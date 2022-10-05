@@ -262,7 +262,42 @@ public class BdD {
                 throw new Error(ex);
             }
         }
+        
     }
+    //___________________________________new_user___________________________________
+
+   public static int newUser(Connection con, String nom, String email, String pass, String codepostal) throws SQLException {
+       return newUser(con, nom, "", email, pass, codepostal);
+   }
+
+   public static int newUser(Connection con, String nom, String prenom, String email, String pass, String codepostal) throws SQLException {
+       // lors de la creation du PreparedStatement, il faut que je précise
+       // que je veux qu'il conserve les clés générées
+       try ( PreparedStatement pst = con.prepareStatement(
+               """
+               insert into utilisateur (nom,prenom,email,pass,codepostal) values (?,?,?,?,?)
+               """, PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+           pst.setString(1, nom);
+           pst.setString(2, prenom);
+           pst.setString(3, email);
+           pst.setString(4, pass);
+           pst.setString(5, codepostal);
+
+           pst.executeUpdate();
+
+           // je peux alors récupérer les clés créées comme un result set :
+           try ( ResultSet rid = pst.getGeneratedKeys()) {
+               // et comme ici je suis sur qu'il y a une et une seule clé, je
+               // fait un simple next 
+               rid.next();
+               // puis je récupère la valeur de la clé créé qui est dans la
+               // première colonne du ResultSet
+               int id = rid.getInt(1);
+               return id;
+           }
+       }
+   }
 
     public static void main(String[] args) {
         try ( Connection con = defautConnect()) {
