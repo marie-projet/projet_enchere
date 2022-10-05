@@ -30,7 +30,7 @@ public class BdD {
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
         return connectGeneralPostGres("localhost", 5439,
-                "mariewinkler", "mariewinkler", "pass");
+                "postgres", "postgres", "pass");
     }
 
     public static void creeSchema(Connection con)
@@ -42,18 +42,18 @@ public class BdD {
             // creation des tables
             st.executeUpdate(
                     """
-                    create table utilisateur (
-                        id integer not null primary key
-                        generated always as identity,
-                    -- ceci est un exemple de commentaire SQL :
-                    -- un commentaire commence par deux tirets,
-                    -- et fini à la fin de la ligne
-                    -- cela me permet de signaler que le petit mot clé
-                    -- unique ci-dessous interdit deux valeurs semblables
-                    -- dans la colonne des noms.
-                        nom varchar(30) not null unique,
-                        pass varchar(30) not null
+                    CREATE TABLE utilisateur
+                    (
+                        id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+                        nom character varying(50) NOT NULL,
+                        prenom character varying(50),
+                        email character varying(100) NOT NULL,
+                        pass character varying(50) NOT NULL,
+                        codepostal character varying(20),
+                        CONSTRAINT utilisateur_pkey PRIMARY KEY (id),
+                        CONSTRAINT u_utilisateur_email UNIQUE (email)
                     )
+                    
                     """);
             st.executeUpdate(
                     """
@@ -302,7 +302,8 @@ public class BdD {
     public static void main(String[] args) {
         try ( Connection con = defautConnect()) {
             System.out.println("connecté !!!");
-            menu(con);
+            //menu(con);
+            creeSchema(con);
         } catch (Exception ex) {
             throw new Error(ex);
         }
