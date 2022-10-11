@@ -57,24 +57,67 @@ public class BdD {
                     """);
             st.executeUpdate(
                     """
-                    create table aime (
-                        u1 integer not null,
-                        u2 integer not null
+                    CREATE TABLE categorie
+                    (
+                        id integer NOT NULL,
+                        nom character varying(100)  NOT NULL,
+                        CONSTRAINT categorie_pkey PRIMARY KEY (id)
                     )
-                    """);
+            """);
+            st.executeUpdate(
+                    """
+                    CREATE TABLE enchere
+                    (
+                        id integer NOT NULL,
+                        de integer NOT NULL,
+                        sur integer NOT NULL,
+                        quand timestamp without time zone NOT NULL,
+                        montant integer NOT NULL,
+                        CONSTRAINT enchere_pkey PRIMARY KEY (id)
+
+                    )
+            """);
+            st.executeUpdate(
+                    """
+                    CREATE TABLE objet
+                    (
+                        id integer NOT NULL,
+                        titre character varying(500) NOT NULL,
+                        description text ,
+                        debut timestamp without time zone NOT NULL,
+                        fin timestamp without time zone NOT NULL,
+                        prixbase integer NOT NULL,
+                        categorie integer NOT NULL,
+                        proposepar integer NOT NULL,
+                        CONSTRAINT objet_pkey PRIMARY KEY (id)
+                    )
+            """);
+
             // je defini les liens entre les clés externes et les clés primaires
             // correspondantes
             st.executeUpdate(
                     """
-                    alter table aime
-                        add constraint fk_aime_u1
-                        foreign key (u1) references utilisateur(id)
+                    ALTER TABLE OBJET
+                        ADD CONSTRAINT fk_objet_categorie FOREIGN KEY (categorie)
+                        REFERENCES categorie (id) 
                     """);
             st.executeUpdate(
-                    """
-                    alter table aime
-                        add constraint fk_aime_u2
-                        foreign key (u2) references utilisateur(id)
+                    """        
+                    ALTER TABLE OBJET
+                        ADD CONSTRAINT fk_objet_utilisateur FOREIGN KEY (proposepar)
+                        REFERENCES utilisateur (id)
+                    """);
+            st.executeUpdate(
+                    """  
+                    ALTER TABLE ENCHERE
+                        ADD CONSTRAINT fk_enchere_objet FOREIGN KEY (sur)
+                        REFERENCES objet (id) 
+                    """);
+            st.executeUpdate(
+                    """ 
+                    ALTER TABLE ENCHERE
+                        ADD CONSTRAINT fk_enchere_utilisateur FOREIGN KEY (de)
+                        REFERENCES utilisateur (id) 
                     """);
             // si j'arrive jusqu'ici, c'est que tout s'est bien passé
             // je confirme (commit) la transaction
@@ -104,39 +147,29 @@ public class BdD {
             try {
                 st.executeUpdate(
                         """
-                    alter table aime
-                        drop constraint fk_aime_u1
+                    alter table utilisateur
                              """);
-                System.out.println("constraint fk_aime_u1 dropped");
+                
             } catch (SQLException ex) {
                 // nothing to do : maybe the constraint was not created
             }
-            try {
-                st.executeUpdate(
-                        """
-                    alter table aime
-                        drop constraint fk_aime_u2
-                    """);
-                System.out.println("constraint fk_aime_u2 dropped");
-            } catch (SQLException ex) {
-                // nothing to do : maybe the constraint was not created
-            }
+             // nothing to do : maybe the constraint was not created
             // je peux maintenant supprimer les tables
-            try {
-                st.executeUpdate(
-                        """
-                    drop table aime
-                    """);
-                System.out.println("dable aime dropped");
-            } catch (SQLException ex) {
-                // nothing to do : maybe the table was not created
-            }
             try {
                 st.executeUpdate(
                         """
                     drop table utilisateur
                     """);
                 System.out.println("table utilisateur dropped");
+            } catch (SQLException ex) {
+                // nothing to do : maybe the table was not created
+            }
+            try {
+                st.executeUpdate(
+                        """
+                    drop table categorie
+                    """);
+                System.out.println("table categorie dropped");
             } catch (SQLException ex) {
                 // nothing to do : maybe the table was not created
             }
