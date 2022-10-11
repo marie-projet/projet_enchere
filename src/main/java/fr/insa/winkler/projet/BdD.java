@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 
 /**
  *
@@ -287,6 +288,7 @@ public class BdD {
             System.out.println("2) créer la base de donée exemple");
             System.out.println("3) liste des utilisateurs");
             System.out.println("4) cherche par nom");
+            System.out.println("5) Ajouter un utilisateur");
             System.out.println("0) quitter");
             rep = Console.entreeEntier("Votre choix : ");
             try {
@@ -301,7 +303,9 @@ public class BdD {
                 } else if (rep == 4) {
                     String cherche = Console.entreeString("nom cherché :");
                     trouveParNom(con, cherche);
-                }
+                } else if (rep == 5) {
+                    ajouterUtilisateur(con);
+                } 
 
             } catch (SQLException ex) {
                 throw new Error(ex);
@@ -342,104 +346,14 @@ public class BdD {
             }
         }
     }
-    /**
-    // lors de la création d'un utilisateur, l'identificateur est automatiquement
-    // créé par le SGBD.
-    // on va souvent avoir besoin de cet identificateur dans le programme,
-    // par exemple pour gérer des liens "aime" entre utilisateur
-    // vous trouverez ci-dessous la façon de récupérer les identificateurs
-    // créés : ils se présentent comme un ResultSet particulier.
-    public static int createUtilisateur(Connection con,
-            String nom, String pass)
-            throws SQLException {
-        // lors de la creation du PreparedStatement, il faut que je précise
-        // que je veux qu'il conserve les clés générées
-        try ( PreparedStatement pst = con.prepareStatement(
-                """
-                insert into utilisateur (nom,pass) values (?,?)
-                """, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            pst.setString(1, nom);
-            pst.setString(2, pass);
-            pst.executeUpdate();
-
-            // je peux alors récupérer les clés créées comme un result set :
-            try ( ResultSet rid = pst.getGeneratedKeys()) {
-                // et comme ici je suis sur qu'il y a une et une seule clé, je
-                // fait un simple next 
-                rid.next();
-                // puis je récupère la valeur de la clé créé qui est dans la
-                // première colonne du ResultSet
-                int id = rid.getInt(1);
-                return id;
-            }
-        }
-    }
-
-    public static void menu(Connection con) {
-        int rep = -1;
-        while (rep != 0) {
-            System.out.println("Menu BdD Aime");
-            System.out.println("=============");
-            System.out.println("1) créer/recréer la BdD initiale");
-            System.out.println("2) liste des utilisateurs");
-            System.out.println("3) cherche par nom");
-            System.out.println("4) ajouter un utilisateur");
-            System.out.println("5) ajouter un lien 'Aime'");
-            System.out.println("6) ajouter n utilisateurs aléatoires");
-            System.out.println("0) quitter");
-            rep = Console.entreeEntier("Votre choix : ");
-            try {
-                if (rep == 1) {
-                    recreeTout(con);
-
-                } else if (rep == 2) {
-                    afficheTousLesUtilisateurs(con);
-
-                } else if (rep == 3) {
-                    String cherche = Console.entreeString("nom cherché :");
-                    trouveParNom(con, cherche);
-                } else if (rep == 4) {
-                    String n = Console.entreeString("nom : ");
-                    String p = Console.entreeString("pass : ");
-                    int id = createUtilisateur(con, n, p);
-                    System.out.println("utilisateur " + id + " créé");
-                }
-//else if (rep == 5) {
-//                    demandeNouvelAime(con);
-//                } else if (rep == 6) {
-//                    System.out.println("création d'utilisateurs 'aléatoires'");
-//                    int combien = Console.entreeEntier("combien d'utilisateur : ");
-//                    for (int i = 0; i < combien; i++) {
-//                        boolean exist = true;
-//                        while (exist) {
-//                            String nom = "U" + ((int) (Math.random() * 10000));
-//                            if (!nomUtilisateurExiste(con, nom)) {
-//                                exist = false;
-//                                createUtilisateur(con, nom, "P" + ((int) (Math.random() * 10000)));
-//                            }
-//                        }
-//
-//                    }
-//                }
-            } catch (SQLException ex) {
-                throw new Error(ex);
-            }
-        }
-        
-    }
+    
+   
     //___________________________________new_user___________________________________
-
-   public static int newUser(Connection con, String nom, String email, String pass, String codepostal) throws SQLException {
-       return newUser(con, nom, "", email, pass, codepostal);
-   }
-
-   public static int newUser(Connection con, String nom, String prenom, String email, String pass, String codepostal) throws SQLException {
-       // lors de la creation du PreparedStatement, il faut que je précise
-       // que je veux qu'il conserve les clés générées
+    public static void ajouterUtilisateur(Connection con, String nom, String prenom,String email, String pass, String codepostal) throws SQLException {
        try ( PreparedStatement pst = con.prepareStatement(
                """
                insert into utilisateur (nom,prenom,email,pass,codepostal) values (?,?,?,?,?)
-               """, PreparedStatement.RETURN_GENERATED_KEYS)) {
+               """)) {
 
            pst.setString(1, nom);
            pst.setString(2, prenom);
@@ -449,22 +363,75 @@ public class BdD {
 
            pst.executeUpdate();
 
-           // je peux alors récupérer les clés créées comme un result set :
-           try ( ResultSet rid = pst.getGeneratedKeys()) {
-               // et comme ici je suis sur qu'il y a une et une seule clé, je
-               // fait un simple next 
-               rid.next();
-               // puis je récupère la valeur de la clé créé qui est dans la
-               // première colonne du ResultSet
-               int id = rid.getInt(1);
-               return id;
-           }
-       }
+        }
+    }
+    
+   public static void ajouterUtilisateur(Connection con, String nom, String email, String pass, String codepostal) throws SQLException {
+       ajouterUtilisateur(con, nom, null, email, pass, codepostal);
    }
-   */
+
+   public static void ajouterUtilisateur(Connection con) throws SQLException {
+       // lors de la creation du PreparedStatement, il faut que je précise
+       // que je veux qu'il conserve les clés générées
+        String nom = Console.entreeString("nom : ");
+        String prenom = Console.entreeString("prenom : ");
+        String email = Console.entreeString("email : ");
+        String pass = Console.entreeString("password : ");
+        String passTest = Console.entreeString("verify password : ");
+
+           while(!pass.equals(passTest)){
+               System.out.println("Your first and second password are not the same.");
+               pass = Console.entreeString("password : ");
+               passTest = Console.entreeString("verify password : ");
+           }
+
+           String codepostal = Console.entreeString("codepostal : ");
+        ajouterUtilisateur(con,nom,prenom,email,pass,codepostal);
+    }
+   
+   public static void ajouterCategorie(Connection con, String nom) throws SQLException {
+       try ( PreparedStatement pst = con.prepareStatement(
+               """
+               insert into categorie (nom) values (?)
+               """)) {
+
+           pst.setString(1, nom);
+
+           pst.executeUpdate();
+
+        }
+    }
+   
+   public static void ajouterCategorie(Connection con) throws SQLException {
+       // lors de la creation du PreparedStatement, il faut que je précise
+       // que je veux qu'il conserve les clés générées
+        String nom = Console.entreeString("nom : ");
+        ajouterCategorie(con,nom);
+    }
+   
+   public static void ajouterObjet(Connection con, String titre, String description, Timestamp debut, Timestamp fin, int prixbase, int categorie, int proposepar) throws SQLException {
+       try ( PreparedStatement pst = con.prepareStatement(
+               """
+               insert into categorie (titre, description, debut, fin, prixbase,categorie, proposepar) values (?,?,?,?,?,?,?)
+               """)) {
+
+           pst.setString(1, titre);
+           pst.setString(2, description);
+           pst.setTimestamp(3, debut);
+           pst.setTimestamp(4, fin);
+           pst.setInt(5, prixbase);
+           pst.setInt(6, categorie);
+           pst.setInt(7, proposepar);
+
+           pst.executeUpdate();
+
+        }
+    }
+   
+   
     public static void main(String[] args) {
         try ( Connection con = defautConnect()) {
-            System.out.println("connecté !!!");
+            System.out.println("connecté !");
             menu(con);
         } catch (Exception ex) {
             throw new Error(ex);
