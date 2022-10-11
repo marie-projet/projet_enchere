@@ -26,33 +26,9 @@ import fr.insa.winkler.utils.Console;
 */
 public class Main {
 
-   public static void register() {
-       try ( Connection con = BdD.defautConnect()) {
-           System.out.println("connecté !!!");
-
-           String nom = Console.entreeString("nom : ");
-           String email = Console.entreeString("email : ");
-           String pass = Console.entreeString("password : ");
-           String passTest = Console.entreeString("verify password : ");
-
-           while(!pass.equals(passTest)){
-               System.out.println("Your first and second password are not the same.");
-               pass = Console.entreeString("password : ");
-               passTest = Console.entreeString("verify password : ");
-           }
-
-           String codepostal = Console.entreeString("codepostal : ");
-
-           int id = BdD.newUser(con, nom, email, pass, codepostal);
-
-       } catch (Exception ex) {
-           throw new Error(ex);
-       }   
-   }
-
+  
    public static void main(String[] args) {
        System.out.println("Hello World!");
-       register();
 
    }
 }
