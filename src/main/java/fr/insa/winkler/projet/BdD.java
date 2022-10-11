@@ -277,8 +277,40 @@ public class BdD {
             """);
         }
     }
+    
+        public static void menu(Connection con) {
+        int rep = -1;
+        while (rep != 0) {
+            System.out.println("Menu BdD Encheres");
+            System.out.println("=============");
+            System.out.println("1) créer/recréer la BdD initiale");
+            System.out.println("2) créer la base de donée exemple");
+            System.out.println("3) liste des utilisateurs");
+            System.out.println("4) cherche par nom");
+            System.out.println("0) quitter");
+            rep = Console.entreeEntier("Votre choix : ");
+            try {
+                if (rep == 1) {
+                    recreeTout(con);
+
+                } else if (rep==2){
+                    creeExemple(con);
+                }else if (rep == 3) {
+                afficheTousLesUtilisateurs(con);
+
+                } else if (rep == 4) {
+                    String cherche = Console.entreeString("nom cherché :");
+                    trouveParNom(con, cherche);
+                }
+
+            } catch (SQLException ex) {
+                throw new Error(ex);
+            }
+        }
+        
+    }
                       
-    /**
+    
     public static void afficheTousLesUtilisateurs(Connection con) throws SQLException {
         try ( Statement st = con.createStatement()) {
             try ( ResultSet rs = st.executeQuery(
@@ -310,7 +342,7 @@ public class BdD {
             }
         }
     }
-
+    /**
     // lors de la création d'un utilisateur, l'identificateur est automatiquement
     // créé par le SGBD.
     // on va souvent avoir besoin de cet identificateur dans le programme,
@@ -433,11 +465,7 @@ public class BdD {
     public static void main(String[] args) {
         try ( Connection con = defautConnect()) {
             System.out.println("connecté !!!");
-            //menu(con);
-            //creeSchema(con);
-            //deleteSchema(con);
-            recreeTout(con);
-            creeExemple(con);
+            menu(con);
         } catch (Exception ex) {
             throw new Error(ex);
         }
