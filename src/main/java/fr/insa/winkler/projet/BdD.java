@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.Optional;
 
 /**
  *
@@ -30,7 +31,7 @@ public class BdD {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439,
+        return connectGeneralPostGres("localhost", 5432,
                 "postgres", "postgres", "pass");
     }
 
@@ -289,6 +290,7 @@ public class BdD {
             System.out.println("3) liste des utilisateurs");
             System.out.println("4) cherche par nom");
             System.out.println("5) Ajouter un utilisateur");
+            System.out.println("6) Se connecter");
             System.out.println("0) quitter");
             rep = Console.entreeEntier("Votre choix : ");
             try {
@@ -304,8 +306,11 @@ public class BdD {
                     String cherche = Console.entreeString("nom cherché :");
                     trouveParNom(con, cherche);
                 } else if (rep == 5) {
-                    ajouterUtilisateur(con);
-                } 
+                    ajouterUtilisateur(con).afficheUtilisateur();
+                } else if (rep == 6) {
+                   connexionUtilisateur(con).afficheUtilisateur();
+                   
+                }
 
             } catch (SQLException ex) {
                 throw new Error(ex);
@@ -313,6 +318,7 @@ public class BdD {
         }
         
     }
+        
                       
     
     public static void afficheTousLesUtilisateurs(Connection con) throws SQLException {
@@ -323,8 +329,7 @@ public class BdD {
                     int id = rs.getInt(1);
                     String nom = rs.getString(2);
                     String motDePasse = rs.getString("pass");
-                    System.out.println(id + " : " + nom + "(" + motDePasse
-                            + ")");
+                    System.out.println(id + " : " + nom + "(" + motDePasse+ ")");
                 }
             }
         }
@@ -340,39 +345,52 @@ public class BdD {
                 while (rs.next()) {
                     int id = rs.getInt(1);
                     String motDePasse = rs.getString("pass");
-                    System.out.println(id + " : " + nom + "(" + motDePasse
-                            + ")");
+                    System.out.println(id + " : " + nom + "(" + motDePasse+ ")");
                 }
             }
         }
     }
     
-   
-    //___________________________________new_user___________________________________
-    public static void ajouterUtilisateur(Connection con, String nom, String prenom,String email, String pass, String codepostal) throws SQLException {
-       try ( PreparedStatement pst = con.prepareStatement(
-               """
-               insert into utilisateur (nom,prenom,email,pass,codepostal) values (?,?,?,?,?)
-               """)) {
-
-           pst.setString(1, nom);
-           pst.setString(2, prenom);
-           pst.setString(3, email);
-           pst.setString(4, pass);
-           pst.setString(5, codepostal);
-
-           pst.executeUpdate();
-
+    public static Utilisateur ajouterUtilisateur(Connection con, String nom, String prenom, String email, String pass, String codePostal) throws SQLException {
+        con.setAutoCommit(false);
+        try ( PreparedStatement chercheNom = con.prepareStatement(
+                "select id from utilisateur where email = ?")) {
+            chercheNom.setString(1, email);
+            ResultSet testEmail = chercheNom.executeQuery();
+            if (testEmail.next()) {
+                throw new Error("email deja utilsé");
+            }
+            try ( PreparedStatement pst = con.prepareStatement(
+                    """
+                    insert into utilisateur (nom,prenom,email,pass,codepostal) values (?,?,?,?,?)
+                    """,PreparedStatement.RETURN_GENERATED_KEYS)) {
+                pst.setString(1, nom);
+                pst.setString(2, prenom);
+                pst.setString(3, email);
+                pst.setString(4, pass);
+                pst.setString(5, codePostal);
+                pst.executeUpdate();
+                con.commit();
+                try ( ResultSet rid = pst.getGeneratedKeys()) {
+                    rid.next();// une seule clé dunc un next suffit
+                    int id = rid.getInt(1);
+                    return new Utilisateur(id, nom, prenom, email, pass, codePostal);
+                }
+            }
+        } catch (Exception ex) {
+            con.rollback();
+            throw ex;
+        } finally {
+            con.setAutoCommit(true);
         }
     }
     
-   public static void ajouterUtilisateur(Connection con, String nom, String email, String pass, String codepostal) throws SQLException {
-       ajouterUtilisateur(con, nom, null, email, pass, codepostal);
+    
+   public static Utilisateur ajouterUtilisateur(Connection con, String nom, String email, String pass, String codepostal) throws SQLException {
+       return ajouterUtilisateur(con, nom, null, email, pass, codepostal);
    }
 
-   public static void ajouterUtilisateur(Connection con) throws SQLException {
-       // lors de la creation du PreparedStatement, il faut que je précise
-       // que je veux qu'il conserve les clés générées
+   public static Utilisateur ajouterUtilisateur(Connection con) throws SQLException {
         String nom = Console.entreeString("nom : ");
         String prenom = Console.entreeString("prenom : ");
         String email = Console.entreeString("email : ");
@@ -386,7 +404,7 @@ public class BdD {
            }
 
            String codepostal = Console.entreeString("codepostal : ");
-        ajouterUtilisateur(con,nom,prenom,email,pass,codepostal);
+        return ajouterUtilisateur(con,nom,prenom,email,pass,codepostal);
     }
    
    public static void ajouterCategorie(Connection con, String nom) throws SQLException {
@@ -396,7 +414,7 @@ public class BdD {
                """)) {
 
            pst.setString(1, nom);
-
+           //coucou marie
            pst.executeUpdate();
 
         }
@@ -427,7 +445,37 @@ public class BdD {
 
         }
     }
-   
+   /*
+   public static Optional<Utilisateur> connexionUtilisateur(Connection con, String email, String pass) throws SQLException {
+        try ( PreparedStatement pst = con.prepareStatement("select id from utilisateur where email = ? and pass = ?")) {
+            pst.setString(1, email);
+            pst.setString(2, pass);
+            ResultSet res = pst.executeQuery();
+            if (res.next()) {
+                return Optional.of(new Utilisateur(res.getInt("id"), res.getString("nom"), res.getString("prenom"), email, pass, res.getString("codepostal")));
+            } else {
+                return Optional.empty();
+            }
+        }
+    }
+    */
+   public static Utilisateur connexionUtilisateur(Connection con, String email, String pass) throws SQLException {
+        try ( PreparedStatement pst = con.prepareStatement("select * from utilisateur where email = ? and pass = ?")) {
+            pst.setString(1, email);
+            pst.setString(2, pass);
+            ResultSet res = pst.executeQuery();
+            if (res.next()) {
+                return new Utilisateur(res.getInt("id"), res.getString("nom"), res.getString("prenom"), email, pass, res.getString("codepostal"));
+            } else {
+                return new Utilisateur();//en cas de problème
+            }
+        }
+    }
+   public static Utilisateur connexionUtilisateur(Connection con) throws SQLException {
+       String email = Console.entreeString("email : ");
+       String pass = Console.entreeString("pass : ");
+       return connexionUtilisateur(con, email, pass);
+    }
    
     public static void main(String[] args) {
         try ( Connection con = defautConnect()) {
