@@ -31,7 +31,7 @@ public class BdD {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5432,
+        return connectGeneralPostGres("localhost", 5439,
                 "postgres", "postgres", "pass");
     }
 
@@ -280,7 +280,7 @@ public class BdD {
         }
     }
     
-        public static void menu(Connection con) {
+        public static void menu(Connection con) throws SQLException {
         int rep = -1;
         while (rep != 0) {
             System.out.println("Menu BdD Encheres");
@@ -290,7 +290,8 @@ public class BdD {
             System.out.println("3) liste des utilisateurs");
             System.out.println("4) cherche par nom");
             System.out.println("5) Ajouter un utilisateur");
-            System.out.println("6) Se connecter");
+            System.out.println("6) Ajouter une categorie");
+            System.out.println("7) Ajouter un objet");
             System.out.println("0) quitter");
             rep = Console.entreeEntier("Votre choix : ");
             try {
@@ -308,8 +309,11 @@ public class BdD {
                 } else if (rep == 5) {
                     ajouterUtilisateur(con).afficheUtilisateur();
                 } else if (rep == 6) {
-                   connexionUtilisateur(con).afficheUtilisateur();
-                   
+                   ajouterCategorie(con); 
+                } else if (rep==7){
+                    System.out.println("veuillez vous connecter");
+                    Utilisateur utilisateur=connexionUtilisateur(con);
+                    ajouterObjet(con,utilisateur);
                 }
 
             } catch (SQLException ex) {
@@ -330,6 +334,19 @@ public class BdD {
                     String nom = rs.getString(2);
                     String motDePasse = rs.getString("pass");
                     System.out.println(id + " : " + nom + "(" + motDePasse+ ")");
+                }
+            }
+        }
+    }
+    
+        public static void afficheToutesLesCategories(Connection con) throws SQLException {
+        try ( Statement st = con.createStatement()) {
+            try ( ResultSet rs = st.executeQuery(
+                    "select id,nom from categorie")) {
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String nom = rs.getString(2);
+                    System.out.println(id + " : " + nom );
                 }
             }
         }
@@ -392,7 +409,7 @@ public class BdD {
 
    public static Utilisateur ajouterUtilisateur(Connection con) throws SQLException {
         String nom = Console.entreeString("nom : ");
-        String prenom = Console.entreeString("prenom : ");
+        String prenom = Console.entreeString("prénom : ");
         String email = Console.entreeString("email : ");
         String pass = Console.entreeString("password : ");
         String passTest = Console.entreeString("verify password : ");
@@ -427,10 +444,50 @@ public class BdD {
         ajouterCategorie(con,nom);
     }
    
+    public static String demanderDate (Connection con) throws SQLException{
+        String jour =Console.entreeString("Jour de fin de vente sour la forme annee-mois-jour:");
+        String heure=Console.entreeString("Heure de fin de vente sour la forme heure:minute:seconde");
+        String date =jour+' '+heure;
+        return date;
+   }
+   
+   public static int choisirCategorie(Connection con) throws SQLException{
+       afficheToutesLesCategories(con);
+       return Console.entreeEntier("Entrez l'identifiant de la categorie de votre objet");
+   }
+   
    public static void ajouterObjet(Connection con, String titre, String description, Timestamp debut, Timestamp fin, int prixbase, int categorie, int proposepar) throws SQLException {
        try ( PreparedStatement pst = con.prepareStatement(
                """
                insert into categorie (titre, description, debut, fin, prixbase,categorie, proposepar) values (?,?,?,?,?,?,?)
+               """)) {
+
+           pst.setString(1, titre);
+           pst.setString(2, description);
+           pst.setTimestamp(3, debut);
+           pst.setTimestamp(4, fin);
+           pst.setInt(5, prixbase);
+           pst.setInt(6, categorie);
+           pst.setInt(7, proposepar);
+
+           pst.executeUpdate();
+
+        }
+    }
+   
+   public static void ajouterObjet(Connection con, Utilisateur utilisateur) throws SQLException {
+        String titre = Console.entreeString("titre : ");
+        String description = Console.entreeString("description : ");
+        Long datetime = System.currentTimeMillis();
+        Timestamp debut = new Timestamp(datetime);
+        Timestamp fin= Timestamp.valueOf(demanderDate(con));
+        int prixbase = Console.entreeEntier("prix de base: ");
+        int categorie= choisirCategorie(con);
+        int proposepar=utilisateur.getId();
+        
+       try ( PreparedStatement pst = con.prepareStatement(
+               """
+               insert into objet (titre, description, debut, fin, prixbase,categorie, proposepar) values (?,?,?,?,?,?,?)
                """)) {
 
            pst.setString(1, titre);
@@ -460,6 +517,7 @@ public class BdD {
     }
     */
    public static Utilisateur connexionUtilisateur(Connection con, String email, String pass) throws SQLException {
+       //coucou téo
         try ( PreparedStatement pst = con.prepareStatement("select * from utilisateur where email = ? and pass = ?")) {
             pst.setString(1, email);
             pst.setString(2, pass);
