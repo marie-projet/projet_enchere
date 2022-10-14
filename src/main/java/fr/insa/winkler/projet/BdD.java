@@ -313,9 +313,11 @@ public class BdD {
     public static void afficheTousLesObjets(Connection con) throws SQLException {
         try ( Statement st = con.createStatement()) {
             try ( ResultSet rs = st.executeQuery(
-                    "select id,titre,description,debut,fin,prixbase,categorie.nom ,utilisateur.nom as proposepar from objet "
-                            + "join utilisateur on utilisateur.id=objet.proposepar"
-                            + "join categorie on categorie.id=objet.categorie  ")) {
+                    """
+                    select objet.id,titre,description,debut,fin,prixbase,categorie.nom ,utilisateur.nom as proposepar from objet 
+                        join utilisateur on utilisateur.id=objet.proposepar 
+                        join categorie on categorie.id=objet.categorie
+                    """)) {
                 while (rs.next()) {
                     int id = rs.getInt(1);
                     String titre = rs.getString(2);
@@ -437,13 +439,13 @@ public class BdD {
    
    public static int choisirObjet(Connection con) throws SQLException{
        afficheTousLesObjets(con);
-       return Console.entreeEntier("Entrez l'identifiant de l'obejt de votre choix");
+       return Console.entreeEntier("Entrez l'identifiant de l'objet de votre choix");
    }
    
    public static void ajouterObjet(Connection con, String titre, String description, Timestamp debut, Timestamp fin, int prixbase, int categorie, int proposepar) throws SQLException {
        try ( PreparedStatement pst = con.prepareStatement(
                """
-               insert into categorie (titre, description, debut, fin, prixbase,categorie, proposepar) values (?,?,?,?,?,?,?)
+               insert into objet (titre, description, debut, fin, prixbase,categorie, proposepar) values (?,?,?,?,?,?,?)
                """)) {
 
            pst.setString(1, titre);
@@ -468,69 +470,58 @@ public class BdD {
         int prixbase = Console.entreeEntier("prix de base: ");
         int categorie= choisirCategorie(con);
         int proposepar=utilisateur.getId();
-        
-       try ( PreparedStatement pst = con.prepareStatement(
-               """
-               insert into objet (titre, description, debut, fin, prixbase,categorie, proposepar) values (?,?,?,?,?,?,?)
-               """)) {
-
-           pst.setString(1, titre);
-           pst.setString(2, description);
-           pst.setTimestamp(3, debut);
-           pst.setTimestamp(4, fin);
-           pst.setInt(5, prixbase);
-           pst.setInt(6, categorie);
-           pst.setInt(7, proposepar);
-
-           pst.executeUpdate();
-
-        }
+        ajouterObjet(con,titre,description,debut,fin,prixbase,categorie,proposepar);
     }
    
    public static void ajouterEnchere(Connection con, int de, int sur, Timestamp quand, int montant) throws SQLException {
-       String prixbase = "select prixbase from objet where sur=objet.id" ;     
-    ResultSet res = SQLStatement.executeQuery(prixbase);
-       try ( PreparedStatement pst = con.prepareStatement(
-               """
-               insert into enchere (de, sur, quand, montant) values (?,?,?,?,?,?,?)
-               """)) {
+        int prix=0;
+        try ( PreparedStatement chercheMontant = con.prepareStatement(
+         "select max(montant) as montant from enchere where enchere.sur=?")) {
+            chercheMontant.setInt(1, sur);
+            ResultSet rs = chercheMontant.executeQuery();
+            if(rs.next()) {
+                prix=rs.getInt("montant");
+            } else {
+                try ( PreparedStatement cherchePrix = con.prepareStatement(
+            "select prixbase from objet where objet.id=?")) {
+                    cherchePrix.setInt(1, sur);
+                    ResultSet rp = cherchePrix.executeQuery();
+                    if(rp.next()) {
+                        //int prix = rp.getInt(1);
+                        prix = rp.getInt("prixbase"); 
+                    } else {
+                        throw new Error("objet invalide "+ sur);
+                    }
+                }
+            }
+        }
+        
+       if (montant>prix){  
+            try ( PreparedStatement pst = con.prepareStatement(
+                    """
+                    insert into enchere (de, sur, quand, montant) values (?,?,?,?)
+                    """)) {
 
-           pst.setInt(1, de);
-           pst.setInt(2, sur);
-           pst.setTimestamp(3, quand);
-           pst.setInt(5, montant);
+                pst.setInt(1, de);
+                pst.setInt(2, sur);
+                pst.setTimestamp(3, quand);
+                pst.setInt(4, montant);
 
-           pst.executeUpdate();
+                pst.executeUpdate();
 
+            } 
+        }else {
+            throw new Error("Montant inférieur à l'enchère précédente");
         }
     }
    
-   public static void ajouterObjet(Connection con, Utilisateur utilisateur) throws SQLException {
-        String titre = Console.entreeString("titre : ");
-        String description = Console.entreeString("description : ");
+    public static void ajouterEnchere(Connection con, Utilisateur utilisateur) throws SQLException {
+        int de=utilisateur.getId();
+        int sur=choisirObjet(con);
         Long datetime = System.currentTimeMillis();
-        Timestamp debut = new Timestamp(datetime);
-        Timestamp fin= Timestamp.valueOf(demanderDate(con));
-        int prixbase = Console.entreeEntier("prix de base: ");
-        int categorie= choisirCategorie(con);
-        int proposepar=utilisateur.getId();
-        
-       try ( PreparedStatement pst = con.prepareStatement(
-               """
-               insert into objet (titre, description, debut, fin, prixbase,categorie, proposepar) values (?,?,?,?,?,?,?)
-               """)) {
-
-           pst.setString(1, titre);
-           pst.setString(2, description);
-           pst.setTimestamp(3, debut);
-           pst.setTimestamp(4, fin);
-           pst.setInt(5, prixbase);
-           pst.setInt(6, categorie);
-           pst.setInt(7, proposepar);
-
-           pst.executeUpdate();
-
-        }
+        Timestamp quand = new Timestamp(datetime);
+        int montant = Console.entreeEntier("montant: ");
+        ajouterEnchere(con,de,sur,quand,montant);
     }
    
    /*
@@ -577,6 +568,7 @@ public class BdD {
             System.out.println("5) Ajouter un utilisateur");
             System.out.println("6) Ajouter une categorie");
             System.out.println("7) Ajouter un objet");
+            System.out.println("8) Encherir");
             System.out.println("0) quitter");
             rep = Console.entreeEntier("Votre choix : ");
             try {
@@ -599,6 +591,10 @@ public class BdD {
                     System.out.println("veuillez vous connecter");
                     Utilisateur utilisateur=connexionUtilisateur(con);
                     ajouterObjet(con,utilisateur);
+                } else if (rep==8){
+                    System.out.println("veuillez vous connecter");
+                    Utilisateur utilisateur=connexionUtilisateur(con);
+                    ajouterEnchere(con,utilisateur);
                 }
 
             } catch (SQLException ex) {
