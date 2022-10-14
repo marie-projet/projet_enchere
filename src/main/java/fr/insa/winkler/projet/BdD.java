@@ -279,49 +279,6 @@ public class BdD {
             """);
         }
     }
-    
-        public static void menu(Connection con) throws SQLException {
-        int rep = -1;
-        while (rep != 0) {
-            System.out.println("Menu BdD Encheres");
-            System.out.println("=============");
-            System.out.println("1) créer/recréer la BdD initiale");
-            System.out.println("2) créer la base de donée exemple");
-            System.out.println("3) liste des utilisateurs");
-            System.out.println("4) cherche par nom");
-            System.out.println("5) Ajouter un utilisateur");
-            System.out.println("6) Ajouter une categorie");
-            System.out.println("7) Ajouter un objet");
-            System.out.println("0) quitter");
-            rep = Console.entreeEntier("Votre choix : ");
-            try {
-                if (rep == 1) {
-                    recreeTout(con);
-
-                } else if (rep==2){
-                    creeExemple(con);
-                }else if (rep == 3) {
-                afficheTousLesUtilisateurs(con);
-
-                } else if (rep == 4) {
-                    String cherche = Console.entreeString("nom cherché :");
-                    trouveParNom(con, cherche);
-                } else if (rep == 5) {
-                    ajouterUtilisateur(con).afficheUtilisateur();
-                } else if (rep == 6) {
-                   ajouterCategorie(con); 
-                } else if (rep==7){
-                    System.out.println("veuillez vous connecter");
-                    Utilisateur utilisateur=connexionUtilisateur(con);
-                    ajouterObjet(con,utilisateur);
-                }
-
-            } catch (SQLException ex) {
-                throw new Error(ex);
-            }
-        }
-        
-    }
         
                       
     
@@ -339,7 +296,7 @@ public class BdD {
         }
     }
     
-        public static void afficheToutesLesCategories(Connection con) throws SQLException {
+    public static void afficheToutesLesCategories(Connection con) throws SQLException {
         try ( Statement st = con.createStatement()) {
             try ( ResultSet rs = st.executeQuery(
                     "select id,nom from categorie")) {
@@ -347,6 +304,28 @@ public class BdD {
                     int id = rs.getInt(1);
                     String nom = rs.getString(2);
                     System.out.println(id + " : " + nom );
+                }
+            }
+        }
+    }
+    
+    
+    public static void afficheTousLesObjets(Connection con) throws SQLException {
+        try ( Statement st = con.createStatement()) {
+            try ( ResultSet rs = st.executeQuery(
+                    "select id,titre,description,debut,fin,prixbase,categorie.nom ,utilisateur.nom as proposepar from objet "
+                            + "join utilisateur on utilisateur.id=objet.proposepar"
+                            + "join categorie on categorie.id=objet.categorie  ")) {
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixbase = rs.getInt(6);
+                    String categorie=rs.getString(7);
+                    String proposepar=rs.getString(8);
+                    System.out.println(id + " : " + titre+ " categorie:"+categorie +" prix:"+prixbase+ " vendu par:"+proposepar);
                 }
             }
         }
@@ -456,6 +435,11 @@ public class BdD {
        return Console.entreeEntier("Entrez l'identifiant de la categorie de votre objet");
    }
    
+   public static int choisirObjet(Connection con) throws SQLException{
+       afficheTousLesObjets(con);
+       return Console.entreeEntier("Entrez l'identifiant de l'obejt de votre choix");
+   }
+   
    public static void ajouterObjet(Connection con, String titre, String description, Timestamp debut, Timestamp fin, int prixbase, int categorie, int proposepar) throws SQLException {
        try ( PreparedStatement pst = con.prepareStatement(
                """
@@ -502,6 +486,53 @@ public class BdD {
 
         }
     }
+   
+   public static void ajouterEnchere(Connection con, int de, int sur, Timestamp quand, int montant) throws SQLException {
+       String prixbase = "select prixbase from objet where sur=objet.id" ;     
+    ResultSet res = SQLStatement.executeQuery(prixbase);
+       try ( PreparedStatement pst = con.prepareStatement(
+               """
+               insert into enchere (de, sur, quand, montant) values (?,?,?,?,?,?,?)
+               """)) {
+
+           pst.setInt(1, de);
+           pst.setInt(2, sur);
+           pst.setTimestamp(3, quand);
+           pst.setInt(5, montant);
+
+           pst.executeUpdate();
+
+        }
+    }
+   
+   public static void ajouterObjet(Connection con, Utilisateur utilisateur) throws SQLException {
+        String titre = Console.entreeString("titre : ");
+        String description = Console.entreeString("description : ");
+        Long datetime = System.currentTimeMillis();
+        Timestamp debut = new Timestamp(datetime);
+        Timestamp fin= Timestamp.valueOf(demanderDate(con));
+        int prixbase = Console.entreeEntier("prix de base: ");
+        int categorie= choisirCategorie(con);
+        int proposepar=utilisateur.getId();
+        
+       try ( PreparedStatement pst = con.prepareStatement(
+               """
+               insert into objet (titre, description, debut, fin, prixbase,categorie, proposepar) values (?,?,?,?,?,?,?)
+               """)) {
+
+           pst.setString(1, titre);
+           pst.setString(2, description);
+           pst.setTimestamp(3, debut);
+           pst.setTimestamp(4, fin);
+           pst.setInt(5, prixbase);
+           pst.setInt(6, categorie);
+           pst.setInt(7, proposepar);
+
+           pst.executeUpdate();
+
+        }
+    }
+   
    /*
    public static Optional<Utilisateur> connexionUtilisateur(Connection con, String email, String pass) throws SQLException {
         try ( PreparedStatement pst = con.prepareStatement("select id from utilisateur where email = ? and pass = ?")) {
@@ -533,6 +564,48 @@ public class BdD {
        String email = Console.entreeString("email : ");
        String pass = Console.entreeString("pass : ");
        return connexionUtilisateur(con, email, pass);
+    }
+   public static void menu(Connection con) throws SQLException {
+        int rep = -1;
+        while (rep != 0) {
+            System.out.println("Menu BdD Encheres");
+            System.out.println("=============");
+            System.out.println("1) créer/recréer la BdD initiale");
+            System.out.println("2) créer la base de donée exemple");
+            System.out.println("3) liste des utilisateurs");
+            System.out.println("4) cherche par nom");
+            System.out.println("5) Ajouter un utilisateur");
+            System.out.println("6) Ajouter une categorie");
+            System.out.println("7) Ajouter un objet");
+            System.out.println("0) quitter");
+            rep = Console.entreeEntier("Votre choix : ");
+            try {
+                if (rep == 1) {
+                    recreeTout(con);
+
+                } else if (rep==2){
+                    creeExemple(con);
+                }else if (rep == 3) {
+                afficheTousLesUtilisateurs(con);
+
+                } else if (rep == 4) {
+                    String cherche = Console.entreeString("nom cherché :");
+                    trouveParNom(con, cherche);
+                } else if (rep == 5) {
+                    ajouterUtilisateur(con).afficheUtilisateur();
+                } else if (rep == 6) {
+                   ajouterCategorie(con); 
+                } else if (rep==7){
+                    System.out.println("veuillez vous connecter");
+                    Utilisateur utilisateur=connexionUtilisateur(con);
+                    ajouterObjet(con,utilisateur);
+                }
+
+            } catch (SQLException ex) {
+                throw new Error(ex);
+            }
+        }
+        
     }
    
     public static void main(String[] args) {
