@@ -285,12 +285,15 @@ public class BdD {
     public static void afficheTousLesUtilisateurs(Connection con) throws SQLException {
         try ( Statement st = con.createStatement()) {
             try ( ResultSet rs = st.executeQuery(
-                    "select id,nom,pass from utilisateur")) {
+                    "select id,nom,prenom,email,pass from utilisateur")) {
                 while (rs.next()) {
                     int id = rs.getInt(1);
                     String nom = rs.getString(2);
+                    String prenom = rs.getString(3);
+                    String email= rs.getString(4);
                     String motDePasse = rs.getString("pass");
-                    System.out.println(id + " : " + nom + "(" + motDePasse+ ")");
+                    
+                    System.out.println(id + " : " + nom +" "+ prenom +" "+email+"(" + motDePasse+ ")");
                 }
             }
         }
@@ -314,9 +317,10 @@ public class BdD {
         try ( Statement st = con.createStatement()) {
             try ( ResultSet rs = st.executeQuery(
                     """
-                    select objet.id,titre,description,debut,fin,prixbase,categorie.nom ,utilisateur.nom as proposepar from objet 
+                    select objet.id,titre,description,debut,fin,prixbase,categorie.nom ,utilisateur.nom as proposeparnom, utilisateur.prenom as proposeparprenom from objet 
                         join utilisateur on utilisateur.id=objet.proposepar 
                         join categorie on categorie.id=objet.categorie
+                        order by objet.id ASC
                     """)) {
                 while (rs.next()) {
                     int id = rs.getInt(1);
@@ -326,8 +330,56 @@ public class BdD {
                     Timestamp fin = rs.getTimestamp(5);
                     int prixbase = rs.getInt(6);
                     String categorie=rs.getString(7);
-                    String proposepar=rs.getString(8);
-                    System.out.println(id + " : " + titre+ " categorie:"+categorie +" prix:"+prixbase+ " vendu par:"+proposepar);
+                    String proposeparnom=rs.getString(8);
+                    String proposeparprenom=rs.getString(9);
+                    System.out.println(id + " : " + titre+ " - " +categorie+ " - " + prixbase + "€" + " - " + proposeparnom + " "+proposeparprenom);
+                }
+            }
+        }
+    }
+    
+        public static void afficheToutesLesEncheres(Connection con) throws SQLException {
+            try ( Statement st = con.createStatement()) {
+                try ( ResultSet rs = st.executeQuery(
+                """
+                select enchere.id, utilisateur.nom, utilisateur.prenom, objet.titre, quand, montant from enchere
+                join objet on enchere.sur=objet.id
+                join utilisateur on utilisateur.id=enchere.de 
+                order by enchere.id ASC
+              """)) {
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String nom = rs.getString(2);
+                    String prenom = rs.getString(3);
+                    String objet = rs.getString(4);
+                    Timestamp quand = rs.getTimestamp(5);
+                    int montant = rs.getInt(6);
+                    System.out.println(id + " : " + objet+ " - " +montant+ "€" + " - "+quand+" - " + nom + " "+prenom);
+                      }
+                  }
+        }
+    }
+    
+    public static void afficheEnchereObjet(Connection con, int identifiant) throws SQLException {
+    try ( PreparedStatement st = con.prepareStatement(
+        """
+        select enchere.id, utilisateur.nom, utilisateur.prenom, objet.titre, quand, montant from enchere
+        join objet on enchere.sur=objet.id
+        join utilisateur on utilisateur.id=enchere.de 
+        where enchere.sur=?
+        order by enchere.id ASC
+        """)) {
+            st.setInt(1,identifiant);
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String nom = rs.getString(2);
+                    String prenom = rs.getString(3);
+                    String objet = rs.getString(4);
+                    Timestamp quand = rs.getTimestamp(5);
+                    int montant = rs.getInt(6);
+                    System.out.println("Les enchères déjà effectuées sur l'objet:");
+                    System.out.println(id + " : " + objet+ " - " +montant+ "€" + " - "+quand+" - " + nom + " "+prenom);
                 }
             }
         }
@@ -518,9 +570,10 @@ public class BdD {
     public static void ajouterEnchere(Connection con, Utilisateur utilisateur) throws SQLException {
         int de=utilisateur.getId();
         int sur=choisirObjet(con);
+        afficheEnchereObjet(con,sur);
         Long datetime = System.currentTimeMillis();
         Timestamp quand = new Timestamp(datetime);
-        int montant = Console.entreeEntier("montant: ");
+        int montant = Console.entreeEntier("montant de votre enchère: ");
         ajouterEnchere(con,de,sur,quand,montant);
     }
    
@@ -551,20 +604,39 @@ public class BdD {
             }
         }
     }
+   
    public static Utilisateur connexionUtilisateur(Connection con) throws SQLException {
        String email = Console.entreeString("email : ");
        String pass = Console.entreeString("pass : ");
        return connexionUtilisateur(con, email, pass);
     }
+   
+   
+   public static void BilanUtilisateur(Connection con, Utilisateur utilisateur) throws SQLException {
+       int identifiant=utilisateur.getId();
+       try ( PreparedStatement chercheEncheres = con.prepareStatement(
+         "select objet.titre, objet.categorie, objet.prixbase, objet.debut, objet.fin from enchere"
+                 + "join objet on objet.id=enchere.sur"
+                 + "where enchere.de=?")) {
+            chercheEncheres.setInt(1, identifiant);
+            ResultSet rs = chercheEncheres.executeQuery();
+            try( PreparedStatement cherche )
+            if(rs.next()) {
+        
+            }
+        }
+    }
+   
+   
    public static void menu(Connection con) throws SQLException {
         int rep = -1;
         while (rep != 0) {
             System.out.println("Menu BdD Encheres");
             System.out.println("=============");
-            System.out.println("1) créer/recréer la BdD initiale");
-            System.out.println("2) créer la base de donée exemple");
-            System.out.println("3) liste des utilisateurs");
-            System.out.println("4) cherche par nom");
+            System.out.println("1) Créer/recréer la BdD initiale");
+            System.out.println("2) Créer la base de donée exemple");
+            System.out.println("3) Liste des utilisateurs");
+            System.out.println("4) Chercher un utilisateur par nom");
             System.out.println("5) Ajouter un utilisateur");
             System.out.println("6) Ajouter une categorie");
             System.out.println("7) Ajouter un objet");
@@ -607,6 +679,7 @@ public class BdD {
     public static void main(String[] args) {
         try ( Connection con = defautConnect()) {
             System.out.println("connecté !");
+            afficheToutesLesEncheres(con);
             menu(con);
         } catch (Exception ex) {
             throw new Error(ex);
