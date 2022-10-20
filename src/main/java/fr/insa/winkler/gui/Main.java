@@ -32,9 +32,9 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
-        Scene sc = new Scene(new Label("coucou JavaFx"));
+        Scene sc = new Scene(new MainPane(stage),800,600);
         stage.setScene(sc);
-        stage.setTitle("AmourFx");
+        stage.setTitle("Vente aux enchères");
         stage.show();
     }
 
