@@ -43,11 +43,11 @@ public class Utilisateur {
         this(id, nom, null, email, pass, codePostal);
     }
     public Utilisateur() { // en cas de problème
-        this(-1, null, null,null, null);
+        this(0, null, null,null, null);
     }
     
-    public static Utilisateur admin(){ // Admin unique et non stoqué dans la BdD
-        return new Utilisateur(0,"admin",null,"admin",null);
+    public static Utilisateur admin(){
+        return new Utilisateur(1,"admin",null,"admin","00000");
     }
     
     public int getId(){

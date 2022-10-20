@@ -121,8 +121,10 @@ public class BdD {
                         ADD CONSTRAINT fk_enchere_utilisateur FOREIGN KEY (de)
                         REFERENCES utilisateur (id) 
                     """);
+            
             // si j'arrive jusqu'ici, c'est que tout s'est bien passé
             // je confirme (commit) la transaction
+            ajouterAdmin(con);
             con.commit();
         } catch (SQLException ex) {
             // quelque chose s'est mal passé
@@ -403,10 +405,10 @@ public class BdD {
     
     public static Utilisateur ajouterUtilisateur(Connection con, String nom, String prenom, String email, String pass, String codePostal) throws SQLException {
         con.setAutoCommit(false);
-        try ( PreparedStatement chercheNom = con.prepareStatement(
+        try ( PreparedStatement chercheEmail = con.prepareStatement(
                 "select id from utilisateur where email = ?")) {
-            chercheNom.setString(1, email);
-            ResultSet testEmail = chercheNom.executeQuery();
+            chercheEmail.setString(1, email);
+            ResultSet testEmail = chercheEmail.executeQuery();
             if (testEmail.next()) {
                 throw new Error("email deja utilsé");
             }
@@ -436,11 +438,11 @@ public class BdD {
     }
     
     
-   public static Utilisateur ajouterUtilisateur(Connection con, String nom, String email, String pass, String codepostal) throws SQLException {
-       return ajouterUtilisateur(con, nom, null, email, pass, codepostal);
-   }
+    public static Utilisateur ajouterUtilisateur(Connection con, String nom, String email, String pass, String codepostal) throws SQLException {
+        return ajouterUtilisateur(con, nom, null, email, pass, codepostal);
+    }
 
-   public static Utilisateur ajouterUtilisateur(Connection con) throws SQLException {
+    public static Utilisateur ajouterUtilisateur(Connection con) throws SQLException {
         String nom = Console.entreeString("nom : ");
         String prenom = Console.entreeString("prénom : ");
         String email = Console.entreeString("email : ");
@@ -455,6 +457,24 @@ public class BdD {
 
            String codepostal = Console.entreeString("codepostal : ");
         return ajouterUtilisateur(con,nom,prenom,email,pass,codepostal);
+    }
+    
+    public static void ajouterAdmin(Connection con) throws SQLException {
+        con.setAutoCommit(false);
+        try ( PreparedStatement pst = con.prepareStatement(
+        """
+            insert into utilisateur (nom,email,pass,codepostal) values (?,?,?,?)
+            """,PreparedStatement.RETURN_GENERATED_KEYS)) {
+            pst.setString(1, "admin");
+            pst.setString(2, "admin");
+            pst.setString(3, "admin");
+            pst.setString(4, "00000");
+            pst.executeUpdate();
+            con.commit();
+        } catch (Exception ex) {
+            con.rollback();
+            throw ex;
+        }
     }
    
    public static void ajouterCategorie(Connection con, String nom) throws SQLException {
@@ -707,7 +727,7 @@ public class BdD {
                 break;
             }
             rep = -1;
-            if (utilActif.getId() == 0){ // menu admin
+            if (utilActif.getId() == 1){ // menu admin
                 while (rep != 0) {
                     System.out.println("__________MENU_ADMIN__________");
                     
@@ -790,7 +810,7 @@ public class BdD {
     public static void main(String[] args) {
         try ( Connection con = defautConnect()) {
             System.out.println("connecté !");
-            afficheToutesLesEncheres(con);
+            //afficheToutesLesEncheres(con);
             menuV2(con);
         } catch (Exception ex) {
             throw new Error(ex);
