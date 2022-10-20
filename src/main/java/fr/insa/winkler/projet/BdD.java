@@ -31,7 +31,7 @@ public class BdD {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439,
+        return connectGeneralPostGres("localhost", 5432,
                 "postgres", "postgres", "pass");
     }
 
@@ -577,20 +577,7 @@ public class BdD {
         ajouterEnchere(con,de,sur,quand,montant);
     }
    
-   /*
-   public static Optional<Utilisateur> connexionUtilisateur(Connection con, String email, String pass) throws SQLException {
-        try ( PreparedStatement pst = con.prepareStatement("select id from utilisateur where email = ? and pass = ?")) {
-            pst.setString(1, email);
-            pst.setString(2, pass);
-            ResultSet res = pst.executeQuery();
-            if (res.next()) {
-                return Optional.of(new Utilisateur(res.getInt("id"), res.getString("nom"), res.getString("prenom"), email, pass, res.getString("codepostal")));
-            } else {
-                return Optional.empty();
-            }
-        }
-    }
-    */
+    /*
    public static Utilisateur connexionUtilisateur(Connection con, String email, String pass) throws SQLException {
        //coucou téo
         try ( PreparedStatement pst = con.prepareStatement("select * from utilisateur where email = ? and pass = ?")) {
@@ -610,6 +597,31 @@ public class BdD {
        String pass = Console.entreeString("pass : ");
        return connexionUtilisateur(con, email, pass);
     }
+*/
+    public static Optional<Utilisateur> connexionUtilisateur(Connection con, String email, String pass) throws SQLException {
+        if(email.equals("admin") && pass.equals("admin")){
+            return Optional.of(Utilisateur.admin());
+        } else {
+            try ( PreparedStatement pst = con.prepareStatement("select * from utilisateur where email = ? and pass = ?")) {
+                pst.setString(1, email);
+                pst.setString(2, pass);
+                ResultSet res = pst.executeQuery();
+                if (res.next()) {
+                    return Optional.of(new Utilisateur(res.getInt("id"), res.getString("nom"), res.getString("prenom"), email, pass, res.getString("codepostal")));
+                } else {
+                    return Optional.empty();
+                }
+            }
+        }
+    }
+   
+   public static Optional<Utilisateur> connexionUtilisateur(Connection con) throws SQLException {
+       String email = Console.entreeString("email : ");
+       String pass = Console.entreeString("pass : ");
+       return connexionUtilisateur(con, email, pass);
+    }
+
+    
    
    
    public static void BilanUtilisateur(Connection con, Utilisateur utilisateur) throws SQLException {
@@ -660,11 +672,11 @@ public class BdD {
                    ajouterCategorie(con); 
                 } else if (rep==7){
                     System.out.println("veuillez vous connecter");
-                    Utilisateur utilisateur=connexionUtilisateur(con);
+                    Utilisateur utilisateur=connexionUtilisateur(con).get();
                     ajouterObjet(con,utilisateur);
                 } else if (rep==8){
                     System.out.println("veuillez vous connecter");
-                    Utilisateur utilisateur=connexionUtilisateur(con);
+                    Utilisateur utilisateur=connexionUtilisateur(con).get();
                     ajouterEnchere(con,utilisateur);
                 }
 
@@ -675,11 +687,111 @@ public class BdD {
         
     }
    
+    public static void menuV2(Connection con) throws SQLException {
+        int rep = 0;
+        Utilisateur utilActif = new Utilisateur();
+        while (true) {
+            System.out.println("__________MENU_BASE__________");
+            
+            System.out.println("[1] Se connecter");
+            System.out.println("[2] Créer un nouveau compte");
+            System.out.println("[0] Quitter");
+            
+            rep = Console.entreeEntier("Votre choix : ");
+            
+            if (rep == 1){ // Se connecter
+                utilActif = connexionUtilisateur(con).get();
+            } else if (rep == 2){ // Créer un nouveau compte
+                utilActif = ajouterUtilisateur(con);
+            } else { // Quitter
+                break;
+            }
+            rep = -1;
+            if (utilActif.getId() == 0){ // menu admin
+                while (rep != 0) {
+                    System.out.println("__________MENU_ADMIN__________");
+                    
+                    System.out.println("Bienvenu "+utilActif.getNom()+" !");
+                    
+                    System.out.println("[1] Créer/recréer la BdD initiale");
+                    System.out.println("[2] Créer la base de donée exemple");
+                    System.out.println("[3] Liste des utilisateurs");
+                    System.out.println("[4] Chercher un utilisateur par nom");
+                    System.out.println("[5] Ajouter un utilisateur");
+                    System.out.println("[6] Ajouter une categorie");
+                    System.out.println("[7] Ajouter un objet");
+                    System.out.println("[8] Encherir");
+                    System.out.println("[0] Se déconecter");
+
+                    rep = Console.entreeEntier("Votre choix : ");
+
+                    switch(rep){
+                        case 1: // Créer/recréer la BdD initiale
+                            recreeTout(con);
+                            break;
+                        case 2: // Créer la base de donée exemple
+                            creeExemple(con);
+                            break;
+                        case 3: // Liste des utilisateurs
+                            afficheTousLesUtilisateurs(con);
+                            break;
+                        case 4: // Chercher un utilisateur par nom
+                            String cherche = Console.entreeString("Nom cherché :");
+                            trouveParNom(con, cherche);
+                            break;
+                        case 5: // Ajouter un utilisateur
+                            ajouterUtilisateur(con).afficheUtilisateur();
+                            break;
+                        case 6: // Ajouter une categorie
+                            ajouterCategorie(con);
+                            break;
+                        case 7: // Ajouter un objet
+                            ajouterObjet(con,utilActif);
+                            break;
+                        case 8: // Encherir
+                            ajouterEnchere(con,utilActif);
+                            break;
+                    }
+                }
+            } else { // menu utilisateur
+                while (rep != 0) {
+                    System.out.println("_______MENU_UTILISATEUR_______");
+                    
+                    System.out.println("Bienvenu(e) M,Mme "+utilActif.getNom()+" !");
+                    
+                    System.out.println("[3] Liste des utilisateurs");
+                    System.out.println("[4] Chercher un utilisateur par nom");
+                    System.out.println("[7] Ajouter un objet");
+                    System.out.println("[8] Encherir");
+                    System.out.println("[0] Se déconecter");
+
+                    rep = Console.entreeEntier("Votre choix : ");
+
+                    switch(rep){
+                        case 3: // Liste des utilisateurs
+                            afficheTousLesUtilisateurs(con);
+                            break;
+                        case 4: // Chercher un utilisateur par nom
+                            String cherche = Console.entreeString("Nom cherché :");
+                        trouveParNom(con, cherche);
+                            break;
+                        case 7: // Ajouter un objet
+                            ajouterObjet(con,utilActif);
+                            break;
+                        case 8: // Encherir
+                            ajouterEnchere(con,utilActif);
+                            break;
+                    }
+                }
+            }
+        }
+    }
+   
     public static void main(String[] args) {
         try ( Connection con = defautConnect()) {
             System.out.println("connecté !");
             afficheToutesLesEncheres(con);
-            menu(con);
+            menuV2(con);
         } catch (Exception ex) {
             throw new Error(ex);
         }
