@@ -620,7 +620,6 @@ public class BdD {
                  + "where enchere.de=?")) {
             chercheEncheres.setInt(1, identifiant);
             ResultSet rs = chercheEncheres.executeQuery();
-            try( PreparedStatement cherche )
             if(rs.next()) {
         
             }
