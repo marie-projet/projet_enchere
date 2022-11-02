@@ -69,14 +69,16 @@ public class Utilisateur {
         return this.codePostal;
     }
     
-    public void afficheUtilisateur(){
-        if (this.getId() != 0){
-            System.out.println("________Utilisateur________");
-            System.out.println(this.getId()+" : "+this.getNom()+" "+this.getPrenom());
-            System.out.println("email : "+this.getEmail());
-            System.out.println("pass : "+this.getPass());
-            System.out.println("code postal : "+this.getCodePostal());
-            System.out.println("___________________________");
+    public void print(){
+        System.out.println("_________Utilisateur_________");
+        if (this.getPrenom() == null){
+            System.out.println(this.getNom());
+        } else {
+            System.out.println(this.getNom()+" "+this.getPrenom());
         }
+        System.out.println("id : "+this.getId());
+        System.out.println("email : "+this.getEmail());
+        System.out.println("pass : "+this.getPass());
+        System.out.println("code postal : "+this.getCodePostal());
     }
 }

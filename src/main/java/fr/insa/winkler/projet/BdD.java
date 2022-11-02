@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -281,9 +283,26 @@ public class BdD {
             """);
         }
     }
-        
-                      
     
+    public static void afficheListUtilisateur(List<Utilisateur> list)throws SQLException {
+        for(Utilisateur utilisateur: list){
+            utilisateur.print();
+        }
+    }
+        
+    public static List<Utilisateur> listUtilisateur(Connection con) throws SQLException {
+        List<Utilisateur> res = new ArrayList<Utilisateur>();
+        try ( PreparedStatement pst = con.prepareStatement("select id,nom,prenom,email,pass,codepostal from utilisateur ")) {
+            try ( ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    res.add(new Utilisateur(rs.getInt("id"),rs.getString("nom"),rs.getString("prenom"),rs.getString("email"),rs.getString("pass"),rs.getString("codepostal")));
+                }
+                return res;
+            }
+        }
+    }
+    
+    /*
     public static void afficheTousLesUtilisateurs(Connection con) throws SQLException {
         try ( Statement st = con.createStatement()) {
             try ( ResultSet rs = st.executeQuery(
@@ -300,11 +319,30 @@ public class BdD {
             }
         }
     }
+    */
     
+    public static List<Categorie> listCategorie(Connection con) throws SQLException {
+        List<Categorie> res = new ArrayList<Categorie>();
+        try ( PreparedStatement pst = con.prepareStatement("select id,nom from categorie ")) {
+            try ( ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    res.add(new Categorie(rs.getInt("id"),rs.getString("nom")));
+                }
+                return res;
+            }
+        }
+    }
+    public static void afficheListCategorie(List<Categorie> list)throws SQLException {
+        for(Categorie categorie: list){
+            categorie.print();
+        }
+    }
+    
+    /*
     public static void afficheToutesLesCategories(Connection con) throws SQLException {
         try ( Statement st = con.createStatement()) {
             try ( ResultSet rs = st.executeQuery(
-                    "select id,nom from categorie")) {
+                    "select nom from categorie")) {
                 while (rs.next()) {
                     int id = rs.getInt(1);
                     String nom = rs.getString(2);
@@ -313,8 +351,35 @@ public class BdD {
             }
         }
     }
+    */
     
-    
+    //dernierEnchereSurObjet(con,rs.getInt("id"))
+    /*____________________________________________PAS TERMINE_____________________________________________________
+    public static List<String> listObjet(Connection con) throws SQLException {
+        List<String> res = new ArrayList<String>();
+        try ( Statement st = con.createStatement()) {
+            try ( ResultSet rs = st.executeQuery(
+                    """
+                    select objet.id,titre,description,debut,fin,prixbase,categorie.nom ,utilisateur.nom as proposeparnom, utilisateur.prenom as proposeparprenom from objet 
+                        join utilisateur on utilisateur.id=objet.proposepar 
+                        join categorie on categorie.id=objet.categorie
+                        order by objet.id ASC
+                    """)) {
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String categorie=rs.getString(7);
+                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, utilisateur));
+                }
+                return res;
+            }
+        }
+    }
+    */
     public static void afficheTousLesObjets(Connection con) throws SQLException {
         try ( Statement st = con.createStatement()) {
             try ( ResultSet rs = st.executeQuery(
@@ -505,7 +570,7 @@ public class BdD {
    }
    
    public static int choisirCategorie(Connection con) throws SQLException{
-       afficheToutesLesCategories(con);
+       afficheListCategorie(listCategorie(con));
        return Console.entreeEntier("Entrez l'identifiant de la categorie de votre objet");
    }
    
@@ -545,14 +610,13 @@ public class BdD {
         ajouterObjet(con,titre,description,debut,fin,prixbase,categorie,proposepar);
     }
    
-   public static void ajouterEnchere(Connection con, int de, int sur, Timestamp quand, int montant) throws SQLException {
-        int prix=0;
-        try ( PreparedStatement chercheMontant = con.prepareStatement(
+   public static int dernierEnchereSurObjet(Connection con, int sur) throws SQLException {
+       try ( PreparedStatement chercheMontant = con.prepareStatement(
          "select max(montant) as montant from enchere where enchere.sur=?")) {
             chercheMontant.setInt(1, sur);
             ResultSet rs = chercheMontant.executeQuery();
             if(rs.next()) {
-                prix=rs.getInt("montant");
+                return rs.getInt("montant");
             } else {
                 try ( PreparedStatement cherchePrix = con.prepareStatement(
             "select prixbase from objet where objet.id=?")) {
@@ -560,15 +624,18 @@ public class BdD {
                     ResultSet rp = cherchePrix.executeQuery();
                     if(rp.next()) {
                         //int prix = rp.getInt(1);
-                        prix = rp.getInt("prixbase"); 
+                        return rp.getInt("prixbase"); 
                     } else {
                         throw new Error("objet invalide "+ sur);
                     }
                 }
             }
         }
-        
-       if (montant>prix){  
+    }
+   
+   public static void ajouterEnchere(Connection con, int de, int sur, Timestamp quand, int montant) throws SQLException {
+        int prix=dernierEnchereSurObjet(con, sur);
+        if (montant>prix){  
             try ( PreparedStatement pst = con.prepareStatement(
                     """
                     insert into enchere (de, sur, quand, montant) values (?,?,?,?)
@@ -681,13 +748,13 @@ public class BdD {
                 } else if (rep==2){
                     creeExemple(con);
                 }else if (rep == 3) {
-                afficheTousLesUtilisateurs(con);
+                    afficheListUtilisateur(listUtilisateur(con));
 
                 } else if (rep == 4) {
                     String cherche = Console.entreeString("nom cherché :");
                     trouveParNom(con, cherche);
                 } else if (rep == 5) {
-                    ajouterUtilisateur(con).afficheUtilisateur();
+                    ajouterUtilisateur(con).print();
                 } else if (rep == 6) {
                    ajouterCategorie(con); 
                 } else if (rep==7){
@@ -753,14 +820,14 @@ public class BdD {
                             creeExemple(con);
                             break;
                         case 3: // Liste des utilisateurs
-                            afficheTousLesUtilisateurs(con);
+                            afficheListUtilisateur(listUtilisateur(con));
                             break;
                         case 4: // Chercher un utilisateur par nom
                             String cherche = Console.entreeString("Nom cherché :");
                             trouveParNom(con, cherche);
                             break;
                         case 5: // Ajouter un utilisateur
-                            ajouterUtilisateur(con).afficheUtilisateur();
+                            ajouterUtilisateur(con).print();
                             break;
                         case 6: // Ajouter une categorie
                             ajouterCategorie(con);
@@ -789,7 +856,7 @@ public class BdD {
 
                     switch(rep){
                         case 3: // Liste des utilisateurs
-                            afficheTousLesUtilisateurs(con);
+                            afficheListUtilisateur(listUtilisateur(con));
                             break;
                         case 4: // Chercher un utilisateur par nom
                             String cherche = Console.entreeString("Nom cherché :");
@@ -811,6 +878,7 @@ public class BdD {
         try ( Connection con = defautConnect()) {
             System.out.println("connecté !");
             //afficheToutesLesEncheres(con);
+            afficheListCategorie(listCategorie(con));
             menuV2(con);
         } catch (Exception ex) {
             throw new Error(ex);
