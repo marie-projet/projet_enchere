@@ -5,12 +5,16 @@
  */
 package fr.insa.winkler.gui;
 
+import fr.insa.winkler.gui.vues.EnteteLogin;
+import fr.insa.winkler.projet.BdD;
+import java.sql.SQLException;
+import javafx.scene.Node;
 import javafx.scene.control.MenuButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.control.Button;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 /**
@@ -20,28 +24,63 @@ import javafx.stage.Stage;
 public class MainPane extends BorderPane{
     //private File file;
     //private Controleur controleur; 
-    private MenuButton mbUtilisateur;
-    private Button bConnexion;  
-    private Button bNouvelUtilisateur; 
-    private TextArea message; 
+    private HBox entete;
     private ScrollPane mainContent;
+    private SessionInfo session;
 
     private Stage stage;
     
-    
-    public MainPane(Stage st){
-        this.stage=st;
-        this.mainContent=new ScrollPane();
-        this.mbUtilisateur=new MenuButton ("Utilisateur");
-        this.message=new TextArea();
-        this.message.setMinHeight(70);
-        this.message.setMaxHeight(70);
-        this.setTop(this.mbUtilisateur);
-        this.setBottom(this.message);
-        this.setCenter(this.mainContent);
-        
-        MenuItem menuItemConnexion = new MenuItem("Connexion");
-        MenuItem menuItemNouvelUtilisateur = new MenuItem("Créer un compte");
-        mbUtilisateur.getItems().addAll(menuItemConnexion,menuItemNouvelUtilisateur);
+        public void setEntete(Node c) {
+        this.setTop(c);
     }
+    
+    public void setMainContent(Node c) {
+        this.mainContent.setContent(c);
+    }
+    
+  
+    public MainPane(Stage st) {
+        this.stage=st;
+        this.session = new SessionInfo();
+        this.mainContent = new ScrollPane();
+        this.setCenter(this.mainContent);
+        JavaFXUtils.addSimpleBorder(this.mainContent);
+         try {
+            this.session.setConBdD(BdD.defautConnect());
+            this.setEntete(new EnteteLogin(this));
+            this.setMainContent(new BienvenueMainVue(this));
+        } catch (ClassNotFoundException | SQLException ex) {
+            this.setMainContent(new BdDNonAccessible(this));
+        }
+        
+    }
+
+    public MenuButton getMbUtilisateur() {
+        return mbUtilisateur;
+    }
+
+    public Button getbConnexion() {
+        return bConnexion;
+    }
+
+    public Button getbNouvelUtilisateur() {
+        return bNouvelUtilisateur;
+    }
+
+    public TextArea getMessage() {
+        return message;
+    }
+
+    public ScrollPane getMainContent() {
+        return mainContent;
+    }
+
+    public SessionInfo getSession() {
+        return session;
+    }
+
+    public Stage getStage() {
+        return stage;
+    }
+    
 }
