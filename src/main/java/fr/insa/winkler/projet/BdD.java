@@ -33,7 +33,7 @@ public class BdD {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439,
+        return connectGeneralPostGres("localhost", 5432,
                 "postgres", "postgres", "pass");
     }
 
@@ -283,12 +283,6 @@ public class BdD {
             """);
         }
     }
-    
-    public static void afficheListUtilisateur(List<Utilisateur> list)throws SQLException {
-        for(Utilisateur utilisateur: list){
-            utilisateur.print();
-        }
-    }
         
     public static List<Utilisateur> listUtilisateur(Connection con) throws SQLException {
         List<Utilisateur> res = new ArrayList<Utilisateur>();
@@ -299,6 +293,12 @@ public class BdD {
                 }
                 return res;
             }
+        }
+    }
+    
+    public static void afficheListUtilisateur(List<Utilisateur> list)throws SQLException {
+        for(Utilisateur utilisateur: list){
+            utilisateur.print();
         }
     }
     
@@ -322,7 +322,7 @@ public class BdD {
     */
     
     public static List<Categorie> listCategorie(Connection con) throws SQLException {
-        List<Categorie> res = new ArrayList<Categorie>();
+        List<Categorie> res = new ArrayList<>();
         try ( PreparedStatement pst = con.prepareStatement("select id,nom from categorie ")) {
             try ( ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
@@ -351,19 +351,17 @@ public class BdD {
             }
         }
     }
-    */
+    
     
     //dernierEnchereSurObjet(con,rs.getInt("id"))
-    /*____________________________________________PAS TERMINE_____________________________________________________
-    public static List<String> listObjet(Connection con) throws SQLException {
-        List<String> res = new ArrayList<String>();
+    */
+    
+    public static List<Objet> listObjet(Connection con) throws SQLException {
+        List<Objet> res = new ArrayList<>();
         try ( Statement st = con.createStatement()) {
             try ( ResultSet rs = st.executeQuery(
                     """
-                    select objet.id,titre,description,debut,fin,prixbase,categorie.nom ,utilisateur.nom as proposeparnom, utilisateur.prenom as proposeparprenom from objet 
-                        join utilisateur on utilisateur.id=objet.proposepar 
-                        join categorie on categorie.id=objet.categorie
-                        order by objet.id ASC
+                    select id,titre,description,debut,fin,prixbase,categorie,proposepar from objet 
                     """)) {
                 while (rs.next()) {
                     int id = rs.getInt(1);
@@ -372,35 +370,47 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    String categorie=rs.getString(7);
-                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, utilisateur));
+                    String categorie = rs.getString(7);
+                    int proposePar = rs.getInt(8);
+                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, proposePar));
                 }
                 return res;
             }
         }
     }
+    
+    public static void afficheListObjet(List<Objet> list)throws SQLException {
+        for(Objet objet: list){
+            objet.print();
+        }
+    }
+    
+    /*
+    Donne la liste des objets mis en enchère par un utilisateur.
     */
-    public static void afficheTousLesObjets(Connection con) throws SQLException {
-        try ( Statement st = con.createStatement()) {
-            try ( ResultSet rs = st.executeQuery(
-                    """
-                    select objet.id,titre,description,debut,fin,prixbase,categorie.nom ,utilisateur.nom as proposeparnom, utilisateur.prenom as proposeparprenom from objet 
-                        join utilisateur on utilisateur.id=objet.proposepar 
-                        join categorie on categorie.id=objet.categorie
-                        order by objet.id ASC
-                    """)) {
+    
+    public static List<Objet> listObjetDunUtilisateur(Connection con, Utilisateur utilisateur) throws SQLException {
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id,objet.titre,objet.description,objet.debut,objet.fin,objet.prixbase,objet.categorie,objet.proposepar from enchere
+        join objet on objet.id=enchere.sur
+        where enchere.de=?
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            try ( ResultSet rs = st.executeQuery()){
                 while (rs.next()) {
                     int id = rs.getInt(1);
                     String titre = rs.getString(2);
                     String description = rs.getString(3);
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
-                    int prixbase = rs.getInt(6);
-                    String categorie=rs.getString(7);
-                    String proposeparnom=rs.getString(8);
-                    String proposeparprenom=rs.getString(9);
-                    System.out.println(id + " : " + titre+ " - " +categorie+ " - " + prixbase + "€" + " - " + proposeparnom + " "+proposeparprenom);
+                    int prixBase = rs.getInt(6);
+                    String categorie = rs.getString(7);
+                    int proposePar = rs.getInt(8);
+                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, proposePar));
                 }
+                return res;
             }
         }
     }
@@ -450,6 +460,61 @@ public class BdD {
                 }
             }
         }
+    }
+    
+    /*
+    Donne la liste des objets dont l'utilisateur à enchéri au moins une fois.
+    */
+    public static List<Objet> objetEncheri(Connection con, Utilisateur utilisateur) throws SQLException {
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from enchere
+        join objet on objet.id = enchere.sur
+        where enchere.de=?
+        
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String categorie = rs.getString(7);
+                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                }
+                return res;
+            }
+        }
+    }
+    
+    /*
+    Donne la liste des objets dont l'utilisateur à l'enchère la plus élevé. 
+    */
+    public static List<Objet> objetEncheriGagnant(Connection con, Utilisateur utilisateur, List<Objet> list) throws SQLException {
+        List<Objet> res = new ArrayList<>();
+        for(Objet objet: list){
+            if(dernierEnchereSurObjet(con,objet.getId()) == dernierEnchereSurObjetDunUtilisateur(con,objet.getId(),utilisateur)){
+                res.add(objet);
+            }
+        }
+        return res;
+    }
+    
+    /*
+    Donne la liste des objets dont l'utilisateur à enchéri au moins une fois mais un autre utilisateur à enchéri plus que lui.
+    */
+    public static List<Objet> objetEncheriPerdant(Connection con, Utilisateur utilisateur, List<Objet> list) throws SQLException {
+        List<Objet> res = new ArrayList<>();
+        for(Objet objet: list){
+            if(dernierEnchereSurObjet(con,objet.getId()) > dernierEnchereSurObjetDunUtilisateur(con,objet.getId(),utilisateur)){
+                res.add(objet);
+            }
+        }
+        return res;
     }
 
     public static void trouveParNom(Connection con, String nom) throws SQLException {
@@ -575,7 +640,7 @@ public class BdD {
    }
    
    public static int choisirObjet(Connection con) throws SQLException{
-       afficheTousLesObjets(con);
+       afficheListObjet(listObjet(con));
        return Console.entreeEntier("Entrez l'identifiant de l'objet de votre choix");
    }
    
@@ -610,10 +675,40 @@ public class BdD {
         ajouterObjet(con,titre,description,debut,fin,prixbase,categorie,proposepar);
     }
    
-   public static int dernierEnchereSurObjet(Connection con, int sur) throws SQLException {
-       try ( PreparedStatement chercheMontant = con.prepareStatement(
+    /*
+    Donne le montant le plus élevé enchérit sur l'objet "sur".
+    */
+    public static int dernierEnchereSurObjet(Connection con, int sur) throws SQLException {
+        try ( PreparedStatement chercheMontant = con.prepareStatement(
          "select max(montant) as montant from enchere where enchere.sur=?")) {
             chercheMontant.setInt(1, sur);
+            ResultSet rs = chercheMontant.executeQuery();
+            if(rs.next()) {
+                return rs.getInt("montant");
+            } else {
+                try ( PreparedStatement cherchePrix = con.prepareStatement(
+            "select prixbase from objet where objet.id=?")) {
+                    cherchePrix.setInt(1, sur);
+                    ResultSet rp = cherchePrix.executeQuery();
+                    if(rp.next()) {
+                        //int prix = rp.getInt(1);
+                        return rp.getInt("prixbase"); 
+                    } else {
+                        throw new Error("objet invalide "+ sur);
+                    }
+                }
+            }
+        }
+    }
+    
+    /*
+    Donne le montant le plus élevé qu'un utilisateur à enchérit sur l'objet d'id "sur".
+    */
+    public static int dernierEnchereSurObjetDunUtilisateur(Connection con, int sur, Utilisateur utilisateur) throws SQLException {
+        try ( PreparedStatement chercheMontant = con.prepareStatement(
+         "select max(montant) as montant from enchere where enchere.sur=? and enchere.de=?")) {
+            chercheMontant.setInt(1, sur);
+            chercheMontant.setInt(2, utilisateur.getId());
             ResultSet rs = chercheMontant.executeQuery();
             if(rs.next()) {
                 return rs.getInt("montant");
@@ -808,6 +903,7 @@ public class BdD {
                     System.out.println("[6] Ajouter une categorie");
                     System.out.println("[7] Ajouter un objet");
                     System.out.println("[8] Encherir");
+                    System.out.println("[9] Mes enchers");
                     System.out.println("[0] Se déconecter");
 
                     rep = Console.entreeEntier("Votre choix : ");
@@ -838,6 +934,13 @@ public class BdD {
                         case 8: // Encherir
                             ajouterEnchere(con,utilActif);
                             break;
+                        case 9: // Mes enchers
+                            List<Objet> list = objetEncheri(con,utilActif);
+                            System.out.println("Objets dont l'enchère est gagnante");
+                            afficheListObjet(objetEncheriGagnant(con,utilActif,list));
+                            System.out.println("Objets dont l'enchère est perdante");
+                            afficheListObjet(objetEncheriPerdant(con,utilActif,list));
+                            break;
                     }
                 }
             } else { // menu utilisateur
@@ -848,8 +951,10 @@ public class BdD {
                     
                     System.out.println("[3] Liste des utilisateurs");
                     System.out.println("[4] Chercher un utilisateur par nom");
+                    System.out.println("[6] Mes objets");
                     System.out.println("[7] Ajouter un objet");
                     System.out.println("[8] Encherir");
+                    System.out.println("[9] Mes enchers");
                     System.out.println("[0] Se déconecter");
 
                     rep = Console.entreeEntier("Votre choix : ");
@@ -862,11 +967,21 @@ public class BdD {
                             String cherche = Console.entreeString("Nom cherché :");
                         trouveParNom(con, cherche);
                             break;
+                        case 6: // Mes objets
+                            afficheListObjet(listObjetDunUtilisateur(con,utilActif));
+                            break;
                         case 7: // Ajouter un objet
                             ajouterObjet(con,utilActif);
                             break;
                         case 8: // Encherir
                             ajouterEnchere(con,utilActif);
+                            break;
+                        case 9: // Mes enchers
+                            List<Objet> list = objetEncheri(con,utilActif);
+                            System.out.println("Objets dont l'enchère est gagnante : ");
+                            afficheListObjet(objetEncheriGagnant(con,utilActif,list));
+                            System.out.println("Objets dont l'enchère est perdante : ");
+                            afficheListObjet(objetEncheriPerdant(con,utilActif,list));
                             break;
                     }
                 }
@@ -879,6 +994,7 @@ public class BdD {
             System.out.println("connecté !");
             //afficheToutesLesEncheres(con);
             afficheListCategorie(listCategorie(con));
+            afficheListObjet(listObjet(con));
             menuV2(con);
         } catch (Exception ex) {
             throw new Error(ex);

@@ -32,17 +32,17 @@ public class Objet {
     String description;
     Timestamp debut;
     Timestamp fin;
-    Categorie categorie;
-    Utilisateur proposePar;
+    String categorie;
+    int proposePar;
     
-    public Objet(int id, String titre, int prixBase, String description, Timestamp debut, Timestamp fin, Categorie categorie, Utilisateur utilisateur) {
+    public Objet(int id, String titre, int prixBase, String description, Timestamp debut, Timestamp fin, String categorie, int proposePar) {
         this.id = id;
         this.titre = titre;
         this.prixBase = prixBase;
         this.debut = debut;
         this.fin = fin;
         this.categorie = categorie;
-        this.proposePar = utilisateur;
+        this.proposePar = proposePar;
     }
 
     public int getId() {
@@ -69,11 +69,11 @@ public class Objet {
         return fin;
     }
 
-    public Categorie getCategorie() {
+    public String getCategorie() {
         return categorie;
     }
     
-    public Utilisateur getProposePar() {
+    public int getProposePar() {
         return proposePar;
     }
     
@@ -85,7 +85,7 @@ public class Objet {
         System.out.println("prix de base : "+this.getPrixBase());
         System.out.println("debut enchere : "+this.getDebut());
         System.out.println("fin enchere : "+this.getFin());
-        System.out.println("categorie : "+this.getCategorie().getNom());
-        System.out.println("propose par : "+this.getProposePar().getNom());
+        System.out.println("categorie : "+this.getCategorie());
+        System.out.println("propose par : "+this.getProposePar());
     }
 }
