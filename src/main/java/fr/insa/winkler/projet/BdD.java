@@ -14,7 +14,7 @@ import java.util.Optional;
 
 /**
  *
- * @author marie
+ * @author marie et théo
  */
 public class BdD {
 
@@ -33,7 +33,7 @@ public class BdD {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5432,
+        return connectGeneralPostGres("localhost", 5439,
                 "postgres", "postgres", "pass");
     }
 

@@ -34,7 +34,7 @@ public class BienvenueMainVue extends VBox{
     
     public BienvenueMainVue(MainPane main) {
         this.main = main;
-        this.getChildren().add(new BigLabel("bienvenu dans ce super programme",30));
+        //this.getChildren().add(new BigLabel("bienvenu dans ce super programme",30));
         this.getChildren().add(new Label("merci de vous connecter"));
         TextArea taMoche = new TextArea("Cette interface en javaFX est la traduction quasi à l'identique\n"
                 + "d'une interface web faite en vaadin\n"
@@ -42,9 +42,9 @@ public class BienvenueMainVue extends VBox{
                 + "==> on pourrait faire moins moche et plus adapté à JavaFX");
         taMoche.setEditable(false);
         this.getChildren().add(taMoche);
-        if (ConfigGenerale.AFFICHE_RAZ_DATABASE) {
-            this.getChildren().add(new InitOrResetDatabase(this.main));
-        }
+        //if (ConfigGenerale.AFFICHE_RAZ_DATABASE) {
+        //    this.getChildren().add(new InitOrResetDatabase(this.main));
+        //}
     }
     
 }

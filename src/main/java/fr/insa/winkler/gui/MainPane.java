@@ -48,28 +48,28 @@ public class MainPane extends BorderPane{
          try {
             this.session.setConBdD(BdD.defautConnect());
             this.setEntete(new EnteteLogin(this));
-            this.setMainContent(new BienvenueMainVue(this));
+            //this.setMainContent(new BienvenueMainVue(this));
         } catch (ClassNotFoundException | SQLException ex) {
-            this.setMainContent(new BdDNonAccessible(this));
+            //this.setMainContent(new BdDNonAccessible(this));
         }
         
     }
 
-    public MenuButton getMbUtilisateur() {
-        return mbUtilisateur;
-    }
+    //public MenuButton getMbUtilisateur() {
+        //return mbUtilisateur;
+    //}
 
-    public Button getbConnexion() {
-        return bConnexion;
-    }
+    //public Button getbConnexion() {
+        //return bConnexion;
+    //}
 
-    public Button getbNouvelUtilisateur() {
-        return bNouvelUtilisateur;
-    }
+    //public Button getbNouvelUtilisateur() {
+       // return bNouvelUtilisateur;
+    //}
 
-    public TextArea getMessage() {
-        return message;
-    }
+    //public TextArea getMessage() {
+     //   return message;
+    //}
 
     public ScrollPane getMainContent() {
         return mainContent;
