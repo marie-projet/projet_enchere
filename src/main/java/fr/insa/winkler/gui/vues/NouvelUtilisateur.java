@@ -45,7 +45,7 @@ public class NouvelUtilisateur extends GridPane {
 
     public NouvelUtilisateur(MainPane main) {
         this.main = main;
-        this.vtNom = new TextField("nom");
+        this.vtNom = new TextField();
         this.vtPass = new PasswordField();
         this.vbValidate = new Button("Valider");
         this.vbValidate.setOnAction((event) -> {

@@ -73,13 +73,13 @@ public class Login extends GridPane{
         String pass = this.PFpass.getText();
         try {
             Connection con = this.main.getSession().getConBdD();
-            Optional<Utilisateur> user = BdD.connexionUtilisateur(con, nom, pass);
+            Optional<Utilisateur> user = BdD.connexionUtilisateur(con, email, pass);
             if(user.isEmpty()) {
                 JavaFXUtils.showErrorInAlert("Utilisateur ou pass invalide");
             } else {
                 this.main.getSession().setCurUser(user);
-                //this.main.setEntete(new EnteteAfterLogin(this.main));
-                //this.main.setMainContent(new Main(this.main));
+                this.main.setEntete(new EnteteAfterLogin(this.main));
+                this.main.setMainContent(new MainAfterLogin(this.main));
             }
         } catch (SQLException ex) {
             JavaFXUtils.showErrorInAlert("Problème interne : " + ex.getLocalizedMessage());
