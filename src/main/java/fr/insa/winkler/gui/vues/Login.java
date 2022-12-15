@@ -46,14 +46,10 @@ public class Login extends GridPane{
     
     public Login(MainPane main) {
         this.main = main;
-        this.TFnom = new TextField();
         this.TFemail= new TextField();
         this.PFpass = new PasswordField();
         this.bLogin = new Button("login");
         int lig = 0;
-        this.add(new Label("nom : "), 0, lig);
-        this.add(this.TFnom, 1, lig);
-        lig ++;
         this.add(new Label("email : "), 0, lig);
         this.add(this.TFemail, 1, lig);
         lig ++;
@@ -68,7 +64,6 @@ public class Login extends GridPane{
     }
     
     public void doLogin() {
-        String nom = this.TFnom.getText();
         String email = this.TFemail.getText();
         String pass = this.PFpass.getText();
         try {
