@@ -25,7 +25,7 @@ public class ObjetTable extends TableView {
     
     private ObservableList<Objet> objets;
     
-    public ObjetTable(MainPane main,List<Objet> utilisateurs) {
+    public ObjetTable(MainPane main,List<Objet> objets) {
         this.main = main;
         this.objets = FXCollections.observableArrayList(objets);
         
@@ -33,24 +33,31 @@ public class ObjetTable extends TableView {
         
         TableColumn<Objet,String> cNom = 
                 new TableColumn<>("nom");
-        TableColumn<Objet,String> cRole = 
-                new TableColumn<>("role");
-        this.getColumns().addAll(cNom,cRole);
+        TableColumn<Objet,String> cPrix = 
+                new TableColumn<>("prix");
+        this.getColumns().addAll(cNom,cPrix);
         
         // si l'on ne veut pas d'espace supplémentaire
         this.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         
         cNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
-        cRole.setCellValueFactory(new PropertyValueFactory<>("nomRole"));
+        cPrix.setCellValueFactory(new PropertyValueFactory<>("prix"));
         this.setItems(this.objets);
     }
 
-    public List<Objet> getObjets() {
+    public List<Objet> getObjects() {
         return this.objets;
     }
     
-    public List<Objet> getSelectedObjets() {
+    public List<Objet> getSelectedObjects() {
         return this.getSelectionModel().getSelectedItems();
     }
     
+     public void addObjects(List<Objet> objets) {
+        this.getItems().addAll(objets);
+    }
+    
+    public void removeObjects(List<Objet> objets) {
+        this.getItems().removeAll(objets);
+    }
 }

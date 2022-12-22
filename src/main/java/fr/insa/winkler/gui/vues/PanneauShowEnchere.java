@@ -41,7 +41,7 @@ public class PanneauShowEnchere extends GridPane {
     public PanneauShowEnchere(MainPane main) {
         this.main = main;
         VBox vlEnchere = new VBox();
-        vlEnchere.getChildren().add(new BigLabel("vos enchères",30));
+        vlEnchere.getChildren().add(new BigLabel("Vos enchères",30));
         System.out.print("test1");
         try {
             List<Objet> datas = BdD.objetEncheri(

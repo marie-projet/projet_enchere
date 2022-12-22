@@ -21,6 +21,7 @@ package fr.insa.winkler.gui.vues;
 import fr.insa.winkler.projet.BdD;
 import fr.insa.winkler.gui.JavaFXUtils;
 import fr.insa.winkler.gui.MainPane;
+import fr.insa.winkler.projet.Objet;
 import fr.insa.winkler.projet.Utilisateur;
 import java.sql.SQLException;
 import java.util.List;
@@ -55,70 +56,53 @@ public class Encherir extends VBox {
     
     private void reInit() {
         this.getChildren().clear();
-        this.vbValidate = new Button("Valider les modifs.");
-        this.vbValidate.setOnAction((event) -> {
-            try {
-                BdD.change(this.main.getSession().getConBdD(),
-                        this.main.getSession().getCurUser().orElseThrow(),
-                        this.vPasEnchere.getObjets());
-                JavaFXUtils.showInfoInAlert("Modifications validées");
-            } catch (SQLException ex) {
-                JavaFXUtils.showErrorInAlert("Error","Problem BdD : " , ex.getLocalizedMessage());
-            }
-        });
-        this.vbCancel = new Button("Annuler les dernières modifs.");
-        this.vbCancel.setOnAction((event) -> {
-            this.reInit();
-        });
-        HBox hlButtons = new HBox(this.vbValidate, this.vbCancel);
-        this.getChildren().add(hlButtons);
  
-        GridPane gpAime = new GridPane();
-        VBox vlPasAimes = new VBox();
-        Label lPasAime = new Label("vous n'aimez pas");
-        lPasAime.setStyle("-fx-font-size: 30");
-        vlPasAimes.getChildren().add(lPasAime);
+        GridPane gpEnchere = new GridPane();
+        VBox vlPasEnchere = new VBox();
+        Label lPasEnchere = new Label("Objets en ventes");
+        lPasEnchere.setStyle("-fx-font-size: 30");
+        vlPasEnchere.getChildren().add(lPasEnchere);
         try {
-            List<Utilisateur> datas = GestionBdD.quiNeSontPasAimesPar(
-                    this.main.getSessionInfo().getConBdD(), this.main.getSessionInfo().getCurUser().orElseThrow());
-            this.vpasAime = new UtilisateurTable(this.main,datas);
-            vlPasAimes.getChildren().add(this.vpasAime);
+            List<Objet> objetsPasEncheris = BdD.objetPasEncheri(
+                    this.main.getSession
+        ().getConBdD(), this.main.getSession
+        ().getCurUser().orElseThrow());
+            this.vPasEnchere = new ObjetTable(this.main,objetsPasEncheris);
+            vlPasEnchere.getChildren().add(this.vPasEnchere);
         } catch (SQLException ex) {
-            vlPasAimes.getChildren().add(new BigLabel("Probleme BdD",30));
+            vlPasEnchere.getChildren().add(new BigLabel("Probleme BdD",30));
         }
-        gpAime.add(vlPasAimes,0,0);
-        this.vbAdd = new Button("ADD >>");
-        this.vbAdd.setOnAction((event) -> {
-            List<Utilisateur> select = this.vpasAime.getSelectedUsers();
-            this.vaime.addUsers(select);
-            this.vpasAime.removeUsers(select);
+        gpEnchere.add(vlPasEnchere,0,0);
+        this.vbEncherir = new Button("ENCHERIR >>");
+        this.vbEncherir.setOnAction((event) -> {
+            List<Objet> select = this.vPasEnchere.getSelectedObjects();
+            this.vEnchereGagnante.addObjects(select);
+            this.vPasEnchere.removeObjects(select);
         });
-        this.vbRemove = new Button("<< REMOVE");
-        this.vbRemove.setOnAction((event) -> {
-            List<Utilisateur> select = this.vaime.getSelectedUsers();
-            this.vpasAime.addUsers(select);
-            this.vaime.removeUsers(select);
-
-        });
-        VBox vbuttons = new VBox(this.vbAdd, this.vbRemove);
-        gpAime.add(vbuttons,1,0);
+       
+        VBox vbuttons = new VBox(this.vbEncherir);
+        gpEnchere.add(vbuttons,1,0);
         vbuttons.setAlignment(Pos.TOP_CENTER);
         GridPane.setHalignment(vbuttons, HPos.CENTER);
         GridPane.setValignment(vbuttons, VPos.CENTER);
         
 
-        VBox vlAime = new VBox();
-        vlAime.getChildren().add(new BigLabel("vous aimez",30));
+        VBox vlEnchere = new VBox();
+        vlEnchere.getChildren().add(new BigLabel("vous avez encheri",30));
         try {
-            List<Utilisateur> datas = GestionBdD.quiSontAimesPar(
-                    this.main.getSessionInfo().getConBdD(), this.main.getSessionInfo().getCurUser().orElseThrow());
-            this.vaime = new UtilisateurTable(this.main,datas);
-            vlAime.getChildren().add(this.vaime);
+            List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                    this.main.getSession
+        ().getConBdD(), this.main.getSession
+        ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
+        ().getConBdD(), this.main.getSession
+        ().getCurUser().orElseThrow()));
+            this.vEnchereGagnante = new ObjetTable(this.main,objetsEncheris);
+            vlEnchere.getChildren().add(this.vEnchereGagnante);
         } catch (SQLException ex) {
-            vlAime.getChildren().add(new BigLabel("Probleme BdD",30));
+            vlEnchere.getChildren().add(new BigLabel("Probleme BdD",30));
         }
-        gpAime.add(vlAime,2,0);
-        this.getChildren().add(gpAime);
+        gpEnchere.add(vlEnchere,2,0);
+        this.getChildren().add(gpEnchere);
     }
 
 }

@@ -31,8 +31,8 @@ public class EnteteAfterLogin extends HBox {
     private MainPane main;
     
     private Button vbLogout;
-    private Button vbListeDesUtilisateurs;
-    private Button vbGestionAmours;
+    private Button vbEnchere;
+    private Button vbVente;
     
     public EnteteAfterLogin(MainPane main) {
         this.main = main;
@@ -41,15 +41,15 @@ public class EnteteAfterLogin extends HBox {
         this.vbLogout.setOnAction((event) -> {
             this.doLogout();
         });
-        this.vbListeDesUtilisateurs = new Button("liste des utilisateurs");
-        this.vbListeDesUtilisateurs.setOnAction((event) -> {
-            //this.main.setMainContent(new ListeDesUtilisateurs(this.main));
+        this.vbEnchere = new Button("Enchères");
+        this.vbEnchere.setOnAction((event) -> {
+            this.main.setMainContent(new PanneauShowEnchere(this.main));
         });
-        this.vbGestionAmours = new Button("Gérer vos amours");
-        this.vbGestionAmours.setOnAction((event) -> {
+        this.vbVente = new Button("Ventes");
+        this.vbVente.setOnAction((event) -> {
             //this.main.setMainContent(new MainAfterLogin(this.main));
         });
-        this.getChildren().addAll(this.vbLogout,this.vbListeDesUtilisateurs,this.vbGestionAmours);
+        this.getChildren().addAll(this.vbLogout,this.vbEnchere,this.vbVente);
     }
     
     public void doLogout() {

@@ -39,18 +39,18 @@ public class MainAfterLogin extends VBox {
 
     public MainAfterLogin(MainPane main) {
         this.main = main;
-
+        System.out.print("debug");
         this.EnchereCurrentUser = new Tab("Encheres de "
                 + this.main.getSession().getUserName());
         this.EnchereCurrentUser.setOnSelectionChanged((t) -> {
             this.EnchereCurrentUser.setContent(new PanneauShowEnchere(this.main));
         });
-        //this.aimeCurrentUser.setContent(new PanneauShowAime(this.main));
+        this.EnchereCurrentUser.setContent(new PanneauShowEnchere(this.main));
         this.changeEnchere = new Tab("modifier");
         this.changeEnchere.setOnSelectionChanged((t) -> {
-            //this.changeAime.setContent(new PanneauModifyAime(this.main));
+            this.changeEnchere.setContent(new Encherir(this.main));
         });
-        //this.changeAime.setContent(new PanneauModifyAime(this.main));
+        this.changeEnchere.setContent(new Encherir(this.main));
         this.allTabs = new TabPane(this.EnchereCurrentUser, this.changeEnchere);
         this.getChildren().addAll(this.allTabs);
         this.allTabs.getSelectionModel().select(this.EnchereCurrentUser);

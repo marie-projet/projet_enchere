@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -463,7 +464,7 @@ public class BdD {
     }
     
     /*
-    Donne la liste des objets dont l'utilisateur à enchéri au moins une fois.
+    Donne la liste des objets dont l'utilisateur a enchéri au moins une fois.
     */
     public static List<Objet> objetEncheri(Connection con, Utilisateur utilisateur) throws SQLException {
         List<Objet> res = new ArrayList<>();
@@ -516,6 +517,33 @@ public class BdD {
         }
         return res;
     }
+    
+     public static List<Objet> objetPasEncheri(Connection con, Utilisateur utilisateur) throws SQLException {
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from enchere
+        join objet on objet.id = enchere.sur
+        where enchere.de!=?
+        
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String categorie = rs.getString(7);
+                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                }
+                return res;
+            }
+        }
+    }
+    
 
     public static void trouveParNom(Connection con, String nom) throws SQLException {
         try ( PreparedStatement st = con.prepareStatement(
@@ -758,6 +786,8 @@ public class BdD {
         int montant = Console.entreeEntier("montant de votre enchère: ");
         ajouterEnchere(con,de,sur,quand,montant);
     }
+    
+ 
    
     /*
    public static Utilisateur connexionUtilisateur(Connection con, String email, String pass) throws SQLException {
@@ -780,6 +810,7 @@ public class BdD {
        return connexionUtilisateur(con, email, pass);
     }
 */
+
     public static Optional<Utilisateur> connexionUtilisateur(Connection con, String email, String pass) throws SQLException {
         if(email.equals("admin") && pass.equals("admin")){
             return Optional.of(Utilisateur.admin());
