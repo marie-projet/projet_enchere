@@ -42,17 +42,15 @@ public class PanneauShowEnchere extends GridPane {
         this.main = main;
         VBox vlEnchere = new VBox();
         vlEnchere.getChildren().add(new BigLabel("Vos enchères",30));
-        System.out.print("test1");
         try {
             List<Objet> datas = BdD.objetEncheri(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
             vlEnchere.getChildren().add(new ObjetTable(this.main,datas));
             System.out.print(datas);
-            System.out.print("test2");
         } catch (SQLException ex) {
             vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),30));
         }
-        JavaFXUtils.addSimpleBorder(vlEnchere, Color.GREEN, 2);
+        JavaFXUtils.addSimpleBorder(vlEnchere, Color.RED, 2);
         this.add(vlEnchere,0,0);
     }   
 }

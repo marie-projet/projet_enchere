@@ -31,17 +31,18 @@ public class ObjetTable extends TableView {
         
         this.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         
-        TableColumn<Objet,String> cNom = 
-                new TableColumn<>("nom");
+        TableColumn<Objet,String> cTitre = 
+                new TableColumn<>("titre");
         TableColumn<Objet,String> cPrix = 
                 new TableColumn<>("prix");
-        this.getColumns().addAll(cNom,cPrix);
+        this.getColumns().addAll(cTitre,cPrix);
         
         // si l'on ne veut pas d'espace supplémentaire
         this.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         
-        cNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
-        cPrix.setCellValueFactory(new PropertyValueFactory<>("prix"));
+        cTitre.setCellValueFactory(new PropertyValueFactory<>("titre"));
+        //cPrix.setCellValueFactory(new PropertyValueFactory<>(prixbase));
+        System.out.print(objets);
         this.setItems(this.objets);
     }
 
