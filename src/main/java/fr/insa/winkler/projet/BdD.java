@@ -470,7 +470,7 @@ public class BdD {
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
-        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from enchere
+        select distinct on (objet.id) objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from enchere
         join objet on objet.id = enchere.sur
         where enchere.de=?
         
@@ -522,9 +522,8 @@ public class BdD {
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
-        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from enchere
-        join objet on objet.id = enchere.sur
-        where enchere.de!=?
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.id not in (select enchere.sur from enchere where enchere.de=?)
         
         """)) {
             st.setInt(1,utilisateur.getId());
@@ -820,7 +819,7 @@ public class BdD {
                 pst.setString(2, pass);
                 ResultSet res = pst.executeQuery();
                 if (res.next()) {
-                    return Optional.of(new Utilisateur(res.getInt("id"), res.getString("nom"), res.getString("prenom"), email, pass, res.getString("codepostal")));
+                    return Optional.of(new Utilisateur(res.getInt("id")-1, res.getString("nom"), res.getString("prenom"), email, pass, res.getString("codepostal")));
                 } else {
                     return Optional.empty();
                 }

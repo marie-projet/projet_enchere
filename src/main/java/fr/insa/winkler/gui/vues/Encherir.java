@@ -56,7 +56,6 @@ public class Encherir extends VBox {
     
     private void reInit() {
         this.getChildren().clear();
- 
         GridPane gpEnchere = new GridPane();
         VBox vlPasEnchere = new VBox();
         Label lPasEnchere = new Label("Objets en ventes");
@@ -64,9 +63,7 @@ public class Encherir extends VBox {
         vlPasEnchere.getChildren().add(lPasEnchere);
         try {
             List<Objet> objetsPasEncheris = BdD.objetPasEncheri(
-                    this.main.getSession
-        ().getConBdD(), this.main.getSession
-        ().getCurUser().orElseThrow());
+                    this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
             this.vPasEnchere = new ObjetTable(this.main,objetsPasEncheris);
             vlPasEnchere.getChildren().add(this.vPasEnchere);
         } catch (SQLException ex) {
@@ -88,7 +85,7 @@ public class Encherir extends VBox {
         
 
         VBox vlEnchere = new VBox();
-        vlEnchere.getChildren().add(new BigLabel("vous avez encheri",30));
+        vlEnchere.getChildren().add(new BigLabel("Vos enchères gagnantes",30));
         try {
             List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
                     this.main.getSession
