@@ -43,7 +43,7 @@ public class EnteteAfterLogin extends HBox {
         });
         this.vbEnchere = new Button("Enchères");
         this.vbEnchere.setOnAction((event) -> {
-            this.main.setMainContent(new PanneauShowEnchere(this.main));
+            this.main.setMainContent(new MainAfterLogin(this.main));
         });
         this.vbVente = new Button("Ventes");
         this.vbVente.setOnAction((event) -> {

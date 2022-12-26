@@ -40,9 +40,10 @@ public class ObjetTable extends TableView {
         // si l'on ne veut pas d'espace supplémentaire
         this.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         
+
+        
         cTitre.setCellValueFactory(new PropertyValueFactory<>("titre"));
-        //cPrix.setCellValueFactory(new PropertyValueFactory<>(prixbase));
-        System.out.print(objets);
+        cPrix.setCellValueFactory(new PropertyValueFactory<>("prixBase"));
         this.setItems(this.objets);
     }
 

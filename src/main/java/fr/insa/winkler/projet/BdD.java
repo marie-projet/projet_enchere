@@ -703,7 +703,7 @@ public class BdD {
     }
    
     /*
-    Donne le montant le plus élevé enchérit sur l'objet "sur".
+    Donne le montant le plus élevé enchéri sur l'objet "sur".
     */
     public static int dernierEnchereSurObjet(Connection con, int sur) throws SQLException {
         try ( PreparedStatement chercheMontant = con.prepareStatement(

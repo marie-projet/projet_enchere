@@ -34,24 +34,29 @@ public class MainAfterLogin extends VBox {
     private MainPane main;
 
     private Tab EnchereCurrentUser;
-    private Tab changeEnchere;
+    private Tab encherir;
+    private Tab reencherir;
     private TabPane allTabs;
 
     public MainAfterLogin(MainPane main) {
         this.main = main;
-        System.out.print("debug");
         this.EnchereCurrentUser = new Tab("Encheres de "
                 + this.main.getSession().getUserName());
         this.EnchereCurrentUser.setOnSelectionChanged((t) -> {
             this.EnchereCurrentUser.setContent(new PanneauShowEnchere(this.main));
         });
         this.EnchereCurrentUser.setContent(new PanneauShowEnchere(this.main));
-        this.changeEnchere = new Tab("modifier");
-        this.changeEnchere.setOnSelectionChanged((t) -> {
-            this.changeEnchere.setContent(new Encherir(this.main));
+        this.encherir = new Tab("Enchérir");
+        this.encherir.setOnSelectionChanged((t) -> {
+            this.encherir.setContent(new Encherir(this.main));
         });
-        this.changeEnchere.setContent(new Encherir(this.main));
-        this.allTabs = new TabPane(this.EnchereCurrentUser, this.changeEnchere);
+        this.encherir.setContent(new Encherir(this.main));
+        this.reencherir = new Tab("Réenchérir");
+        this.reencherir.setOnSelectionChanged((t) -> {
+           this.reencherir.setContent(new Reencherir(this.main));
+        });
+        this.reencherir.setContent(new Reencherir(this.main));
+        this.allTabs = new TabPane(this.EnchereCurrentUser,this.encherir,this.reencherir);
         this.getChildren().addAll(this.allTabs);
         this.allTabs.getSelectionModel().select(this.EnchereCurrentUser);
      }

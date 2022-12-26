@@ -18,6 +18,7 @@ along with CoursBeuvron.  If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.insa.winkler.projet;
 
+import java.sql.Connection;
 import java.sql.Timestamp;
 
 /**
@@ -56,6 +57,7 @@ public class Objet {
     public int getPrixBase() {
         return prixBase;
     }
+    
 
     public String getDescription() {
         return description;

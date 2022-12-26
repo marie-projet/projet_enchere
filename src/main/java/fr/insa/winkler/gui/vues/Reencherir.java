@@ -38,18 +38,18 @@ import javafx.scene.layout.VBox;
  *
  * @author francois
  */
-public class Encherir extends VBox {
+public class Reencherir extends VBox {
 
     private MainPane main;
 
-    private ObjetTable vPasEnchere;
+    private ObjetTable vEncherePerdante;
     private ObjetTable vEnchereGagnante;
     private Button vbValidate;
     private Button vbCancel;
     private Button vbEncherir;
     private Button vbDetails;
 
-    public Encherir(MainPane main) {
+    public Reencherir(MainPane main) {
         this.main = main;
         this.reInit();
     }
@@ -57,26 +57,27 @@ public class Encherir extends VBox {
     private void reInit() {
         this.getChildren().clear();
         GridPane gpEnchere = new GridPane();
-        VBox vlPasEnchere = new VBox();
-        Label lPasEnchere = new Label("Objets en ventes");
-        lPasEnchere.setStyle("-fx-font-size: 20");
-        vlPasEnchere.getChildren().add(lPasEnchere);
+        VBox vlEncherePerdante = new VBox();
+        vlEncherePerdante.getChildren().add(new BigLabel("Vos enchères perdantes",20));
         try {
-            List<Objet> objetsPasEncheris = BdD.objetPasEncheri(
-                    this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-            this.vPasEnchere = new ObjetTable(this.main,objetsPasEncheris);
-            vlPasEnchere.getChildren().add(this.vPasEnchere);
+            List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                    this.main.getSession
+        ().getConBdD(), this.main.getSession
+        ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
+        ().getConBdD(), this.main.getSession
+        ().getCurUser().orElseThrow()));
+            vlEncherePerdante.getChildren().add(new ObjetTable(this.main,objetsEncheris));
         } catch (SQLException ex) {
-            vlPasEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+            vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
         }
-        vlPasEnchere.setAlignment(Pos.CENTER);
-        gpEnchere.add(vlPasEnchere,0,0);
+        vlEncherePerdante.setAlignment(Pos.CENTER);
+        gpEnchere.add(vlEncherePerdante,0,0);
         
         this.vbEncherir = new Button("ENCHERIR >>");
         this.vbEncherir.setOnAction((event) -> {
-            List<Objet> select = this.vPasEnchere.getSelectedObjects();
+            List<Objet> select = this.vEncherePerdante.getSelectedObjects();
             this.vEnchereGagnante.addObjects(select);
-            this.vPasEnchere.removeObjects(select);
+            this.vEncherePerdante.removeObjects(select);
         });
        
         VBox vbuttons = new VBox(this.vbEncherir);
