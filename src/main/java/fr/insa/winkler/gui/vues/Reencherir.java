@@ -104,7 +104,7 @@ public class Reencherir extends VBox {
         vlEnchere.setAlignment(Pos.CENTER);
         gpEnchere.add(vlEnchere,2,0);
         this.getChildren().add(gpEnchere);
-        gpEnchere.setHgap(50);
+        gpEnchere.setHgap(90);
     }
 
 }
