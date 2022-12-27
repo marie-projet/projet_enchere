@@ -518,13 +518,85 @@ public class BdD {
         return res;
     }
     
-     public static List<Objet> objetPasEncheri(Connection con, Utilisateur utilisateur) throws SQLException {
+    public static List<Objet> objetPasEncheri(Connection con, Utilisateur utilisateur) throws SQLException {
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
         select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
         where objet.id not in (select enchere.sur from enchere where enchere.de=?)
         
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String categorie = rs.getString(7);
+                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                }
+                return res;
+            }
+        }
+    }
+    
+    public static List<Objet> objetsEnVente(Connection con, Utilisateur utilisateur) throws SQLException {
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=?  
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String categorie = rs.getString(7);
+                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                }
+                return res;
+            }
+        }
+    }
+    
+    public static List<Objet> objetsPasVendus(Connection con, Utilisateur utilisateur) throws SQLException {
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=? and objet.id not in (select enchere.sur from enchere)
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String categorie = rs.getString(7);
+                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                }
+                return res;
+            }
+        }
+    }
+    
+    public static List<Objet> objetsVendus(Connection con, Utilisateur utilisateur) throws SQLException {
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=? and objet.id in (select enchere.sur from enchere)
         """)) {
             st.setInt(1,utilisateur.getId());
             try ( ResultSet rs = st.executeQuery()){
@@ -701,6 +773,7 @@ public class BdD {
         int proposepar=utilisateur.getId();
         ajouterObjet(con,titre,description,debut,fin,prixbase,categorie,proposepar);
     }
+   
    
     /*
     Donne le montant le plus élevé enchéri sur l'objet "sur".

@@ -37,7 +37,7 @@ public class EnteteAfterLogin extends HBox {
     public EnteteAfterLogin(MainPane main) {
         this.main = main;
         
-        this.vbLogout = new Button("logout");
+        this.vbLogout = new Button("Logout");
         this.vbLogout.setOnAction((event) -> {
             this.doLogout();
         });
@@ -47,7 +47,7 @@ public class EnteteAfterLogin extends HBox {
         });
         this.vbVente = new Button("Ventes");
         this.vbVente.setOnAction((event) -> {
-            //this.main.setMainContent(new MainAfterLogin(this.main));
+            this.main.setMainContent(new MainVentes(this.main));
         });
         this.getChildren().addAll(this.vbLogout,this.vbEnchere,this.vbVente);
     }

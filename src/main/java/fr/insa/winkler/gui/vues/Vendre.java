@@ -33,12 +33,13 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 
 /**
  *
  * @author francois
  */
-public class Encherir extends VBox {
+public class Vendre extends VBox {
 
     private MainPane main;
 
@@ -46,64 +47,43 @@ public class Encherir extends VBox {
     private ObjetTable vEnchereGagnante;
     private Button vbValidate;
     private Button vbCancel;
-    private Button vbEncherir;
+    private Button vbVendre;
     private Button vbDetails;
 
-    public Encherir(MainPane main) {
+    public Vendre(MainPane main) {
         this.main = main;
         this.reInit();
     }
     
     private void reInit() {
         this.getChildren().clear();
-        GridPane gpEnchere = new GridPane();
-        VBox vlPasEnchere = new VBox();
-        Label lPasEnchere = new Label("Objets en vente");
-        lPasEnchere.setStyle("-fx-font-size: 20");
-        vlPasEnchere.getChildren().add(lPasEnchere);
+        GridPane gpVente = new GridPane();
+        VBox vlObjetsEnVente = new VBox();
+        vlObjetsEnVente.getChildren().add(new BigLabel("Vos objets en vente",20));
         try {
-            List<Objet> objetsPasEncheris = BdD.objetPasEncheri(
+            List<Objet> datas = BdD.objetsEnVente(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-            this.vPasEnchere = new ObjetTable(this.main,objetsPasEncheris);
-            vlPasEnchere.getChildren().add(this.vPasEnchere);
+            vlObjetsEnVente.getChildren().add(new ObjetTable(this.main,datas));
         } catch (SQLException ex) {
-            vlPasEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+            vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
         }
-        vlPasEnchere.setAlignment(Pos.CENTER);
-        gpEnchere.add(vlPasEnchere,0,0);
+        JavaFXUtils.addSimpleBorder(vlObjetsEnVente, Color.BLUE, 2);
+        vlObjetsEnVente.setAlignment(Pos.CENTER);
+        gpVente.add(vlObjetsEnVente,0,0);
         
-        this.vbEncherir = new Button("ENCHERIR >>");
-        this.vbEncherir.setOnAction((event) -> {
-            List<Objet> select = this.vPasEnchere.getSelectedObjects();
-            this.vEnchereGagnante.addObjects(select);
-            this.vPasEnchere.removeObjects(select);
+        this.vbVendre = new Button("VENDRE");
+        this.vbVendre.setOnAction((event) -> {
         });
        
-        VBox vbuttons = new VBox(this.vbEncherir);
-        gpEnchere.add(vbuttons,1,0);
+        VBox vbuttons = new VBox(this.vbVendre);
+        gpVente.add(vbuttons,1,0);
         vbuttons.setAlignment(Pos.TOP_CENTER);
         GridPane.setHalignment(vbuttons, HPos.CENTER);
         GridPane.setValignment(vbuttons, VPos.CENTER);
         
 
-        VBox vlEnchere = new VBox();
-        vlEnchere.getChildren().add(new BigLabel("Vos enchères gagnantes",20));
-        try {
-            List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
-                    this.main.getSession
-        ().getConBdD(), this.main.getSession
-        ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
-        ().getConBdD(), this.main.getSession
-        ().getCurUser().orElseThrow()));
-            this.vEnchereGagnante = new ObjetTable(this.main,objetsEncheris);
-            vlEnchere.getChildren().add(this.vEnchereGagnante);
-        } catch (SQLException ex) {
-            vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
-        }
-        vlEnchere.setAlignment(Pos.CENTER);
-        gpEnchere.add(vlEnchere,2,0);
-        this.getChildren().add(gpEnchere);
-        gpEnchere.setHgap(90);
+        this.getChildren().add(gpVente);
+        gpVente.setHgap(90);
     }
 
 }
