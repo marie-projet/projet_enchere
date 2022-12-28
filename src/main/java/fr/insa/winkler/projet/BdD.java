@@ -34,7 +34,7 @@ public class BdD {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439,
+        return connectGeneralPostGres("localhost", 5432,
                 "postgres", "postgres", "pass");
     }
 
@@ -127,7 +127,6 @@ public class BdD {
             
             // si j'arrive jusqu'ici, c'est que tout s'est bien passé
             // je confirme (commit) la transaction
-            ajouterAdmin(con);
             con.commit();
         } catch (SQLException ex) {
             // quelque chose s'est mal passé
@@ -380,9 +379,9 @@ public class BdD {
         }
     }
     
-    public static void afficheListObjet(List<Objet> list)throws SQLException {
+    public static void afficheListObjet(Connection con, List<Objet> list)throws SQLException {
         for(Objet objet: list){
-            objet.print();
+            objet.print(con);
         }
     }
     
@@ -394,9 +393,8 @@ public class BdD {
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
-        select objet.id,objet.titre,objet.description,objet.debut,objet.fin,objet.prixbase,objet.categorie,objet.proposepar from enchere
-        join objet on objet.id=enchere.sur
-        where enchere.de=?
+        select objet.id,objet.titre,objet.description,objet.debut,objet.fin,objet.prixbase,objet.categorie from objet
+        where objet.proposepar=?
         """)) {
             st.setInt(1,utilisateur.getId());
             try ( ResultSet rs = st.executeQuery()){
@@ -408,8 +406,7 @@ public class BdD {
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
                     String categorie = rs.getString(7);
-                    int proposePar = rs.getInt(8);
-                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, proposePar));
+                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
                 }
                 return res;
             }
@@ -493,7 +490,7 @@ public class BdD {
     }
     
     /*
-    Donne la liste des objets dont l'utilisateur à l'enchère la plus élevé. 
+    Donne la liste des objets dont l'utilisateur à l'enchère la plus élevé. Prend la liste de objetEncheri en entrée.
     */
     public static List<Objet> objetEncheriGagnant(Connection con, Utilisateur utilisateur, List<Objet> list) throws SQLException {
         List<Objet> res = new ArrayList<>();
@@ -506,7 +503,7 @@ public class BdD {
     }
     
     /*
-    Donne la liste des objets dont l'utilisateur à enchéri au moins une fois mais un autre utilisateur à enchéri plus que lui.
+    Donne la liste des objets dont l'utilisateur à enchéri au moins une fois mais un autre utilisateur à enchéri plus que lui. Prend la liste de objetEncheri en entrée.
     */
     public static List<Objet> objetEncheriPerdant(Connection con, Utilisateur utilisateur, List<Objet> list) throws SQLException {
         List<Objet> res = new ArrayList<>();
@@ -688,6 +685,7 @@ public class BdD {
         return ajouterUtilisateur(con,nom,prenom,email,pass,codepostal);
     }
     
+    /*_________________________________ON DECIDE DE NE PAS AVOIR ADMIN DANS LA BDD_________________________________
     public static void ajouterAdmin(Connection con) throws SQLException {
         con.setAutoCommit(false);
         try ( PreparedStatement pst = con.prepareStatement(
@@ -705,6 +703,7 @@ public class BdD {
             throw ex;
         }
     }
+    */
    
    public static void ajouterCategorie(Connection con, String nom) throws SQLException {
        try ( PreparedStatement pst = con.prepareStatement(
@@ -739,7 +738,7 @@ public class BdD {
    }
    
    public static int choisirObjet(Connection con) throws SQLException{
-       afficheListObjet(listObjet(con));
+       afficheListObjet(con,listObjet(con));
        return Console.entreeEntier("Entrez l'identifiant de l'objet de votre choix");
    }
    
@@ -800,6 +799,7 @@ public class BdD {
             }
         }
     }
+    
     
     /*
     Donne le montant le plus élevé qu'un utilisateur à enchérit sur l'objet d'id "sur".
@@ -892,7 +892,7 @@ public class BdD {
                 pst.setString(2, pass);
                 ResultSet res = pst.executeQuery();
                 if (res.next()) {
-                    return Optional.of(new Utilisateur(res.getInt("id")-1, res.getString("nom"), res.getString("prenom"), email, pass, res.getString("codepostal")));
+                    return Optional.of(new Utilisateur(res.getInt("id"), res.getString("nom"), res.getString("prenom"), email, pass, res.getString("codepostal")));
                 } else {
                     return Optional.empty();
                 }
@@ -992,7 +992,7 @@ public class BdD {
                 break;
             }
             rep = -1;
-            if (utilActif.getId() == 1){ // menu admin
+            if (utilActif.getId() == 0){ // menu admin
                 while (rep != 0) {
                     System.out.println("__________MENU_ADMIN__________");
                     
@@ -1004,9 +1004,6 @@ public class BdD {
                     System.out.println("[4] Chercher un utilisateur par nom");
                     System.out.println("[5] Ajouter un utilisateur");
                     System.out.println("[6] Ajouter une categorie");
-                    System.out.println("[7] Ajouter un objet");
-                    System.out.println("[8] Encherir");
-                    System.out.println("[9] Mes enchers");
                     System.out.println("[0] Se déconecter");
 
                     rep = Console.entreeEntier("Votre choix : ");
@@ -1030,19 +1027,6 @@ public class BdD {
                             break;
                         case 6: // Ajouter une categorie
                             ajouterCategorie(con);
-                            break;
-                        case 7: // Ajouter un objet
-                            ajouterObjet(con,utilActif);
-                            break;
-                        case 8: // Encherir
-                            ajouterEnchere(con,utilActif);
-                            break;
-                        case 9: // Mes enchers
-                            List<Objet> list = objetEncheri(con,utilActif);
-                            System.out.println("Objets dont l'enchère est gagnante");
-                            afficheListObjet(objetEncheriGagnant(con,utilActif,list));
-                            System.out.println("Objets dont l'enchère est perdante");
-                            afficheListObjet(objetEncheriPerdant(con,utilActif,list));
                             break;
                     }
                 }
@@ -1071,7 +1055,7 @@ public class BdD {
                         trouveParNom(con, cherche);
                             break;
                         case 6: // Mes objets
-                            afficheListObjet(listObjetDunUtilisateur(con,utilActif));
+                            afficheListObjet(con,listObjetDunUtilisateur(con,utilActif));
                             break;
                         case 7: // Ajouter un objet
                             ajouterObjet(con,utilActif);
@@ -1082,9 +1066,9 @@ public class BdD {
                         case 9: // Mes enchers
                             List<Objet> list = objetEncheri(con,utilActif);
                             System.out.println("Objets dont l'enchère est gagnante : ");
-                            afficheListObjet(objetEncheriGagnant(con,utilActif,list));
+                            afficheListObjet(con,objetEncheriGagnant(con,utilActif,list));
                             System.out.println("Objets dont l'enchère est perdante : ");
-                            afficheListObjet(objetEncheriPerdant(con,utilActif,list));
+                            afficheListObjet(con,objetEncheriPerdant(con,utilActif,list));
                             break;
                     }
                 }
@@ -1097,7 +1081,7 @@ public class BdD {
             System.out.println("connecté !");
             //afficheToutesLesEncheres(con);
             afficheListCategorie(listCategorie(con));
-            afficheListObjet(listObjet(con));
+            afficheListObjet(con,listObjet(con));
             menuV2(con);
         } catch (Exception ex) {
             throw new Error(ex);

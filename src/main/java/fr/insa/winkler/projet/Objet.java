@@ -18,8 +18,8 @@ along with CoursBeuvron.  If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.insa.winkler.projet;
 
-import java.sql.Connection;
 import java.sql.Timestamp;
+import java.sql.Connection;
 
 /**
  *
@@ -79,7 +79,15 @@ public class Objet {
         return proposePar;
     }
     
-    public void print(){
+    public int getPrixActuel(Connection con) {
+        try{
+            return BdD.dernierEnchereSurObjet(con,this.getId());
+        }catch(Exception e){
+            return 0;
+        }
+    }
+    
+    public void print(Connection con){
         System.out.println("____________Objet____________");
         System.out.println(this.getTitre());
         System.out.println(this.getDescription());
@@ -89,5 +97,6 @@ public class Objet {
         System.out.println("fin enchere : "+this.getFin());
         System.out.println("categorie : "+this.getCategorie());
         System.out.println("propose par : "+this.getProposePar());
+        System.out.println("prix actuel : "+this.getPrixActuel(con));
     }
 }

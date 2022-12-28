@@ -47,7 +47,7 @@ public class Utilisateur {
     }
     
     public static Utilisateur admin(){
-        return new Utilisateur(1,"admin",null,"admin","00000");
+        return new Utilisateur(0,"admin",null,"admin","00000");
     }
     
     public int getId(){
