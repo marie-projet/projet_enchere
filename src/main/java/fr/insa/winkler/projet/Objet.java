@@ -35,8 +35,9 @@ public class Objet {
     Timestamp fin;
     String categorie;
     int proposePar;
+    private int prixActuel;
     
-    public Objet(int id, String titre, int prixBase, String description, Timestamp debut, Timestamp fin, String categorie, int proposePar) {
+    public Objet(Connection con,int id, String titre, int prixBase, String description, Timestamp debut, Timestamp fin, String categorie, int proposePar) {
         this.id = id;
         this.titre = titre;
         this.prixBase = prixBase;
@@ -44,6 +45,11 @@ public class Objet {
         this.fin = fin;
         this.categorie = categorie;
         this.proposePar = proposePar;
+        try{
+            this.prixActuel=BdD.dernierEnchereSurObjet(con,this.getId());
+        }catch(Exception e){
+            this.prixActuel= 0;
+        }
     }
 
     public int getId() {
@@ -79,12 +85,8 @@ public class Objet {
         return proposePar;
     }
     
-    public int getPrixActuel(Connection con) {
-        try{
-            return BdD.dernierEnchereSurObjet(con,this.getId());
-        }catch(Exception e){
-            return 0;
-        }
+    public int getPrixActuel() {
+        return prixActuel;
     }
     
     public void print(Connection con){
@@ -97,6 +99,6 @@ public class Objet {
         System.out.println("fin enchere : "+this.getFin());
         System.out.println("categorie : "+this.getCategorie());
         System.out.println("propose par : "+this.getProposePar());
-        System.out.println("prix actuel : "+this.getPrixActuel(con));
+        System.out.println("prix actuel : "+this.getPrixActuel());
     }
 }

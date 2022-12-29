@@ -43,7 +43,7 @@ public class ObjetTable extends TableView {
 
         
         cTitre.setCellValueFactory(new PropertyValueFactory<>("titre"));
-        cPrix.setCellValueFactory(new PropertyValueFactory<>("prixBase"));
+        cPrix.setCellValueFactory(new PropertyValueFactory<>("prixActuel"));
         this.setItems(this.objets);
     }
 

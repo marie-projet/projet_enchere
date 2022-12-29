@@ -34,7 +34,7 @@ public class BdD {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5432,
+        return connectGeneralPostGres("localhost", 5439,
                 "postgres", "postgres", "pass");
     }
 
@@ -372,7 +372,7 @@ public class BdD {
                     int prixBase = rs.getInt(6);
                     String categorie = rs.getString(7);
                     int proposePar = rs.getInt(8);
-                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, proposePar));
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, proposePar));
                 }
                 return res;
             }
@@ -406,7 +406,7 @@ public class BdD {
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
                     String categorie = rs.getString(7);
-                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
                 }
                 return res;
             }
@@ -482,7 +482,7 @@ public class BdD {
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
                     String categorie = rs.getString(7);
-                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
                 }
                 return res;
             }
@@ -533,7 +533,7 @@ public class BdD {
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
                     String categorie = rs.getString(7);
-                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
                 }
                 return res;
             }
@@ -557,7 +557,7 @@ public class BdD {
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
                     String categorie = rs.getString(7);
-                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
                 }
                 return res;
             }
@@ -581,7 +581,7 @@ public class BdD {
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
                     String categorie = rs.getString(7);
-                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
                 }
                 return res;
             }
@@ -605,7 +605,7 @@ public class BdD {
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
                     String categorie = rs.getString(7);
-                    res.add(new Objet(id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
                 }
                 return res;
             }
@@ -892,7 +892,8 @@ public class BdD {
                 pst.setString(2, pass);
                 ResultSet res = pst.executeQuery();
                 if (res.next()) {
-                    return Optional.of(new Utilisateur(res.getInt("id"), res.getString("nom"), res.getString("prenom"), email, pass, res.getString("codepostal")));
+                    System.out.println("l'identifiant est"+res.getInt("id"));
+                    return Optional.of(new Utilisateur(res.getInt("id")-1, res.getString("nom"), res.getString("prenom"), email, pass, res.getString("codepostal")));
                 } else {
                     return Optional.empty();
                 }
