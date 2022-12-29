@@ -19,13 +19,13 @@ import javafx.scene.control.cell.PropertyValueFactory;
  * voir https://devstory.net/11079/javafx-tableview
  * @author francois
  */
-public class ObjetTable extends TableView {
+public class ObjetTable2 extends TableView {
     
     private MainPane main;
     
     private ObservableList<Objet> objets;
     
-    public ObjetTable(MainPane main,List<Objet> objets) {
+    public ObjetTable2(MainPane main,List<Objet> objets) {
         this.main = main;
         this.objets = FXCollections.observableArrayList(objets);
         
@@ -34,7 +34,7 @@ public class ObjetTable extends TableView {
         TableColumn<Objet,String> cTitre = 
                 new TableColumn<>("titre");
         TableColumn<Objet,String> cPrix = 
-                new TableColumn<>("enchère actuelle");
+                new TableColumn<>("prix de base");
         this.getColumns().addAll(cTitre,cPrix);
         
         // si l'on ne veut pas d'espace supplémentaire
@@ -43,7 +43,7 @@ public class ObjetTable extends TableView {
 
         
         cTitre.setCellValueFactory(new PropertyValueFactory<>("titre"));
-        cPrix.setCellValueFactory(new PropertyValueFactory<>("prixActuel"));
+        cPrix.setCellValueFactory(new PropertyValueFactory<>("prixBase"));
         this.setItems(this.objets);
     }
 

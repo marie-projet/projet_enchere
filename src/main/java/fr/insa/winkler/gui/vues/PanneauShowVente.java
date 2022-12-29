@@ -112,7 +112,7 @@ public class PanneauShowVente extends GridPane {
                 try {
                     List<Objet> datas = BdD.objetsPasVendus(
                             this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                    vlObjetsPasVendus.getChildren().add(new ObjetTable(this.main,datas));
+                    vlObjetsPasVendus.getChildren().add(new ObjetTable2(this.main,datas));
                 } catch (SQLException ex) {
                     vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
                 }
@@ -121,7 +121,7 @@ public class PanneauShowVente extends GridPane {
                 try {
                     List<Objet> datas = BdD.objetsPasVendus(
                             this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-                    vlObjetsPasVendus.getChildren().add(new ObjetTable(this.main,datas));
+                    vlObjetsPasVendus.getChildren().add(new ObjetTable2(this.main,datas));
                 } catch (SQLException ex) {
                     vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
                 }
@@ -167,7 +167,7 @@ public class PanneauShowVente extends GridPane {
         try {
             List<Objet> datas = BdD.objetsPasVendus(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-            vlObjetsPasVendus.getChildren().add(new ObjetTable(this.main,datas));
+            vlObjetsPasVendus.getChildren().add(new ObjetTable2(this.main,datas));
         } catch (SQLException ex) {
             vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
         }
