@@ -50,6 +50,7 @@ public class EnteteAfterLogin extends HBox {
             this.main.setMainContent(new MainVentes(this.main));
         });
         this.getChildren().addAll(this.vbLogout,this.vbEnchere,this.vbVente);
+        this.setSpacing(50);
     }
     
     public void doLogout() {

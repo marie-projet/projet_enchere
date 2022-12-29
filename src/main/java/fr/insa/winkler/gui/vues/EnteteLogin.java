@@ -45,6 +45,7 @@ public class EnteteLogin extends HBox {
             this.main.setMainContent(new NouvelUtilisateur(this.main));
         });
         this.getChildren().addAll(this.bLogin,this.vNouvelUtilisateur);
+        this.setSpacing(50);
     }
 }
 
