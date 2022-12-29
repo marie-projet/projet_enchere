@@ -34,7 +34,7 @@ public class BdD {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439,
+        return connectGeneralPostGres("localhost", 5432,
                 "postgres", "postgres", "pass");
     }
 
@@ -260,8 +260,19 @@ public class BdD {
             st.executeUpdate(
             """
             INSERT INTO categorie (nom) values
-            ('Meuble'),
-            ('Habit')
+            ('Jeux'),
+            ('Collections'),
+            ('Vetements et accessoires'),
+            ('Art et antiquites'),
+            ('Bijoux et montres'),
+            ('Livres'),
+            ('Ceramique et verres'),
+            ('Electromenager'),
+            ('Instruments de musique'),
+            ('Musique'),
+            ('Articles pour la maison'),
+            ('Articles pour le jardin'),
+            ('Autre')
             """);
             
             st.executeUpdate(
@@ -332,6 +343,7 @@ public class BdD {
             }
         }
     }
+    
     public static void afficheListCategorie(List<Categorie> list)throws SQLException {
         for(Categorie categorie: list){
             categorie.print();
@@ -467,7 +479,7 @@ public class BdD {
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
-        select distinct on (objet.id) objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from enchere
+        select distinct on (objet.id) objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie, objet.proposepar from enchere
         join objet on objet.id = enchere.sur
         where enchere.de=?
         
@@ -482,12 +494,47 @@ public class BdD {
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
                     String categorie = rs.getString(7);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    int proposePar = rs.getInt(8);
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, proposePar));
                 }
                 return res;
             }
         }
     }
+    
+    /*
+    La même chose mais avec une catégorie précise.
+    */
+    
+    
+    public static List<Objet> objetEncheri(Connection con, Utilisateur utilisateur, Categorie categorie) throws SQLException {
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select distinct on (objet.id) objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.proposepar from enchere
+        join objet on objet.id = enchere.sur
+        where enchere.de=?
+        where objet.categorie=?
+        
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setInt(2,categorie.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    int proposePar = rs.getInt(7);
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie.getNom(), proposePar));
+                }
+                return res;
+            }
+        }
+    }
+    
     
     /*
     Donne la liste des objets dont l'utilisateur à l'enchère la plus élevé. Prend la liste de objetEncheri en entrée.
@@ -509,6 +556,18 @@ public class BdD {
         List<Objet> res = new ArrayList<>();
         for(Objet objet: list){
             if(dernierEnchereSurObjet(con,objet.getId()) > dernierEnchereSurObjetDunUtilisateur(con,objet.getId(),utilisateur)){
+                res.add(objet);
+            }
+        }
+        return res;
+    }
+    /*
+    Pas tiptop mais en haut ça marche pas.
+    */
+    public static List<Objet> objetParCategorie(Connection con, Categorie categorie, List<Objet> list) throws SQLException {
+        List<Objet> res = new ArrayList<>();
+        for(Objet objet: list){
+            if(objet.getCategorie().equals(categorie.getNom())){
                 res.add(objet);
             }
         }
@@ -893,7 +952,7 @@ public class BdD {
                 ResultSet res = pst.executeQuery();
                 if (res.next()) {
                     System.out.println("l'identifiant est"+res.getInt("id"));
-                    return Optional.of(new Utilisateur(res.getInt("id")-1, res.getString("nom"), res.getString("prenom"), email, pass, res.getString("codepostal")));
+                    return Optional.of(new Utilisateur(res.getInt("id"), res.getString("nom"), res.getString("prenom"), email, pass, res.getString("codepostal")));
                 } else {
                     return Optional.empty();
                 }
@@ -983,7 +1042,7 @@ public class BdD {
             System.out.println("[2] Créer un nouveau compte");
             System.out.println("[0] Quitter");
             
-            rep = Console.entreeEntier("Votre choix : ");
+            rep = Console.entreeEntier("Votre1 choix : ");
             
             if (rep == 1){ // Se connecter
                 utilActif = connexionUtilisateur(con).get();
@@ -1033,6 +1092,9 @@ public class BdD {
                 }
             } else { // menu utilisateur
                 while (rep != 0) {
+                    
+                    //afficheListObjet(con,objetEncheri(con,utilActif,Categorie.predef(1)));
+                    
                     System.out.println("_______MENU_UTILISATEUR_______");
                     
                     System.out.println("Bienvenu(e) M,Mme "+utilActif.getNom()+" !");
