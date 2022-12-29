@@ -18,6 +18,9 @@ along with CoursBeuvron.  If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.insa.winkler.projet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author Théo
@@ -48,6 +51,8 @@ public class Categorie {
     
     public static Categorie predef(int num){
         switch(num){
+            case 0:
+                return All();
             case 1:
                 return jeux();
             case 2:
@@ -77,6 +82,9 @@ public class Categorie {
         }
     }
     
+    public static Categorie All(){
+        return new Categorie(0, "All");
+    }
     
     public static Categorie jeux(){
         return new Categorie(1, "Jeux");
@@ -128,5 +136,16 @@ public class Categorie {
     
     public static Categorie autre(){
         return new Categorie(13, "Autre");
+    }
+    
+    public static List<Categorie> ListCategorie(){
+        List<Categorie> categories=new ArrayList<Categorie>();
+        for(int i=0; i<14; i++){
+            categories.add(predef(i));
+        }
+        return categories;
+    }
+        public String toString(){
+        return this.getId()+": "+this.getNom();
     }
 }

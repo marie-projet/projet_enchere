@@ -18,8 +18,8 @@
  */
 package fr.insa.winkler.gui.vues;
 
-import fr.insa.winkler.gui.JavaFXUtils;
 import fr.insa.winkler.gui.MainPane;
+import fr.insa.winkler.projet.Categorie;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.VBox;

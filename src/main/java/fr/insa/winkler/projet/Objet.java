@@ -48,7 +48,7 @@ public class Objet {
         try{
             this.prixActuel=BdD.dernierEnchereSurObjet(con,this.getId());
         }catch(Exception e){
-            this.prixActuel= 0;
+            this.prixActuel= this.prixBase;
         }
     }
 

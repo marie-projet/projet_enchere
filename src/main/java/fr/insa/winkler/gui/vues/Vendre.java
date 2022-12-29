@@ -21,14 +21,17 @@ package fr.insa.winkler.gui.vues;
 import fr.insa.winkler.projet.BdD;
 import fr.insa.winkler.gui.JavaFXUtils;
 import fr.insa.winkler.gui.MainPane;
+import fr.insa.winkler.projet.Categorie;
 import fr.insa.winkler.projet.Objet;
 import fr.insa.winkler.projet.Utilisateur;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -56,7 +59,7 @@ public class Vendre extends VBox {
     }
     
     private void reInit() {
-        this.getChildren().clear();
+         this.getChildren().clear();         
         GridPane gpVente = new GridPane();
         VBox vlObjetsEnVente = new VBox();
         vlObjetsEnVente.getChildren().add(new BigLabel("Vos objets en vente",20));
