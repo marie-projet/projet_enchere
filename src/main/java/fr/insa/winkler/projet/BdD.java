@@ -34,7 +34,7 @@ public class BdD {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439,
+        return connectGeneralPostGres("localhost", 5432,
                 "postgres", "postgres", "pass");
     }
 
@@ -400,7 +400,6 @@ public class BdD {
     /*
     Donne la liste des objets mis en enchère par un utilisateur.
     */
-    
     public static List<Objet> listObjetDunUtilisateur(Connection con, Utilisateur utilisateur) throws SQLException {
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
@@ -495,6 +494,39 @@ public class BdD {
                     int prixBase = rs.getInt(6);
                     String categorie = rs.getString(7);
                     int proposePar = rs.getInt(8);
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, proposePar));
+                }
+                return res;
+            }
+        }
+    }
+    /*
+    La même chose mais avec un mot correspondant dans la description/titre.
+    */
+    public static List<Objet> objetEncheri(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select distinct on (objet.id) objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.proposepar, objet.categorie from enchere
+        join objet on objet.id = enchere.sur
+        where enchere.de=?
+        and (objet.description like ? or objet.titre like ?)
+        
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setString(2,"%" + mot + "%");
+            st.setString(3,"%" + mot + "%");
+            
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    int proposePar = rs.getInt(7);
+                    String categorie = rs.getString(8);
                     res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, proposePar));
                 }
                 return res;
@@ -646,8 +678,41 @@ public class BdD {
             }
         }
     }
+    /*
+    Objets mis en vente par un utilisateur avec un mot en description/titre.
+    */
+    public static List<Objet> objetsEnVente(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=? 
+        and (objet.description like ? or objet.titre like ?)
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setString(2,"%" + mot + "%");
+            st.setString(3,"%" + mot + "%");
+            
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String categorie = rs.getString(7);
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                }
+                return res;
+            }
+        }
+    }
     
-        public static List<Objet> objetsEnVente(Connection con, Utilisateur utilisateur,Categorie cat) throws SQLException {
+    /*
+    Objets mis en vente par un utilisateur avec une categorie.
+    */
+        public static List<Objet> objetsEnVente(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -1193,6 +1258,8 @@ public class BdD {
                 while (rep != 0) {
                     
                     //afficheListObjet(con,objetEncheri(con,utilActif,Categorie.predef(1)));
+                    //afficheListObjet(con,objetsEnVente(con,utilActif,"lit"));
+                    afficheListObjet(con,objetEncheri(con,utilActif,"e"));
                     
                     System.out.println("_______MENU_UTILISATEUR_______");
                     
@@ -1244,7 +1311,7 @@ public class BdD {
             //afficheToutesLesEncheres(con);
             afficheListCategorie(listCategorie(con));
             afficheListObjet(con,listObjet(con));
-            menu(con);
+            menuV2(con);
         } catch (Exception ex) {
             throw new Error(ex);
         }

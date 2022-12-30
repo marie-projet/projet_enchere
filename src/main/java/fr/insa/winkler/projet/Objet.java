@@ -41,6 +41,7 @@ public class Objet {
         this.id = id;
         this.titre = titre;
         this.prixBase = prixBase;
+        this.description = description;
         this.debut = debut;
         this.fin = fin;
         this.categorie = categorie;
