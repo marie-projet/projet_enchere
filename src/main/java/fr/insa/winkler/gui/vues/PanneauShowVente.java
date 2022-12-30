@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -41,6 +42,10 @@ import javafx.scene.paint.Color;
 public class PanneauShowVente extends GridPane {
 
     private MainPane main;
+    private ObjetTable vObjetsEnVente;
+    private ObjetTable vObjetsVendus;
+    private ObjetTable2 vObjetsNonVendus;
+    
 
     public PanneauShowVente(MainPane main) {
                 this.main = main;
@@ -49,8 +54,34 @@ public class PanneauShowVente extends GridPane {
             for (Categorie cat: Categorie.ListCategorie()){
                 categories.getItems().addAll(cat.toString());
             }
+        Button infos=new Button("Infos");
         this.add(categorie,0,0);
         this.add(categories,1,0);
+        this.add(infos,2,0);
+        
+        infos.setOnAction ((i) -> {
+            if(this.vObjetsEnVente != null){
+                List<Objet> objetSelctionne=this.vObjetsEnVente.getSelectedObjects();
+                for (Objet obj:objetSelctionne){
+                    JavaFXUtils.showInfoObjet(obj.toString());
+                }
+                this.vObjetsEnVente.getSelectionModel().clearSelection();
+            }
+            if(this.vObjetsVendus != null){
+                List<Objet>objetSelctionne=this.vObjetsVendus.getSelectedObjects();
+                for (Objet obj:objetSelctionne){
+                    JavaFXUtils.showInfoObjet(obj.toString());
+                }
+                this.vObjetsVendus.getSelectionModel().clearSelection();
+            }
+            if(this.vObjetsNonVendus != null){
+                List<Objet>objetSelctionne=this.vObjetsNonVendus.getSelectedObjects();
+                for (Objet obj:objetSelctionne){
+                    JavaFXUtils.showInfoObjet(obj.toString());
+                }
+                this.vObjetsNonVendus.getSelectionModel().clearSelection();
+            }
+        });
         
         categories.setOnAction ((i) -> {
             List<String> a = new ArrayList<>();
@@ -64,7 +95,7 @@ public class PanneauShowVente extends GridPane {
                 try {
                     List<Objet> datas = BdD.objetsEnVente(
                             this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                    vlObjetsEnVente.getChildren().add(new ObjetTable(this.main,datas));
+                    vlObjetsEnVente.getChildren().add(this.vObjetsEnVente=new ObjetTable(this.main,datas));
                 } catch (SQLException ex) {
                     vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
                 }
@@ -73,7 +104,7 @@ public class PanneauShowVente extends GridPane {
                 try {
                     List<Objet> datas = BdD.objetsEnVente(
                             this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-                    vlObjetsEnVente.getChildren().add(new ObjetTable(this.main,datas));
+                    vlObjetsEnVente.getChildren().add(this.vObjetsEnVente=new ObjetTable(this.main,datas));
                 } catch (SQLException ex) {
                     vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
                 }
@@ -88,7 +119,7 @@ public class PanneauShowVente extends GridPane {
                 try {
                     List<Objet> datas = BdD.objetsVendus(
                             this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                    vlObjetsVendus.getChildren().add(new ObjetTable(this.main,datas));
+                    vlObjetsVendus.getChildren().add(this.vObjetsVendus=new ObjetTable(this.main,datas));
                 } catch (SQLException ex) {
                     vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
                 }
@@ -97,7 +128,7 @@ public class PanneauShowVente extends GridPane {
                 try {
                     List<Objet> datas = BdD.objetsVendus(
                             this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-                    vlObjetsVendus.getChildren().add(new ObjetTable(this.main,datas));
+                    vlObjetsVendus.getChildren().add(this.vObjetsVendus=new ObjetTable(this.main,datas));
                 } catch (SQLException ex) {
                     vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
                 }
@@ -112,7 +143,7 @@ public class PanneauShowVente extends GridPane {
                 try {
                     List<Objet> datas = BdD.objetsPasVendus(
                             this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                    vlObjetsPasVendus.getChildren().add(new ObjetTable2(this.main,datas));
+                    vlObjetsPasVendus.getChildren().add(this.vObjetsNonVendus=new ObjetTable2(this.main,datas));
                 } catch (SQLException ex) {
                     vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
                 }
@@ -121,7 +152,7 @@ public class PanneauShowVente extends GridPane {
                 try {
                     List<Objet> datas = BdD.objetsPasVendus(
                             this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-                    vlObjetsPasVendus.getChildren().add(new ObjetTable2(this.main,datas));
+                    vlObjetsPasVendus.getChildren().add(this.vObjetsNonVendus=new ObjetTable2(this.main,datas));
                 } catch (SQLException ex) {
                     vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
                 }
@@ -130,6 +161,7 @@ public class PanneauShowVente extends GridPane {
             vlObjetsPasVendus.setAlignment(Pos.CENTER);
             this.add(vlObjetsPasVendus,2,1);
             this.setHgap(10);
+            this.setVgap(20);
         });
             
             
@@ -140,7 +172,7 @@ public class PanneauShowVente extends GridPane {
         try {
             List<Objet> datas = BdD.objetsEnVente(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-            vlObjetsEnVente.getChildren().add(new ObjetTable(this.main,datas));
+            vlObjetsEnVente.getChildren().add(this.vObjetsEnVente=new ObjetTable(this.main,datas));
         } catch (SQLException ex) {
             vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
         }
@@ -153,7 +185,7 @@ public class PanneauShowVente extends GridPane {
         try {
             List<Objet> datas = BdD.objetsVendus(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-            vlObjetsVendus.getChildren().add(new ObjetTable(this.main,datas));
+            vlObjetsVendus.getChildren().add(this.vObjetsVendus=new ObjetTable(this.main,datas));
         } catch (SQLException ex) {
             vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
         }
@@ -167,7 +199,7 @@ public class PanneauShowVente extends GridPane {
         try {
             List<Objet> datas = BdD.objetsPasVendus(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-            vlObjetsPasVendus.getChildren().add(new ObjetTable2(this.main,datas));
+            vlObjetsPasVendus.getChildren().add(this.vObjetsNonVendus=new ObjetTable2(this.main,datas));
         } catch (SQLException ex) {
             vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
         }
@@ -175,6 +207,7 @@ public class PanneauShowVente extends GridPane {
         vlObjetsPasVendus.setAlignment(Pos.CENTER);
         this.add(vlObjetsPasVendus,2,1);
         this.setHgap(10);
+        this.setVgap(20);
     }
     }   
 

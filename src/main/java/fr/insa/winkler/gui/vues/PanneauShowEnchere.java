@@ -41,6 +41,9 @@ import javafx.scene.paint.Color;
 public class PanneauShowEnchere extends GridPane {
 
     private MainPane main;
+    private ObjetTable vEnchere;
+    private ObjetTable vEnchereGagnante;
+    private ObjetTable vEncherePerdante;
 
     public PanneauShowEnchere(MainPane main) {
         this.main = main;
@@ -49,8 +52,34 @@ public class PanneauShowEnchere extends GridPane {
             for (Categorie cat: Categorie.ListCategorie()){
                 categories.getItems().addAll(cat.toString());
             }
+        Button infos=new Button("Infos");
         this.add(categorie,0,0);
         this.add(categories,1,0);
+        this.add(infos,2,0);
+        
+        infos.setOnAction ((i) -> {
+            if(this.vEnchere != null ){
+                List<Objet> objetSelctionne=this.vEnchere.getSelectedObjects();
+                for (Objet obj:objetSelctionne){
+                    JavaFXUtils.showInfoObjet(obj.toString());
+                }
+                this.vEnchere.getSelectionModel().clearSelection();
+            }
+            if(this.vEnchereGagnante != null){
+                List<Objet>objetSelctionne=this.vEnchereGagnante.getSelectedObjects();
+                for (Objet obj:objetSelctionne){
+                    JavaFXUtils.showInfoObjet(obj.toString());
+                }
+                this.vEnchereGagnante.getSelectionModel().clearSelection();
+            }
+            if(this.vEncherePerdante != null){
+                List<Objet>objetSelctionne=this.vEncherePerdante.getSelectedObjects();
+                for (Objet obj:objetSelctionne){
+                    JavaFXUtils.showInfoObjet(obj.toString());
+                }
+                this.vEncherePerdante.getSelectionModel().clearSelection();
+            }
+        });
         
         categories.setOnAction ((i) -> {
             List<String> a = new ArrayList<>();
@@ -65,7 +94,7 @@ public class PanneauShowEnchere extends GridPane {
                 try {
                     List<Objet> datas = BdD.objetEncheri(
                             this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                    vlEnchere.getChildren().add(new ObjetTable(this.main,datas));
+                    vlEnchere.getChildren().add(this.vEnchere=new ObjetTable(this.main,datas));
                 } catch (SQLException ex) {
                     vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
                 }
@@ -74,7 +103,7 @@ public class PanneauShowEnchere extends GridPane {
                 try {
                 List<Objet> datas = BdD.objetEncheri(
                         this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-                vlEnchere.getChildren().add(new ObjetTable(this.main,datas));
+                vlEnchere.getChildren().add(this.vEnchere=new ObjetTable(this.main,datas));
                 } catch (SQLException ex) {
                     vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
                 }                        
@@ -93,7 +122,7 @@ public class PanneauShowEnchere extends GridPane {
             ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
             ().getConBdD(), this.main.getSession
             ().getCurUser().orElseThrow(),categorieChoisie));
-                vlEnchereGagnante.getChildren().add(new ObjetTable(this.main,objetsEncheris));
+                vlEnchereGagnante.getChildren().add(this.vEnchereGagnante=new ObjetTable(this.main,objetsEncheris));
             } catch (SQLException ex) {
                 vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
             }
@@ -106,7 +135,7 @@ public class PanneauShowEnchere extends GridPane {
             ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
             ().getConBdD(), this.main.getSession
             ().getCurUser().orElseThrow()));
-                vlEnchereGagnante.getChildren().add(new ObjetTable(this.main,objetsEncheris));
+                vlEnchereGagnante.getChildren().add(this.vEnchereGagnante=new ObjetTable(this.main,objetsEncheris));
             } catch (SQLException ex) {
                 vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
             }
@@ -125,7 +154,7 @@ public class PanneauShowEnchere extends GridPane {
             ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
             ().getConBdD(), this.main.getSession
             ().getCurUser().orElseThrow(),categorieChoisie));
-                vlEncherePerdante.getChildren().add(new ObjetTable(this.main,objetsEncheris));
+                vlEncherePerdante.getChildren().add(this.vEncherePerdante=new ObjetTable(this.main,objetsEncheris));
             } catch (SQLException ex) {
                 vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
             }
@@ -138,7 +167,7 @@ public class PanneauShowEnchere extends GridPane {
             ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
             ().getConBdD(), this.main.getSession
             ().getCurUser().orElseThrow()));
-                vlEncherePerdante.getChildren().add(new ObjetTable(this.main,objetsEncheris));
+                vlEncherePerdante.getChildren().add(this.vEncherePerdante=new ObjetTable(this.main,objetsEncheris));
             } catch (SQLException ex) {
                 vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
             }
@@ -147,6 +176,7 @@ public class PanneauShowEnchere extends GridPane {
         vlEncherePerdante.setAlignment(Pos.CENTER);
         this.add(vlEncherePerdante,2,1);
         this.setHgap(10);
+        this.setVgap(20);
 
         });
         
@@ -156,7 +186,7 @@ public class PanneauShowEnchere extends GridPane {
         try {
             List<Objet> datas = BdD.objetEncheri(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-            vlEnchere.getChildren().add(new ObjetTable(this.main,datas));
+            vlEnchere.getChildren().add(this.vEnchere=new ObjetTable(this.main,datas));
         } catch (SQLException ex) {
             vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
         }
@@ -173,7 +203,7 @@ public class PanneauShowEnchere extends GridPane {
         ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
         ().getConBdD(), this.main.getSession
         ().getCurUser().orElseThrow()));
-            vlEnchereGagnante.getChildren().add(new ObjetTable(this.main,objetsEncheris));
+            vlEnchereGagnante.getChildren().add(this.vEnchereGagnante=new ObjetTable(this.main,objetsEncheris));
         } catch (SQLException ex) {
             vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
         }
@@ -190,7 +220,7 @@ public class PanneauShowEnchere extends GridPane {
         ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
         ().getConBdD(), this.main.getSession
         ().getCurUser().orElseThrow()));
-            vlEncherePerdante.getChildren().add(new ObjetTable(this.main,objetsEncheris));
+            vlEncherePerdante.getChildren().add(this.vEncherePerdante=new ObjetTable(this.main,objetsEncheris));
         } catch (SQLException ex) {
             vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
         }
@@ -198,6 +228,10 @@ public class PanneauShowEnchere extends GridPane {
         vlEncherePerdante.setAlignment(Pos.CENTER);
         this.add(vlEncherePerdante,2,1);
         this.setHgap(10);
+        this.setVgap(20);
+        
+        
+        
     }
     
 }

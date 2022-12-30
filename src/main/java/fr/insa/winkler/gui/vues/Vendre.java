@@ -87,6 +87,7 @@ public class Vendre extends VBox {
 
         this.getChildren().add(gpVente);
         gpVente.setHgap(90);
+        gpVente.setVgap(20);
     }
 
 }

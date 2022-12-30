@@ -68,8 +68,27 @@ public class Reencherir extends VBox {
             for (Categorie cat: Categorie.ListCategorie()){
                 categories.getItems().addAll(cat.toString());
             }
+        Button infos=new Button("Infos");
         gpEnchere.add(categorie,0,0);
         gpEnchere.add(categories,1,0);
+        gpEnchere.add(infos,2,0);
+        
+        infos.setOnAction ((i) -> {
+            if(this.vEncherePerdante != null){
+                List<Objet> objetSelctionne=this.vEncherePerdante.getSelectedObjects();
+                for (Objet obj:objetSelctionne){
+                    JavaFXUtils.showInfoObjet(obj.toString());
+                }
+                this.vEncherePerdante.getSelectionModel().clearSelection();
+            }
+            if(this.vEnchereGagnante != null){
+                List<Objet>objetSelctionne=this.vEnchereGagnante.getSelectedObjects();
+                for (Objet obj:objetSelctionne){
+                    JavaFXUtils.showInfoObjet(obj.toString());
+                }
+                this.vEnchereGagnante.getSelectionModel().clearSelection();
+            }
+        });
         
         categories.setOnAction ((i) -> {
             List<String> a = new ArrayList<>();
@@ -112,10 +131,14 @@ public class Reencherir extends VBox {
         
             this.vbEncherir = new Button("ENCHERIR >>");
             this.vbEncherir.setOnAction((event) -> {
-                List<Objet> select = this.vEncherePerdante.getSelectedObjects();
-                this.vEnchereGagnante.addObjects(select);
-                this.vEncherePerdante.removeObjects(select);
-            });
+            List<Objet> select=this.vEncherePerdante.getSelectedObjects();
+                for (Objet obj:select){
+                    JavaFXUtils.Encherir(obj.toString());
+                }
+                this.vEncherePerdante.getSelectionModel().clearSelection();
+            this.vEnchereGagnante.addObjects(select);
+            this.vEncherePerdante.removeObjects(select);
+        });
 
             VBox vbuttons = new VBox(this.vbEncherir);
             gpEnchere.add(vbuttons,1,1);
@@ -159,6 +182,7 @@ public class Reencherir extends VBox {
             gpEnchere.add(vlEnchere,2,1);
             this.getChildren().add(gpEnchere);
             gpEnchere.setHgap(10);
+            gpEnchere.setVgap(20);
         });
 
    
@@ -183,7 +207,11 @@ public class Reencherir extends VBox {
         
         this.vbEncherir = new Button("ENCHERIR >>");
         this.vbEncherir.setOnAction((event) -> {
-            List<Objet> select = this.vEncherePerdante.getSelectedObjects();
+            List<Objet> select=this.vEncherePerdante.getSelectedObjects();
+                for (Objet obj:select){
+                    JavaFXUtils.Encherir(obj.toString());
+                }
+                this.vEncherePerdante.getSelectionModel().clearSelection();
             this.vEnchereGagnante.addObjects(select);
             this.vEncherePerdante.removeObjects(select);
         });
@@ -214,6 +242,7 @@ public class Reencherir extends VBox {
         gpEnchere.add(vlEnchere,2,1);
         this.getChildren().add(gpEnchere);
         gpEnchere.setHgap(10);
+        gpEnchere.setVgap(20);
     }
 
 }

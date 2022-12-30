@@ -23,18 +23,18 @@ import fr.insa.winkler.gui.JavaFXUtils;
 import fr.insa.winkler.gui.MainPane;
 import fr.insa.winkler.projet.Categorie;
 import fr.insa.winkler.projet.Objet;
-import fr.insa.winkler.projet.Utilisateur;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
@@ -68,8 +68,27 @@ public class Encherir extends VBox {
             for (Categorie cat: Categorie.ListCategorie()){
                 categories.getItems().addAll(cat.toString());
             }
+        Button infos=new Button("Infos");
         gpEnchere.add(categorie,0,0);
         gpEnchere.add(categories,1,0);
+        gpEnchere.add(infos,2,0);
+        
+        infos.setOnAction ((i) -> {
+            if(this.vPasEnchere != null){
+                List<Objet> objetSelctionne=this.vPasEnchere.getSelectedObjects();
+                for (Objet obj:objetSelctionne){
+                    JavaFXUtils.showInfoObjet(obj.toString());
+                }
+                this.vPasEnchere.getSelectionModel().clearSelection();
+            }
+            if(this.vEnchereGagnante != null){
+                List<Objet>objetSelctionne=this.vEnchereGagnante.getSelectedObjects();
+                for (Objet obj:objetSelctionne){
+                    JavaFXUtils.showInfoObjet(obj.toString());
+                }
+                this.vEnchereGagnante.getSelectionModel().clearSelection();
+            }
+        });
         
         categories.setOnAction ((i) -> {
             List<String> a = new ArrayList<>();
@@ -108,17 +127,21 @@ public class Encherir extends VBox {
         gpEnchere.add(vlPasEnchere,0,1);
         
         this.vbEncherir = new Button("ENCHERIR >>");
-        this.vbEncherir.setOnAction((event) -> {
-            List<Objet> select = this.vPasEnchere.getSelectedObjects();
-            this.vEnchereGagnante.addObjects(select);
-            this.vPasEnchere.removeObjects(select);
-        });
-       
         VBox vbuttons = new VBox(this.vbEncherir);
         gpEnchere.add(vbuttons,1,1);
         vbuttons.setAlignment(Pos.TOP_CENTER);
         GridPane.setHalignment(vbuttons, HPos.CENTER);
         GridPane.setValignment(vbuttons, VPos.CENTER);
+        this.vbEncherir.setOnAction((event) -> {
+            List<Objet> select=this.vPasEnchere.getSelectedObjects();
+                for (Objet obj:select){
+                    JavaFXUtils.Encherir(obj.toString());
+                }
+                this.vPasEnchere.getSelectionModel().clearSelection();
+            this.vEnchereGagnante.addObjects(select);
+            this.vPasEnchere.removeObjects(select);
+        });
+       
         
 
         VBox vlEnchere = new VBox();
@@ -156,6 +179,7 @@ public class Encherir extends VBox {
         gpEnchere.add(vlEnchere,2,1);
         this.getChildren().add(gpEnchere);
         gpEnchere.setHgap(10);
+        gpEnchere.setVgap(20);
 
         });
         
@@ -180,7 +204,11 @@ public class Encherir extends VBox {
         
         this.vbEncherir = new Button("ENCHERIR >>");
         this.vbEncherir.setOnAction((event) -> {
-            List<Objet> select = this.vPasEnchere.getSelectedObjects();
+            List<Objet> select=this.vPasEnchere.getSelectedObjects();
+                for (Objet obj:select){
+                    JavaFXUtils.Encherir(obj.toString());
+                }
+                this.vPasEnchere.getSelectionModel().clearSelection();
             this.vEnchereGagnante.addObjects(select);
             this.vPasEnchere.removeObjects(select);
         });
@@ -212,6 +240,9 @@ public class Encherir extends VBox {
         gpEnchere.add(vlEnchere,2,1);
         this.getChildren().add(gpEnchere);
         gpEnchere.setHgap(10);
+        gpEnchere.setVgap(20);
+        
+        
     }
 
 }

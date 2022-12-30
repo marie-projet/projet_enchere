@@ -31,6 +31,7 @@ public class ObjetTable extends TableView {
         
         this.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         
+        
         TableColumn<Objet,String> cTitre = 
                 new TableColumn<>("titre");
         TableColumn<Objet,String> cPrix = 

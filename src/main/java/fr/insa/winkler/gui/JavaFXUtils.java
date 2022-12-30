@@ -4,11 +4,15 @@
  */
 package fr.insa.winkler.gui;
 
+import fr.insa.winkler.projet.Objet;
 import fr.insa.winkler.projet.SQLUtils;
+import fr.insa.winkler.projet.Utilisateur;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 import javafx.scene.control.Alert;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
@@ -65,4 +69,23 @@ public class JavaFXUtils {
         alert.showAndWait();
 
     }
+    
+    public static void showInfoObjet(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Informations sur l'objet");
+        alert.setHeaderText(message);
+        alert.showAndWait();
+    }
+    
+    public static void Encherir(String message) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Faire une enchère");
+        dialog.setHeaderText(message);
+        dialog.setContentText("Montant:");
+        dialog.showAndWait();
+    }
+    
+
+    
+
 }

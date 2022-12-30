@@ -42,6 +42,9 @@ public class Categorie {
     public String getNom(){
         return this.nom;
     }
+    public static String getNom(int i){
+        return predef(i).getNom();
+    }
     
     public void print(){
         System.out.println("__________Categorie_________");
@@ -148,4 +151,5 @@ public class Categorie {
         public String toString(){
         return this.getId()+": "+this.getNom();
     }
+      
 }
