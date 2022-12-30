@@ -1,5 +1,6 @@
 package fr.insa.winkler.projet;
 
+import fr.insa.winkler.gui.JavaFXUtils;
 import fr.insa.winkler.utils.Console;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -34,7 +35,7 @@ public class BdD {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5432,
+        return connectGeneralPostGres("localhost", 5439,
                 "postgres", "postgres", "pass");
     }
 
@@ -1068,6 +1069,7 @@ public class BdD {
 
             } 
         }else {
+            JavaFXUtils.showErrorInAlert("Montant inférieur à l'enchère précédente");
             throw new Error("Montant inférieur à l'enchère précédente");
         }
     }
@@ -1079,6 +1081,13 @@ public class BdD {
         Long datetime = System.currentTimeMillis();
         Timestamp quand = new Timestamp(datetime);
         int montant = Console.entreeEntier("montant de votre enchère: ");
+        ajouterEnchere(con,de,sur,quand,montant);
+    }
+    
+    public static void ajouterEnchere(Connection con, Utilisateur utilisateur, int montant,int sur) throws SQLException {
+        int de=utilisateur.getId();
+        Long datetime = System.currentTimeMillis();
+        Timestamp quand = new Timestamp(datetime);
         ajouterEnchere(con,de,sur,quand,montant);
     }
     
@@ -1115,7 +1124,6 @@ public class BdD {
                 pst.setString(2, pass);
                 ResultSet res = pst.executeQuery();
                 if (res.next()) {
-                    System.out.println("l'identifiant est"+res.getInt("id"));
                     return Optional.of(new Utilisateur(res.getInt("id"), res.getString("nom"), res.getString("prenom"), email, pass, res.getString("codepostal")));
                 } else {
                     return Optional.empty();
@@ -1206,7 +1214,7 @@ public class BdD {
             System.out.println("[2] Créer un nouveau compte");
             System.out.println("[0] Quitter");
             
-            rep = Console.entreeEntier("Votre1 choix : ");
+            rep = Console.entreeEntier("Votre choix : ");
             
             if (rep == 1){ // Se connecter
                 utilActif = connexionUtilisateur(con).get();
@@ -1311,7 +1319,7 @@ public class BdD {
             //afficheToutesLesEncheres(con);
             afficheListCategorie(listCategorie(con));
             afficheListObjet(con,listObjet(con));
-            menuV2(con);
+            menu(con);
         } catch (Exception ex) {
             throw new Error(ex);
         }

@@ -10,6 +10,8 @@ import fr.insa.winkler.projet.Utilisateur;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextInputDialog;
@@ -77,12 +79,17 @@ public class JavaFXUtils {
         alert.showAndWait();
     }
     
-    public static void Encherir(String message) {
+    public static String Encherir(String message) {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Faire une enchère");
         dialog.setHeaderText(message);
         dialog.setContentText("Montant:");
-        dialog.showAndWait();
+        String res="";
+        Optional<String> result = dialog.showAndWait();
+        if(result.isPresent()){
+            res=res+ result.get();
+        }
+        return res;
     }
     
 

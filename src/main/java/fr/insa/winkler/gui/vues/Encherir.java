@@ -90,6 +90,38 @@ public class Encherir extends VBox {
             }
         });
         
+        this.vbEncherir = new Button("ENCHERIR >>");
+        VBox vbuttons = new VBox(this.vbEncherir);
+        gpEnchere.add(vbuttons,1,1);
+        vbuttons.setAlignment(Pos.TOP_CENTER);
+        GridPane.setHalignment(vbuttons, HPos.CENTER);
+        GridPane.setValignment(vbuttons, VPos.CENTER);
+        this.vbEncherir.setOnAction((event) -> {
+            List<Objet> select=this.vPasEnchere.getSelectedObjects();
+                for (Objet obj:select){
+                    String montantStr=JavaFXUtils.Encherir(obj.toString());
+                    int v=1;
+                    if (montantStr.equals("")){
+                        v=0;
+                    }
+                    if(v==1){
+                        try{
+                            try{
+                                Integer.parseInt(montantStr);                                
+                            }
+                            catch(Exception e){
+                                JavaFXUtils.showErrorInAlert("Montant non valide, veuillez entrez un nombre entier");
+                            }
+                            BdD.ajouterEnchere(this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow(), Integer.parseInt(montantStr),obj.getId());
+                        }
+                        catch (SQLException ex) {
+                            JavaFXUtils.showErrorInAlert("Montant non valide, veuillez entrez un nombre entier");
+                        }                       
+                    }
+                }  
+            this.reInit();
+        });
+        
         categories.setOnAction ((i) -> {
             List<String> a = new ArrayList<>();
             for (String s: categories.getSelectionModel().getSelectedItem().split(":")) {
@@ -124,24 +156,10 @@ public class Encherir extends VBox {
             }
         JavaFXUtils.addSimpleBorder(vlPasEnchere, Color.BLUE, 2);
         vlPasEnchere.setAlignment(Pos.CENTER);
-        gpEnchere.add(vlPasEnchere,0,1);
-        
-        this.vbEncherir = new Button("ENCHERIR >>");
-        VBox vbuttons = new VBox(this.vbEncherir);
-        gpEnchere.add(vbuttons,1,1);
-        vbuttons.setAlignment(Pos.TOP_CENTER);
-        GridPane.setHalignment(vbuttons, HPos.CENTER);
-        GridPane.setValignment(vbuttons, VPos.CENTER);
-        this.vbEncherir.setOnAction((event) -> {
-            List<Objet> select=this.vPasEnchere.getSelectedObjects();
-                for (Objet obj:select){
-                    JavaFXUtils.Encherir(obj.toString());
-                }
-                this.vPasEnchere.getSelectionModel().clearSelection();
-            this.vEnchereGagnante.addObjects(select);
-            this.vPasEnchere.removeObjects(select);
-        });
+        gpEnchere.setAlignment(Pos.CENTER);
+        gpEnchere.setHalignment(infos, HPos.CENTER);
        
+        
         
 
         VBox vlEnchere = new VBox();
@@ -180,6 +198,7 @@ public class Encherir extends VBox {
         this.getChildren().add(gpEnchere);
         gpEnchere.setHgap(10);
         gpEnchere.setVgap(20);
+        gpEnchere.setHalignment(infos, HPos.CENTER);
 
         });
         
@@ -190,9 +209,8 @@ public class Encherir extends VBox {
         lPasEnchere.setStyle("-fx-font-size: 20");
         vlPasEnchere.getChildren().add(lPasEnchere);
         try {
-            Categorie cat=Categorie.predef(1);
             List<Objet> objetsPasEncheris = BdD.objetPasEncheri(
-                    this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow(),cat);
+                    this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
             this.vPasEnchere = new ObjetTable(this.main,objetsPasEncheris);
             vlPasEnchere.getChildren().add(this.vPasEnchere);
         } catch (SQLException ex) {
@@ -202,34 +220,17 @@ public class Encherir extends VBox {
         vlPasEnchere.setAlignment(Pos.CENTER);
         gpEnchere.add(vlPasEnchere,0,1);
         
-        this.vbEncherir = new Button("ENCHERIR >>");
-        this.vbEncherir.setOnAction((event) -> {
-            List<Objet> select=this.vPasEnchere.getSelectedObjects();
-                for (Objet obj:select){
-                    JavaFXUtils.Encherir(obj.toString());
-                }
-                this.vPasEnchere.getSelectionModel().clearSelection();
-            this.vEnchereGagnante.addObjects(select);
-            this.vPasEnchere.removeObjects(select);
-        });
-       
-        VBox vbuttons = new VBox(this.vbEncherir);
-        gpEnchere.add(vbuttons,1,1);
-        vbuttons.setAlignment(Pos.TOP_CENTER);
-        GridPane.setHalignment(vbuttons, HPos.CENTER);
-        GridPane.setValignment(vbuttons, VPos.CENTER);
         
 
         VBox vlEnchere = new VBox();
         vlEnchere.getChildren().add(new BigLabel("Vos enchères gagnantes",20));
         try {
-            Categorie cat=Categorie.predef(1);
             List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
                     this.main.getSession
         ().getConBdD(), this.main.getSession
         ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
         ().getConBdD(), this.main.getSession
-        ().getCurUser().orElseThrow(),cat));
+        ().getCurUser().orElseThrow()));
             this.vEnchereGagnante = new ObjetTable(this.main,objetsEncheris);
             vlEnchere.getChildren().add(this.vEnchereGagnante);
         } catch (SQLException ex) {
@@ -241,6 +242,8 @@ public class Encherir extends VBox {
         this.getChildren().add(gpEnchere);
         gpEnchere.setHgap(10);
         gpEnchere.setVgap(20);
+        gpEnchere.setAlignment(Pos.CENTER);
+        gpEnchere.setHalignment(infos, HPos.CENTER);
         
         
     }

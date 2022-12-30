@@ -38,6 +38,7 @@ public class ObjetTable extends TableView {
                 new TableColumn<>("enchère actuelle");
         this.getColumns().addAll(cTitre,cPrix);
         
+        
         // si l'on ne veut pas d'espace supplémentaire
         this.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         

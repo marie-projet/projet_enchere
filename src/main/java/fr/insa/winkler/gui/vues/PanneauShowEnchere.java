@@ -26,6 +26,7 @@ import fr.insa.winkler.projet.Objet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -177,6 +178,8 @@ public class PanneauShowEnchere extends GridPane {
         this.add(vlEncherePerdante,2,1);
         this.setHgap(10);
         this.setVgap(20);
+        this.setAlignment(Pos.CENTER);
+        this.setHalignment(infos, HPos.CENTER);
 
         });
         
@@ -229,9 +232,9 @@ public class PanneauShowEnchere extends GridPane {
         this.add(vlEncherePerdante,2,1);
         this.setHgap(10);
         this.setVgap(20);
-        
-        
-        
+        this.setAlignment(Pos.CENTER);
+        this.setHalignment(infos, HPos.CENTER);
+ 
     }
     
 }
