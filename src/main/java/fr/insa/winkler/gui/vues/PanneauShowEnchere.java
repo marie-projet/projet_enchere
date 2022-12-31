@@ -45,142 +45,31 @@ public class PanneauShowEnchere extends GridPane {
     private ObjetTable vEnchere;
     private ObjetTable vEnchereGagnante;
     private ObjetTable vEncherePerdante;
+    private Button vbInfos;
+    private Label categorie;
+    private ComboBox<String> categories;
 
     public PanneauShowEnchere(MainPane main) {
         this.main = main;
-        Label categorie=new BigLabel("                                            Categorie",20);
-            ComboBox<String> categories=new ComboBox<String>();
+        this.main.getControleur().setEncheres(this);
+        this.main.getControleur().setEtat(10);
+        
+        this.categorie=new BigLabel("                                            Categorie",20);
+            this.categories=new ComboBox<String>();
             for (Categorie cat: Categorie.ListCategorie()){
                 categories.getItems().addAll(cat.toString());
             }
-        Button infos=new Button("Infos");
+        this.vbInfos=new Button("Infos");
         this.add(categorie,0,0);
         this.add(categories,1,0);
-        this.add(infos,2,0);
+        this.add(this.vbInfos,2,0);
         
-        infos.setOnAction ((i) -> {
-            if(this.vEnchere != null ){
-                List<Objet> objetSelctionne=this.vEnchere.getSelectedObjects();
-                for (Objet obj:objetSelctionne){
-                    JavaFXUtils.showInfoObjet(obj.toString());
-                }
-                this.vEnchere.getSelectionModel().clearSelection();
-            }
-            if(this.vEnchereGagnante != null){
-                List<Objet>objetSelctionne=this.vEnchereGagnante.getSelectedObjects();
-                for (Objet obj:objetSelctionne){
-                    JavaFXUtils.showInfoObjet(obj.toString());
-                }
-                this.vEnchereGagnante.getSelectionModel().clearSelection();
-            }
-            if(this.vEncherePerdante != null){
-                List<Objet>objetSelctionne=this.vEncherePerdante.getSelectedObjects();
-                for (Objet obj:objetSelctionne){
-                    JavaFXUtils.showInfoObjet(obj.toString());
-                }
-                this.vEncherePerdante.getSelectionModel().clearSelection();
-            }
+        this.vbInfos.setOnAction ((i) -> {
+            this.main.getControleur().infos();
         });
         
         categories.setOnAction ((i) -> {
-            List<String> a = new ArrayList<>();
-            for (String s: categories.getSelectionModel().getSelectedItem().split(":")) {
-                a.add(s);
-            }
-            Categorie categorieChoisie=Categorie.predef(Integer.parseInt(a.get(0)));
-            VBox vlEnchere = new VBox();
-            vlEnchere.getChildren().add(new BigLabel("Vos enchères",20));
-            
-            if(categorieChoisie.getId()!=0){
-                try {
-                    List<Objet> datas = BdD.objetEncheri(
-                            this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                    vlEnchere.getChildren().add(this.vEnchere=new ObjetTable(this.main,datas));
-                } catch (SQLException ex) {
-                    vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
-                }
-            }
-            else{
-                try {
-                List<Objet> datas = BdD.objetEncheri(
-                        this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-                vlEnchere.getChildren().add(this.vEnchere=new ObjetTable(this.main,datas));
-                } catch (SQLException ex) {
-                    vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
-                }                        
-            }
-        JavaFXUtils.addSimpleBorder(vlEnchere, Color.BLUE, 2);
-        vlEnchere.setAlignment(Pos.CENTER);
-        this.add(vlEnchere,0,1);
-        
-        VBox vlEnchereGagnante = new VBox();
-        vlEnchereGagnante.getChildren().add(new BigLabel("Vos enchères gagnantes",20));
-        if(categorieChoisie.getId()!=0){
-            try {
-                List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
-                        this.main.getSession
-            ().getConBdD(), this.main.getSession
-            ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
-            ().getConBdD(), this.main.getSession
-            ().getCurUser().orElseThrow(),categorieChoisie));
-                vlEnchereGagnante.getChildren().add(this.vEnchereGagnante=new ObjetTable(this.main,objetsEncheris));
-            } catch (SQLException ex) {
-                vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
-            }
-        }
-        else{
-            try {
-                List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
-                        this.main.getSession
-            ().getConBdD(), this.main.getSession
-            ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
-            ().getConBdD(), this.main.getSession
-            ().getCurUser().orElseThrow()));
-                vlEnchereGagnante.getChildren().add(this.vEnchereGagnante=new ObjetTable(this.main,objetsEncheris));
-            } catch (SQLException ex) {
-                vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
-            }
-        }
-        JavaFXUtils.addSimpleBorder(vlEnchereGagnante, Color.GREEN, 2);
-        vlEnchereGagnante.setAlignment(Pos.CENTER);
-        this.add(vlEnchereGagnante,1,1);
-        
-        VBox vlEncherePerdante = new VBox();
-        vlEncherePerdante.getChildren().add(new BigLabel("Vos enchères perdantes",20));
-        if(categorieChoisie.getId()!=0){
-            try {
-                List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
-                        this.main.getSession
-            ().getConBdD(), this.main.getSession
-            ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
-            ().getConBdD(), this.main.getSession
-            ().getCurUser().orElseThrow(),categorieChoisie));
-                vlEncherePerdante.getChildren().add(this.vEncherePerdante=new ObjetTable(this.main,objetsEncheris));
-            } catch (SQLException ex) {
-                vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
-            }
-        }
-        else{
-            try {
-            List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
-                    this.main.getSession
-            ().getConBdD(), this.main.getSession
-            ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
-            ().getConBdD(), this.main.getSession
-            ().getCurUser().orElseThrow()));
-                vlEncherePerdante.getChildren().add(this.vEncherePerdante=new ObjetTable(this.main,objetsEncheris));
-            } catch (SQLException ex) {
-                vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
-            }
-        }
-        JavaFXUtils.addSimpleBorder(vlEncherePerdante, Color.RED, 2);
-        vlEncherePerdante.setAlignment(Pos.CENTER);
-        this.add(vlEncherePerdante,2,1);
-        this.setHgap(10);
-        this.setVgap(20);
-        this.setAlignment(Pos.CENTER);
-        this.setHalignment(infos, HPos.CENTER);
-
+            this.main.getControleur().categorie();
         });
         
                
@@ -233,9 +122,55 @@ public class PanneauShowEnchere extends GridPane {
         this.setHgap(10);
         this.setVgap(20);
         this.setAlignment(Pos.CENTER);
-        this.setHalignment(infos, HPos.CENTER);
+        this.setHalignment(this.vbInfos, HPos.CENTER);
  
     }
+
+    public MainPane getMain() {
+        return main;
+    }
+
+    public ObjetTable getvEnchere() {
+        return vEnchere;
+    }
+
+    public ObjetTable getvEnchereGagnante() {
+        return vEnchereGagnante;
+    }
+
+    public ObjetTable getvEncherePerdante() {
+        return vEncherePerdante;
+    }
+
+    public Button getVbInfos() {
+        return vbInfos;
+    }
+
+    public Label getCategorie() {
+        return categorie;
+    }
+
+    public ComboBox<String> getCategories() {
+        return categories;
+    }
+
+    public void setvEnchere(ObjetTable vEnchere) {
+        this.vEnchere = vEnchere;
+    }
+
+    public void setvEnchereGagnante(ObjetTable vEnchereGagnante) {
+        this.vEnchereGagnante = vEnchereGagnante;
+    }
+
+    public void setvEncherePerdante(ObjetTable vEncherePerdante) {
+        this.vEncherePerdante = vEncherePerdante;
+    }
+    
+    
+    
+
+    
+    
     
 }
 

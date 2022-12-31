@@ -61,5 +61,37 @@ public class MainAfterLogin extends VBox {
         this.allTabs.getSelectionModel().select(this.EnchereCurrentUser);
      }
 
+    public MainPane getMain() {
+        return main;
+    }
+
+    public Tab getEnchereCurrentUser() {
+        return EnchereCurrentUser;
+    }
+
+    public Tab getEncherir() {
+        return encherir;
+    }
+
+    public Tab getReencherir() {
+        return reencherir;
+    }
+
+    public TabPane getAllTabs() {
+        return allTabs;
+    }
+
+    public static double getUSE_PREF_SIZE() {
+        return USE_PREF_SIZE;
+    }
+
+    public static double getUSE_COMPUTED_SIZE() {
+        return USE_COMPUTED_SIZE;
+    }
+
+    public static double getBASELINE_OFFSET_SAME_AS_HEIGHT() {
+        return BASELINE_OFFSET_SAME_AS_HEIGHT;
+    }
+
 
 }

@@ -18,6 +18,7 @@
  */
 package fr.insa.winkler.gui.vues;
 
+import fr.insa.winkler.gui.Controleur;
 import fr.insa.winkler.gui.MainPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;

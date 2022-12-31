@@ -94,7 +94,7 @@ public class Objet {
         String res="";
         res=res+"                             "+this.getTitre().toUpperCase()+"\n"+"\n";
         res=res+this.getDescription()+"\n";
-        res=res+"Catégorie: "+Categorie.getNom(Integer.parseInt(this.getCategorie()))+"\n";
+        res=res+"Catégorie: "+this.getCategorie()+"\n";
         res=res+"Prixe de base: "+this.getPrixBase()+"\n";
         res=res+"Prix actuel : "+this.getPrixActuel()+"\n";
         res=res+"Fin de l'enchère : "+this.getFin()+"\n";

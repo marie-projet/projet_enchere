@@ -45,12 +45,19 @@ public class PanneauShowVente extends GridPane {
     private ObjetTable vObjetsEnVente;
     private ObjetTable vObjetsVendus;
     private ObjetTable2 vObjetsNonVendus;
+    private Label categorie;
+    private ComboBox<String> categories;
+    private Button vbInfos;
+    
     
 
     public PanneauShowVente(MainPane main) {
-                this.main = main;
-        Label categorie=new BigLabel("                                            Categorie",20);
-            ComboBox<String> categories=new ComboBox<String>();
+        this.main = main;
+        this.main.getControleur().setVentes(this);
+        this.main.getControleur().setEtat(20);
+                
+        this.categorie=new BigLabel("                                            Categorie",20);
+            this.categories=new ComboBox<String>();
             for (Categorie cat: Categorie.ListCategorie()){
                 categories.getItems().addAll(cat.toString());
             }
@@ -60,27 +67,8 @@ public class PanneauShowVente extends GridPane {
         this.add(infos,2,0);
         
         infos.setOnAction ((i) -> {
-            if(this.vObjetsEnVente != null){
-                List<Objet> objetSelctionne=this.vObjetsEnVente.getSelectedObjects();
-                for (Objet obj:objetSelctionne){
-                    JavaFXUtils.showInfoObjet(obj.toString());
-                }
-                this.vObjetsEnVente.getSelectionModel().clearSelection();
-            }
-            if(this.vObjetsVendus != null){
-                List<Objet>objetSelctionne=this.vObjetsVendus.getSelectedObjects();
-                for (Objet obj:objetSelctionne){
-                    JavaFXUtils.showInfoObjet(obj.toString());
-                }
-                this.vObjetsVendus.getSelectionModel().clearSelection();
-            }
-            if(this.vObjetsNonVendus != null){
-                List<Objet>objetSelctionne=this.vObjetsNonVendus.getSelectedObjects();
-                for (Objet obj:objetSelctionne){
-                    JavaFXUtils.showInfoObjet(obj.toString());
-                }
-                this.vObjetsNonVendus.getSelectionModel().clearSelection();
-            }
+
+            this.main.getControleur().infos();
         });
         
         categories.setOnAction ((i) -> {
@@ -209,5 +197,31 @@ public class PanneauShowVente extends GridPane {
         this.setHgap(10);
         this.setVgap(20);
     }
+
+    public ObjetTable getvObjetsEnVente() {
+        return vObjetsEnVente;
+    }
+
+    public ObjetTable getvObjetsVendus() {
+        return vObjetsVendus;
+    }
+
+    public ObjetTable2 getvObjetsNonVendus() {
+        return vObjetsNonVendus;
+    }
+
+    public Label getCategorie() {
+        return categorie;
+    }
+
+    public ComboBox<String> getCategories() {
+        return categories;
+    }
+
+    public Button getVbInfos() {
+        return vbInfos;
+    }
+    
+    
     }   
 

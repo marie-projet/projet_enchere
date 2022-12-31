@@ -32,6 +32,7 @@ public class MainPane extends BorderPane{
     private HBox entete;
     private ScrollPane mainContent;
     private SessionInfo session;
+    private Controleur controleur; 
 
     private Stage stage;
     
@@ -46,6 +47,7 @@ public class MainPane extends BorderPane{
   
     public MainPane(Stage st) {
         this.stage=st;
+        this.controleur= new Controleur(this);
         this.session = new SessionInfo();
         this.mainContent = new ScrollPane();
         this.setCenter(this.mainContent);
@@ -92,5 +94,10 @@ public class MainPane extends BorderPane{
     public Stage getStage() {
         return stage;
     }
+
+    public Controleur getControleur() {
+        return controleur;
+    }
+    
     
 }
