@@ -60,6 +60,8 @@ public class PanneauShowEnchere extends GridPane {
                 categories.getItems().addAll(cat.toString());
             }
         this.vbInfos=new Button("Infos");
+        this.vbInfos.setMinWidth(60);
+        this.vbInfos.setMaxWidth(60);
         this.add(categorie,0,0);
         this.add(categories,1,0);
         this.add(this.vbInfos,2,0);

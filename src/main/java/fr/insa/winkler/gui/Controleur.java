@@ -8,6 +8,7 @@ package fr.insa.winkler.gui;
 import fr.insa.winkler.gui.vues.BigLabel;
 import fr.insa.winkler.gui.vues.Encherir;
 import fr.insa.winkler.gui.vues.ObjetTable;
+import fr.insa.winkler.gui.vues.ObjetTable2;
 import fr.insa.winkler.gui.vues.PanneauShowEnchere;
 import fr.insa.winkler.gui.vues.PanneauShowVente;
 import fr.insa.winkler.gui.vues.Reencherir;
@@ -430,7 +431,90 @@ public class Controleur {
             JavaFXUtils.addSimpleBorder(vlEnchere, Color.GREEN, 2);
             this.reencherir.getGpEnchere().add(vlEnchere,2,1);
             this.reencherir.getChildren().add(this.reencherir.getGpEnchere());
-
+        }
+        if(etat==20){
+            List<String> a = new ArrayList<>();
+            for (String s: this.ventes.getCategories().getSelectionModel().getSelectedItem().split(":")) {
+                a.add(s);
+            }
+            Categorie categorieChoisie=Categorie.predef(Integer.parseInt(a.get(0)));
+            VBox vlObjetsEnVente = new VBox();
+            vlObjetsEnVente.getChildren().add(new BigLabel("Vos objets en vente",20));
+            if(categorieChoisie.getId()!=0){
+                try {
+                    List<Objet> datas = BdD.objetsEnVente(
+                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
+                    this.ventes.setvObjetsEnVente(new ObjetTable(this.vue,datas));
+                    vlObjetsEnVente.getChildren().add(this.ventes.getvObjetsEnVente());
+                } catch (SQLException ex) {
+                    vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                }
+            }
+            else{
+                try {
+                    List<Objet> datas = BdD.objetsEnVente(
+                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
+                    this.ventes.setvObjetsEnVente(new ObjetTable(this.vue,datas));
+                    vlObjetsEnVente.getChildren().add(this.ventes.getvObjetsEnVente());
+                } catch (SQLException ex) {
+                    vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                }
+            }
+            JavaFXUtils.addSimpleBorder(vlObjetsEnVente, Color.BLUE, 2);
+            vlObjetsEnVente.setAlignment(Pos.CENTER);
+            this.ventes.add(vlObjetsEnVente,0,1);
+            
+            VBox vlObjetsVendus = new VBox();
+            vlObjetsVendus.getChildren().add(new BigLabel("Vos objets vendus",20));
+            if(categorieChoisie.getId()!=0){
+                try {
+                    List<Objet> datas = BdD.objetsVendus(
+                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
+                    this.ventes.setvObjetsVendus(new ObjetTable(this.vue,datas));
+                    vlObjetsVendus.getChildren().add(this.ventes.getvObjetsVendus());
+                } catch (SQLException ex) {
+                    vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                }
+            }
+            else{
+                try {
+                    List<Objet> datas = BdD.objetsVendus(
+                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
+                    this.ventes.setvObjetsVendus(new ObjetTable(this.vue,datas));
+                    vlObjetsVendus.getChildren().add(this.ventes.getvObjetsVendus());
+                } catch (SQLException ex) {
+                    vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                }
+            } 
+            JavaFXUtils.addSimpleBorder(vlObjetsVendus, Color.GREEN, 2);
+            vlObjetsVendus.setAlignment(Pos.CENTER);
+            this.ventes.add(vlObjetsVendus,1,1);
+            
+            VBox vlObjetsPasVendus = new VBox();
+            vlObjetsPasVendus.getChildren().add(new BigLabel("Vos objets non vendus",20));
+            if(categorieChoisie.getId()!=0){
+                try {
+                    List<Objet> datas = BdD.objetsPasVendus(
+                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
+                    this.ventes.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
+                    vlObjetsPasVendus.getChildren().add(this.ventes.getvObjetsNonVendus());
+                } catch (SQLException ex) {
+                    vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                }
+            }
+            else{
+                try {
+                    List<Objet> datas = BdD.objetsPasVendus(
+                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
+                    this.ventes.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
+                    vlObjetsPasVendus.getChildren().add(this.ventes.getvObjetsNonVendus());
+                } catch (SQLException ex) {
+                    vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                }
+            }
+            JavaFXUtils.addSimpleBorder(vlObjetsPasVendus, Color.RED, 2);
+            vlObjetsPasVendus.setAlignment(Pos.CENTER);
+            this.ventes.add(vlObjetsPasVendus,2,1);
         }
         
     }

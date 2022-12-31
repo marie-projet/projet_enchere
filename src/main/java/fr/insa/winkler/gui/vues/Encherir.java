@@ -71,6 +71,8 @@ public class Encherir extends VBox {
                 categories.getItems().addAll(cat.toString());
             }
         this.vbInfos=new Button("Infos");
+        this.vbInfos.setMinWidth(60);
+        this.vbInfos.setMaxWidth(60);
         gpEnchere.add(categorie,0,0);
         gpEnchere.add(categories,1,0);
         gpEnchere.add(this.vbInfos,2,0);

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -33,14 +34,19 @@ public class EnteteLogin extends HBox {
     private Button vNouvelUtilisateur;
 
     public EnteteLogin(MainPane main) {
+        this.setAlignment(Pos.CENTER);
 
                 this.main = main;
         
         this.bLogin = new Button("Login");
+        this.bLogin.setMinWidth(60);
+        this.bLogin.setMaxWidth(60);
         this.bLogin.setOnAction((event) -> {
             this.main.setMainContent(new Login(this.main));
         });
         this.vNouvelUtilisateur = new Button("Nouvel utilisateur");
+        this.vNouvelUtilisateur.setMinWidth(130);
+        this.vNouvelUtilisateur.setMaxWidth(130);
         this.vNouvelUtilisateur.setOnAction((t) -> {
             this.main.setMainContent(new NouvelUtilisateur(this.main));
         });

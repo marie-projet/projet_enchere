@@ -27,6 +27,7 @@ import fr.insa.winkler.projet.Utilisateur;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -60,101 +61,22 @@ public class PanneauShowVente extends GridPane {
             this.categories=new ComboBox<String>();
             for (Categorie cat: Categorie.ListCategorie()){
                 categories.getItems().addAll(cat.toString());
-            }
-        Button infos=new Button("Infos");
+            }        
+        this.vbInfos=new Button("Infos");
+        this.vbInfos.setMinWidth(60);
+        this.vbInfos.setMaxWidth(60);
         this.add(categorie,0,0);
         this.add(categories,1,0);
-        this.add(infos,2,0);
+        this.add(this.vbInfos,2,0);
         
-        infos.setOnAction ((i) -> {
-
+        this.vbInfos.setOnAction ((i) -> {
             this.main.getControleur().infos();
         });
         
         categories.setOnAction ((i) -> {
-            List<String> a = new ArrayList<>();
-            for (String s: categories.getSelectionModel().getSelectedItem().split(":")) {
-                a.add(s);
-            }
-            Categorie categorieChoisie=Categorie.predef(Integer.parseInt(a.get(0)));
-            VBox vlObjetsEnVente = new VBox();
-            vlObjetsEnVente.getChildren().add(new BigLabel("Vos objets en vente",20));
-            if(categorieChoisie.getId()!=0){
-                try {
-                    List<Objet> datas = BdD.objetsEnVente(
-                            this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                    vlObjetsEnVente.getChildren().add(this.vObjetsEnVente=new ObjetTable(this.main,datas));
-                } catch (SQLException ex) {
-                    vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
-                }
-            }
-            else{
-                try {
-                    List<Objet> datas = BdD.objetsEnVente(
-                            this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-                    vlObjetsEnVente.getChildren().add(this.vObjetsEnVente=new ObjetTable(this.main,datas));
-                } catch (SQLException ex) {
-                    vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
-                }
-            }
-            JavaFXUtils.addSimpleBorder(vlObjetsEnVente, Color.BLUE, 2);
-            vlObjetsEnVente.setAlignment(Pos.CENTER);
-            this.add(vlObjetsEnVente,0,1);
-            
-            VBox vlObjetsVendus = new VBox();
-            vlObjetsVendus.getChildren().add(new BigLabel("Vos objets vendus",20));
-            if(categorieChoisie.getId()!=0){
-                try {
-                    List<Objet> datas = BdD.objetsVendus(
-                            this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                    vlObjetsVendus.getChildren().add(this.vObjetsVendus=new ObjetTable(this.main,datas));
-                } catch (SQLException ex) {
-                    vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
-                }
-            }
-            else{
-                try {
-                    List<Objet> datas = BdD.objetsVendus(
-                            this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-                    vlObjetsVendus.getChildren().add(this.vObjetsVendus=new ObjetTable(this.main,datas));
-                } catch (SQLException ex) {
-                    vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
-                }
-            } 
-            JavaFXUtils.addSimpleBorder(vlObjetsVendus, Color.GREEN, 2);
-            vlObjetsVendus.setAlignment(Pos.CENTER);
-            this.add(vlObjetsVendus,1,1);
-            
-            VBox vlObjetsPasVendus = new VBox();
-            vlObjetsPasVendus.getChildren().add(new BigLabel("Vos objets non vendus",20));
-            if(categorieChoisie.getId()!=0){
-                try {
-                    List<Objet> datas = BdD.objetsPasVendus(
-                            this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                    vlObjetsPasVendus.getChildren().add(this.vObjetsNonVendus=new ObjetTable2(this.main,datas));
-                } catch (SQLException ex) {
-                    vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
-                }
-            }
-            else{
-                try {
-                    List<Objet> datas = BdD.objetsPasVendus(
-                            this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-                    vlObjetsPasVendus.getChildren().add(this.vObjetsNonVendus=new ObjetTable2(this.main,datas));
-                } catch (SQLException ex) {
-                    vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
-                }
-            }
-            JavaFXUtils.addSimpleBorder(vlObjetsPasVendus, Color.RED, 2);
-            vlObjetsPasVendus.setAlignment(Pos.CENTER);
-            this.add(vlObjetsPasVendus,2,1);
-            this.setHgap(10);
-            this.setVgap(20);
+            this.main.getControleur().categorie();
         });
-            
-            
-    
-            
+   
         VBox vlObjetsEnVente = new VBox();
         vlObjetsEnVente.getChildren().add(new BigLabel("Vos objets en vente",20));
         try {
@@ -169,7 +91,7 @@ public class PanneauShowVente extends GridPane {
         this.add(vlObjetsEnVente,0,1);
         
         VBox vlObjetsVendus = new VBox();
-        vlObjetsVendus.getChildren().add(new BigLabel("Vos objets vendus",20));
+        vlObjetsVendus.getChildren().add(new BigLabel("Vos objets enchéris",20));
         try {
             List<Objet> datas = BdD.objetsVendus(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
@@ -183,7 +105,7 @@ public class PanneauShowVente extends GridPane {
         
         
         VBox vlObjetsPasVendus = new VBox();
-        vlObjetsPasVendus.getChildren().add(new BigLabel("Vos objets non vendus",20));
+        vlObjetsPasVendus.getChildren().add(new BigLabel("Vos objets non enchéris",20));
         try {
             List<Objet> datas = BdD.objetsPasVendus(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
@@ -196,6 +118,7 @@ public class PanneauShowVente extends GridPane {
         this.add(vlObjetsPasVendus,2,1);
         this.setHgap(10);
         this.setVgap(20);
+        this.setHalignment(this.vbInfos, HPos.CENTER);
     }
 
     public ObjetTable getvObjetsEnVente() {
@@ -221,7 +144,17 @@ public class PanneauShowVente extends GridPane {
     public Button getVbInfos() {
         return vbInfos;
     }
-    
-    
+
+    public void setvObjetsEnVente(ObjetTable vObjetsEnVente) {
+        this.vObjetsEnVente = vObjetsEnVente;
+    }
+
+    public void setvObjetsVendus(ObjetTable vObjetsVendus) {
+        this.vObjetsVendus = vObjetsVendus;
+    }
+
+    public void setvObjetsNonVendus(ObjetTable2 vObjetsNonVendus) {
+        this.vObjetsNonVendus = vObjetsNonVendus;
+    } 
     }   
 

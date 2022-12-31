@@ -678,7 +678,9 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    String categorie = rs.getString(7);
+                    String idcategorie = rs.getString(7);
+                    Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
+                    String categorie=cat.getNom();
                     res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
                 }
                 return res;
@@ -708,7 +710,9 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    String categorie = rs.getString(7);
+                    String idcategorie = rs.getString(7);
+                    Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
+                    String categorie=cat.getNom();
                     res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
                 }
                 return res;
@@ -736,8 +740,7 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    String categorie = rs.getString(7);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
                 }
                 return res;
             }
@@ -787,8 +790,7 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    String categorie = rs.getString(7);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
                 }
                 return res;
             }
@@ -811,7 +813,9 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    String categorie = rs.getString(7);
+                    String idcategorie = rs.getString(7);
+                    Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
+                    String categorie=cat.getNom();
                     res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
                 }
                 return res;
@@ -837,8 +841,7 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    String categorie = rs.getString(7);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
                 }
                 return res;
             }

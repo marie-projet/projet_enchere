@@ -20,6 +20,7 @@ package fr.insa.winkler.gui.vues;
 
 import fr.insa.winkler.gui.MainPane;
 import java.util.Optional;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 
@@ -36,21 +37,32 @@ public class EnteteAfterLogin extends HBox {
     
     public EnteteAfterLogin(MainPane main) {
         this.main = main;
+        this.setAlignment(Pos.TOP_LEFT);
         
         this.vbLogout = new Button("Logout");
+        this.vbLogout.setMinWidth(60);
+        this.vbLogout.setMaxWidth(60);
         this.vbLogout.setOnAction((event) -> {
             this.doLogout();
         });
+        HBox categories =new HBox();
+        categories.setAlignment(Pos.CENTER);
         this.vbEnchere = new Button("Enchères");
+        this.vbEnchere.setMinWidth(70);
+        this.vbEnchere.setMaxWidth(70);
         this.vbEnchere.setOnAction((event) -> {
             this.main.setMainContent(new MainAfterLogin(this.main));
         });
         this.vbVente = new Button("Ventes");
+        this.vbVente.setMinWidth(60);
+        this.vbVente.setMaxWidth(60);
         this.vbVente.setOnAction((event) -> {
             this.main.setMainContent(new MainVentes(this.main));
         });
-        this.getChildren().addAll(this.vbLogout,this.vbEnchere,this.vbVente);
-        this.setSpacing(50);
+        categories.getChildren().addAll(this.vbEnchere,this.vbVente);
+        categories.setSpacing(50);
+        this.getChildren().addAll(this.vbLogout,categories);
+        this.setSpacing(250);
     }
     
     public void doLogout() {
