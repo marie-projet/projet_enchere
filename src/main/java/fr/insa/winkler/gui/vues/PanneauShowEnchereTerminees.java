@@ -23,56 +23,41 @@ import fr.insa.winkler.gui.JavaFXUtils;
 import fr.insa.winkler.gui.MainPane;
 import fr.insa.winkler.projet.Categorie;
 import fr.insa.winkler.projet.Objet;
-import fr.insa.winkler.projet.Utilisateur;
-import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
-import javafx.geometry.VPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.geometry.Insets;
 
 /**
  *
  * @author francois
  */
-public class Reencherir extends VBox {
+public class PanneauShowEnchereTerminees extends GridPane {
 
     private MainPane main;
-
-    private ObjetTable vEncherePerdante;
+    private ObjetTable vEnchere;
     private ObjetTable vEnchereGagnante;
-    private Button vbEncherir;
+    private ObjetTable vEncherePerdante;
     private Button vbInfos;
     private ComboBox<String> categories;
-    private GridPane gpEnchere;
     private TextField recherche;
 
-    public Reencherir(MainPane main) {
+    public PanneauShowEnchereTerminees(MainPane main) {
         this.main = main;
-        this.reInit();
-    }
-    
-    public void reInit() {
-        this.getChildren().clear();
-        this.gpEnchere = new GridPane();
-        
-        this.main = main;
-        this.main.getControleur().setReencherir(this);
-        this.main.getControleur().setEtat(12);
+        this.main.getControleur().setEncheresTerminees(this);
+        this.main.getControleur().setEtat(13);
         
         this.recherche=new TextField();
         this.recherche.setPromptText("Rechercher un mot-clé");
         this.recherche.setMaxWidth(170);
-        gpEnchere.add(this.recherche,1,0);
+        this.add(this.recherche,1,0);
         
         this.categories=new ComboBox<String>();
         this.categories.setPromptText("Choisissez une catégorie");
@@ -82,22 +67,11 @@ public class Reencherir extends VBox {
         this.vbInfos=new Button("Infos");
         this.vbInfos.setMinWidth(60);
         this.vbInfos.setMaxWidth(60);
-        gpEnchere.add(categories,0,0);
-        gpEnchere.add(this.vbInfos,2,0);
+        this.add(categories,0,0);
+        this.add(this.vbInfos,2,0);
         
         this.vbInfos.setOnAction ((i) -> {
-             this.main.getControleur().infos();
-        });
-        
-        this.vbEncherir = new Button("ENCHERIR >>");
-        VBox vbuttons = new VBox(this.vbEncherir);
-        gpEnchere.add(vbuttons,1,1);
-        vbuttons.setAlignment(Pos.TOP_CENTER);
-        GridPane.setHalignment(vbuttons, HPos.CENTER);
-        GridPane.setValignment(vbuttons, VPos.CENTER);
-        
-        this.vbEncherir.setOnAction((event) -> {
-            this.main.getControleur().encherir();
+            this.main.getControleur().infos();
         });
         
         categories.setOnAction ((i) -> {
@@ -107,9 +81,40 @@ public class Reencherir extends VBox {
         recherche.setOnAction ((i) -> {
             this.main.getControleur().recherche();
         });
-      
+        
+               
+        VBox vlEnchere = new VBox();
+        vlEnchere.getChildren().add(new BigLabel("Vos enchères terminées",20));
+        try {
+            List<Objet> datas = BdD.objetEncheri(
+                    this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
+            vlEnchere.getChildren().add(this.vEnchere=new ObjetTable(this.main,datas));
+        } catch (SQLException ex) {
+            vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+        }
+        JavaFXUtils.addSimpleBorder(vlEnchere, Color.BLUE, 2);
+        vlEnchere.setAlignment(Pos.CENTER);
+        this.add(vlEnchere,0,1);
+        
+        VBox vlEnchereGagnante = new VBox();
+        vlEnchereGagnante.getChildren().add(new BigLabel("Vos enchères gagnées",20));
+        try {
+            List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                    this.main.getSession
+        ().getConBdD(), this.main.getSession
+        ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
+        ().getConBdD(), this.main.getSession
+        ().getCurUser().orElseThrow()));
+            vlEnchereGagnante.getChildren().add(this.vEnchereGagnante=new ObjetTable(this.main,objetsEncheris));
+        } catch (SQLException ex) {
+            vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
+        }
+        JavaFXUtils.addSimpleBorder(vlEnchereGagnante, Color.GREEN, 2);
+        vlEnchereGagnante.setAlignment(Pos.CENTER);
+        this.add(vlEnchereGagnante,1,1);
+        
         VBox vlEncherePerdante = new VBox();
-        vlEncherePerdante.getChildren().add(new BigLabel("Vos enchères perdantes",20));
+        vlEncherePerdante.getChildren().add(new BigLabel("Vos enchères perdues",20));
         try {
             List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
                     this.main.getSession
@@ -121,85 +126,59 @@ public class Reencherir extends VBox {
         } catch (SQLException ex) {
             vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
         }
-        vlEncherePerdante.setAlignment(Pos.CENTER);
         JavaFXUtils.addSimpleBorder(vlEncherePerdante, Color.RED, 2);
-        gpEnchere.add(vlEncherePerdante,0,1);
-    
-
-        VBox vlEnchere = new VBox();
-        vlEnchere.getChildren().add(new BigLabel("Vos enchères gagnantes",20));
-        try {
-            List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
-                    this.main.getSession
-        ().getConBdD(), this.main.getSession
-        ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
-        ().getConBdD(), this.main.getSession
-        ().getCurUser().orElseThrow()));
-            this.vEnchereGagnante = new ObjetTable(this.main,objetsEncheris);
-            vlEnchere.getChildren().add(this.vEnchereGagnante);
-        } catch (SQLException ex) {
-            vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
-        }
-        vlEnchere.setAlignment(Pos.CENTER);
-        JavaFXUtils.addSimpleBorder(vlEnchere, Color.GREEN, 2);
-        gpEnchere.add(vlEnchere,2,1);
-        this.getChildren().add(gpEnchere);
-        gpEnchere.setHgap(10);
-        gpEnchere.setVgap(20);
-        gpEnchere.setAlignment(Pos.CENTER);
-        gpEnchere.setHalignment(this.vbInfos, HPos.CENTER);
-        gpEnchere.setHalignment(this.categories, HPos.CENTER);
-        gpEnchere.setHalignment(this.recherche, HPos.CENTER);
-        
-
+        vlEncherePerdante.setAlignment(Pos.CENTER);
+        this.add(vlEncherePerdante,2,1);
+        this.setHgap(10);
+        this.setVgap(20);
+        this.setAlignment(Pos.CENTER);
+        this.setHalignment(this.vbInfos, HPos.CENTER);
+        this.setHalignment(this.categories, HPos.CENTER);
+        this.setHalignment(this.recherche, HPos.CENTER);
+ 
     }
 
     public MainPane getMain() {
         return main;
     }
 
-    public ObjetTable getvEncherePerdante() {
-        return vEncherePerdante;
+    public ObjetTable getvEnchere() {
+        return vEnchere;
     }
 
     public ObjetTable getvEnchereGagnante() {
         return vEnchereGagnante;
     }
 
-
-    public Button getVbEncherir() {
-        return vbEncherir;
+    public ObjetTable getvEncherePerdante() {
+        return vEncherePerdante;
     }
 
     public Button getVbInfos() {
         return vbInfos;
     }
 
+
     public ComboBox<String> getCategories() {
         return categories;
     }
 
-    public void setvEncherePerdante(ObjetTable vEncherePerdante) {
-        this.vEncherePerdante = vEncherePerdante;
+    public void setvEnchere(ObjetTable vEnchere) {
+        this.vEnchere = vEnchere;
     }
 
     public void setvEnchereGagnante(ObjetTable vEnchereGagnante) {
         this.vEnchereGagnante = vEnchereGagnante;
     }
 
-    public GridPane getGpEnchere() {
-        return gpEnchere;
+    public void setvEncherePerdante(ObjetTable vEncherePerdante) {
+        this.vEncherePerdante = vEncherePerdante;
     }
 
     public TextField getRecherche() {
         return recherche;
     }
+   
     
-    
-    
-
 }
-    
-    
-
 

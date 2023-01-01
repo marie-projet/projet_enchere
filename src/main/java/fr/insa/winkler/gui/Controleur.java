@@ -10,7 +10,9 @@ import fr.insa.winkler.gui.vues.Encherir;
 import fr.insa.winkler.gui.vues.ObjetTable;
 import fr.insa.winkler.gui.vues.ObjetTable2;
 import fr.insa.winkler.gui.vues.PanneauShowEnchere;
+import fr.insa.winkler.gui.vues.PanneauShowEnchereTerminees;
 import fr.insa.winkler.gui.vues.PanneauShowVente;
+import fr.insa.winkler.gui.vues.PanneauShowVenteTerminees;
 import fr.insa.winkler.gui.vues.Reencherir;
 import fr.insa.winkler.gui.vues.Vendre;
 import fr.insa.winkler.projet.BdD;
@@ -18,12 +20,9 @@ import fr.insa.winkler.projet.Categorie;
 import fr.insa.winkler.projet.Objet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -36,9 +35,11 @@ public class Controleur {
     
     private MainPane vue;
     private PanneauShowEnchere encheres;
+    private PanneauShowEnchereTerminees encheresTerminees;
     private Encherir encherir;
     private Reencherir reencherir;
     private PanneauShowVente ventes;
+    private PanneauShowVenteTerminees ventesTerminees;
     private Vendre vendre;
     private int etat;
     
@@ -61,7 +62,6 @@ public class Controleur {
             if(this.encheres.getvEnchereGagnante() != null){
                 List<Objet>objetSelctionne=this.encheres.getvEnchereGagnante().getSelectedObjects();
                 for (Objet obj:objetSelctionne){
-                    System.out.println(obj.toString());
                     JavaFXUtils.showInfoObjet(obj.toString());
                 }
                 this.encheres.getvEnchereGagnante().getSelectionModel().clearSelection();
@@ -69,7 +69,6 @@ public class Controleur {
             if(this.encheres.getvEncherePerdante() != null){
                 List<Objet>objetSelctionne=this.encheres.getvEncherePerdante().getSelectedObjects();
                 for (Objet obj:objetSelctionne){
-                    System.out.println(obj.toString());
                     JavaFXUtils.showInfoObjet(obj.toString());
                 }
                 this.encheres.getvEncherePerdante().getSelectionModel().clearSelection();
@@ -132,6 +131,10 @@ public class Controleur {
     }        
     }
     
+    
+    
+    
+    
     public void encherir(){
         if(etat==11){
             List<Objet> select=this.encherir.getvPasEnchere().getSelectedObjects();
@@ -185,6 +188,9 @@ public class Controleur {
         }
     }
     
+    
+    
+    
     public void categorie(){
         if(etat==10){
             List<String> a = new ArrayList<>();
@@ -195,25 +201,49 @@ public class Controleur {
             VBox vlEnchere = new VBox();
             vlEnchere.getChildren().add(new BigLabel("Vos enchères",20));
             
-            if(categorieChoisie.getId()!=0){
-                try {
+            if(this.encheres.getRecherche()==null){
+                if(categorieChoisie.getId()!=0){
+                    try {
+                        List<Objet> datas = BdD.objetEncheri(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
+                        this.encheres.setvEnchere(new ObjetTable(this.vue,datas));
+                        vlEnchere.getChildren().add(this.encheres.getvEnchere());
+                    } catch (SQLException ex) {
+                        vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+                }
+                else{
+                    try {
                     List<Objet> datas = BdD.objetEncheri(
-                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
+                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
                     this.encheres.setvEnchere(new ObjetTable(this.vue,datas));
                     vlEnchere.getChildren().add(this.encheres.getvEnchere());
-                } catch (SQLException ex) {
-                    vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    } catch (SQLException ex) {
+                        vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }                        
                 }
             }
             else{
-                try {
-                List<Objet> datas = BdD.objetEncheri(
-                        this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
-                this.encheres.setvEnchere(new ObjetTable(this.vue,datas));
-                vlEnchere.getChildren().add(this.encheres.getvEnchere());
-                } catch (SQLException ex) {
-                    vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
-                }                        
+                if(categorieChoisie.getId()!=0){
+                    try {
+                        List<Objet> datas = BdD.objetEncheri(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.encheres.getRecherche().getText(),categorieChoisie);
+                        this.encheres.setvEnchere(new ObjetTable(this.vue,datas));
+                        vlEnchere.getChildren().add(this.encheres.getvEnchere());
+                    } catch (SQLException ex) {
+                        vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+                }
+                else{
+                    try {
+                    List<Objet> datas = BdD.objetEncheri(
+                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.encheres.getRecherche().getText());
+                    this.encheres.setvEnchere(new ObjetTable(this.vue,datas));
+                    vlEnchere.getChildren().add(this.encheres.getvEnchere());
+                    } catch (SQLException ex) {
+                        vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }                        
+                }
             }
         JavaFXUtils.addSimpleBorder(vlEnchere, Color.BLUE, 2);
         vlEnchere.setAlignment(Pos.CENTER);
@@ -221,32 +251,64 @@ public class Controleur {
         
         VBox vlEnchereGagnante = new VBox();
         vlEnchereGagnante.getChildren().add(new BigLabel("Vos enchères gagnantes",20));
-        if(categorieChoisie.getId()!=0){
-            try {
-                List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
-                        this.vue.getSession
-            ().getConBdD(), this.vue.getSession
-            ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
-            ().getConBdD(), this.vue.getSession
-            ().getCurUser().orElseThrow(),categorieChoisie));
-                this.encheres.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
-                vlEnchereGagnante.getChildren().add(this.encheres.getvEnchereGagnante());
-            } catch (SQLException ex) {
-                vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
+        if(this.encheres.getRecherche()==null){
+            if(categorieChoisie.getId()!=0){
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),categorieChoisie));
+                    this.encheres.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEnchereGagnante.getChildren().add(this.encheres.getvEnchereGagnante());
+                } catch (SQLException ex) {
+                    vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
+            }
+            else{
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow()));
+                    this.encheres.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEnchereGagnante.getChildren().add(this.encheres.getvEnchereGagnante());
+                } catch (SQLException ex) {
+                    vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
             }
         }
         else{
-            try {
-                List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
-                        this.vue.getSession
-            ().getConBdD(), this.vue.getSession
-            ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
-            ().getConBdD(), this.vue.getSession
-            ().getCurUser().orElseThrow()));
-                this.encheres.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
-                vlEnchereGagnante.getChildren().add(this.encheres.getvEnchereGagnante());
-            } catch (SQLException ex) {
-                vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
+            if(categorieChoisie.getId()!=0){
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),this.encheres.getRecherche().getText(),categorieChoisie));
+                    this.encheres.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEnchereGagnante.getChildren().add(this.encheres.getvEnchereGagnante());
+                } catch (SQLException ex) {
+                    vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
+            }
+            else{
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),this.encheres.getRecherche().getText()));
+                    this.encheres.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEnchereGagnante.getChildren().add(this.encheres.getvEnchereGagnante());
+                } catch (SQLException ex) {
+                    vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
             }
         }
         JavaFXUtils.addSimpleBorder(vlEnchereGagnante, Color.GREEN, 2);
@@ -254,34 +316,66 @@ public class Controleur {
                 
         VBox vlEncherePerdante = new VBox();
         vlEncherePerdante.getChildren().add(new BigLabel("Vos enchères perdantes",20));
-        if(categorieChoisie.getId()!=0){
-            try {
+        if(this.encheres.getRecherche()==null){
+            if(categorieChoisie.getId()!=0){
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),categorieChoisie));
+                    this.encheres.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEncherePerdante.getChildren().add(this.encheres.getvEncherePerdante());
+                } catch (SQLException ex) {
+                    vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
+            }
+            else{
+                try {
                 List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
                         this.vue.getSession
-            ().getConBdD(), this.vue.getSession
-            ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
-            ().getConBdD(), this.vue.getSession
-            ().getCurUser().orElseThrow(),categorieChoisie));
-                this.encheres.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
-                vlEncherePerdante.getChildren().add(this.encheres.getvEncherePerdante());
-            } catch (SQLException ex) {
-                vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow()));
+                    this.encheres.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEncherePerdante.getChildren().add(this.encheres.getvEncherePerdante());
+                } catch (SQLException ex) {
+                    vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
             }
         }
         else{
-            try {
-            List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
-                    this.vue.getSession
-            ().getConBdD(), this.vue.getSession
-            ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
-            ().getConBdD(), this.vue.getSession
-            ().getCurUser().orElseThrow()));
-                this.encheres.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
-                vlEncherePerdante.getChildren().add(this.encheres.getvEncherePerdante());
-            } catch (SQLException ex) {
-                vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+            if(categorieChoisie.getId()!=0){
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                                this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),this.encheres.getRecherche().getText(),categorieChoisie));
+                        this.encheres.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                        vlEncherePerdante.getChildren().add(this.encheres.getvEncherePerdante());
+                    } catch (SQLException ex) {
+                        vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
             }
-        }
+            else{
+                try {
+                List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                        this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),this.encheres.getRecherche().getText()));
+                    this.encheres.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEncherePerdante.getChildren().add(this.encheres.getvEncherePerdante());
+                } catch (SQLException ex) {
+                    vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
+            }
+        } 
         JavaFXUtils.addSimpleBorder(vlEncherePerdante, Color.RED, 2);
         vlEncherePerdante.setAlignment(Pos.CENTER);
 
@@ -290,6 +384,9 @@ public class Controleur {
         this.encheres.add(vlEncherePerdante,2,1);
 
         }
+        
+        
+        
         if(etat==11){
             List<String> a = new ArrayList<>();
             for (String s: this.encherir.getCategories().getSelectionModel().getSelectedItem().split(":")) {
@@ -300,25 +397,49 @@ public class Controleur {
             Label lPasEnchere = new Label("Objets en vente");
             lPasEnchere.setStyle("-fx-font-size: 20");
             vlPasEnchere.getChildren().add(lPasEnchere);
-
-            if(categorieChoisie.getId()!=0){
-               try {
-                List<Objet> objetsPasEncheris = BdD.objetPasEncheri(
-             this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                this.encherir.setvPasEnchere(new ObjetTable(this.vue,objetsPasEncheris));
-                vlPasEnchere.getChildren().add(this.encherir.getvPasEnchere());
-                } catch (SQLException ex) {
-                    vlPasEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+            
+            if(this.encherir.getRecherche()==null){
+                if(categorieChoisie.getId()!=0){
+                   try {
+                    List<Objet> objetsPasEncheris = BdD.objetPasEncheri(
+                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
+                    this.encherir.setvPasEnchere(new ObjetTable(this.vue,objetsPasEncheris));
+                    vlPasEnchere.getChildren().add(this.encherir.getvPasEnchere());
+                    } catch (SQLException ex) {
+                        vlPasEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
+                }
+                else{
+                    try {
+                        List<Objet> objetsPasEncheris = BdD.objetPasEncheri(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
+                        this.encherir.setvPasEnchere(new ObjetTable(this.vue,objetsPasEncheris));
+                        vlPasEnchere.getChildren().add(this.encherir.getvPasEnchere());
+                    } catch (SQLException ex) {
+                        vlPasEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
                 }
             }
             else{
-                try {
+                if(categorieChoisie.getId()!=0){
+                   try {
                     List<Objet> objetsPasEncheris = BdD.objetPasEncheri(
-                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
+                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.encherir.getRecherche().getText(),categorieChoisie);
                     this.encherir.setvPasEnchere(new ObjetTable(this.vue,objetsPasEncheris));
                     vlPasEnchere.getChildren().add(this.encherir.getvPasEnchere());
-                } catch (SQLException ex) {
-                    vlPasEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                    } catch (SQLException ex) {
+                        vlPasEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
+                }
+                else{
+                    try {
+                        List<Objet> objetsPasEncheris = BdD.objetPasEncheri(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.encherir.getRecherche().getText());
+                        this.encherir.setvPasEnchere(new ObjetTable(this.vue,objetsPasEncheris));
+                        vlPasEnchere.getChildren().add(this.encherir.getvPasEnchere());
+                    } catch (SQLException ex) {
+                        vlPasEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
                 }
             }
         JavaFXUtils.addSimpleBorder(vlPasEnchere, Color.BLUE, 2);
@@ -327,32 +448,65 @@ public class Controleur {
      
         VBox vlEnchere = new VBox();
         vlEnchere.getChildren().add(new BigLabel("Vos enchères gagnantes",20));
-        if(categorieChoisie.getId()!=0){
-            try {
-                List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
-                        this.vue.getSession
-            ().getConBdD(), this.vue.getSession
-            ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
-            ().getConBdD(), this.vue.getSession
-            ().getCurUser().orElseThrow(),categorieChoisie));
-                this.encherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
-                vlEnchere.getChildren().add(this.encherir.getvEnchereGagnante());
-            } catch (SQLException ex) {
-                vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+        
+        if(this.encherir.getRecherche()==null){
+            if(categorieChoisie.getId()!=0){
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),categorieChoisie));
+                    this.encherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEnchere.getChildren().add(this.encherir.getvEnchereGagnante());
+                } catch (SQLException ex) {
+                    vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
+            }
+            else{
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow()));
+                    this.encherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEnchere.getChildren().add(this.encherir.getvEnchereGagnante());
+                } catch (SQLException ex) {
+                    vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
             }
         }
         else{
-            try {
-                List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
-                        this.vue.getSession
-            ().getConBdD(), this.vue.getSession
-            ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
-            ().getConBdD(), this.vue.getSession
-            ().getCurUser().orElseThrow()));
-                this.encherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
-                vlEnchere.getChildren().add(this.encherir.getvEnchereGagnante());
-            } catch (SQLException ex) {
-                vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+            if(categorieChoisie.getId()!=0){
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),this.encherir.getRecherche().getText(),categorieChoisie));
+                    this.encherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEnchere.getChildren().add(this.encherir.getvEnchereGagnante());
+                } catch (SQLException ex) {
+                    vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
+            }
+            else{
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),this.encherir.getRecherche().getText()));
+                    this.encherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEnchere.getChildren().add(this.encherir.getvEnchereGagnante());
+                } catch (SQLException ex) {
+                    vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
             }
         }
         JavaFXUtils.addSimpleBorder(vlEnchere, Color.GREEN, 2);           
@@ -360,6 +514,9 @@ public class Controleur {
         this.encherir.getGpEnchere().add(vlPasEnchere,0,1);
         this.encherir.getGpEnchere().add(vlEnchere,2,1);
         }
+        
+        
+        
         
         if(etat==12){
             List<String> a = new ArrayList<>();
@@ -370,34 +527,68 @@ public class Controleur {
             
             VBox vlEncherePerdante = new VBox();
             vlEncherePerdante.getChildren().add(new BigLabel("Vos enchères perdantes",20));
-            if(categorieChoisie.getId()!=0){
-                try {
-                    List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
-                            this.vue.getSession
-                ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
-                ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),categorieChoisie));
-                    this.reencherir.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
-                    vlEncherePerdante.getChildren().add(this.reencherir.getvEncherePerdante());
-                } catch (SQLException ex) {
-                    vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+            
+            if(this.reencherir.getRecherche()==null){
+                if(categorieChoisie.getId()!=0){
+                    try {
+                        List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                                this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),categorieChoisie));
+                        this.reencherir.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                        vlEncherePerdante.getChildren().add(this.reencherir.getvEncherePerdante());
+                    } catch (SQLException ex) {
+                        vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
+                }
+                else{
+                    try {
+                        List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                                this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow()));
+                        this.reencherir.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                        vlEncherePerdante.getChildren().add(this.reencherir.getvEncherePerdante());
+                    } catch (SQLException ex) {
+                        vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
                 }
             }
             else{
-                try {
-                    List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
-                            this.vue.getSession
-                ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
-                ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow()));
-                    this.reencherir.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
-                    vlEncherePerdante.getChildren().add(this.reencherir.getvEncherePerdante());
-                } catch (SQLException ex) {
-                    vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+                if(categorieChoisie.getId()!=0){
+                    try {
+                            List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                                    this.vue.getSession
+                        ().getConBdD(), this.vue.getSession
+                        ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                        ().getConBdD(), this.vue.getSession
+                        ().getCurUser().orElseThrow(),this.reencherir.getRecherche().getText(),categorieChoisie));
+                            this.reencherir.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                            vlEncherePerdante.getChildren().add(this.reencherir.getvEncherePerdante());
+                        } catch (SQLException ex) {
+                            vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+                        }
                 }
+                else{
+                    try {
+                        List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                                this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),this.reencherir.getRecherche().getText()));
+                        this.reencherir.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                        vlEncherePerdante.getChildren().add(this.reencherir.getvEncherePerdante());
+                    } catch (SQLException ex) {
+                        vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
+                } 
             }
+                
             vlEncherePerdante.setAlignment(Pos.CENTER);
             JavaFXUtils.addSimpleBorder(vlEncherePerdante, Color.RED, 2);
             this.reencherir.getGpEnchere().add(vlEncherePerdante,0,1);
@@ -405,38 +596,73 @@ public class Controleur {
 
             VBox vlEnchere = new VBox();
             vlEnchere.getChildren().add(new BigLabel("Vos enchères gagnantes",20));
-            if(categorieChoisie.getId()!=0){
-                try {
-                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
-                            this.vue.getSession
-                ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
-                ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),categorieChoisie));
-                    this.reencherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
-                    vlEnchere.getChildren().add(this.reencherir.getvEnchereGagnante());
-                } catch (SQLException ex) {
-                    vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+            if(this.reencherir.getRecherche()==null){
+                if(categorieChoisie.getId()!=0){
+                    try {
+                        List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                                this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),categorieChoisie));
+                        this.reencherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                        vlEnchere.getChildren().add(this.reencherir.getvEnchereGagnante());
+                    } catch (SQLException ex) {
+                        vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
+                }
+                else{
+                    try {
+                        List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                                this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow()));
+                        this.reencherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                        vlEnchere.getChildren().add(this.reencherir.getvEnchereGagnante());
+                    } catch (SQLException ex) {
+                        vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
                 }
             }
             else{
-                try {
-                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
-                            this.vue.getSession
-                ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
-                ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow()));
-                    this.reencherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
-                    vlEnchere.getChildren().add(this.reencherir.getvEnchereGagnante());
-                } catch (SQLException ex) {
-                    vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                if(categorieChoisie.getId()!=0){
+                    try {
+                        List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                                this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),this.reencherir.getRecherche().getText(),categorieChoisie));
+                        this.reencherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                        vlEnchere.getChildren().add(this.reencherir.getvEnchereGagnante());
+                    } catch (SQLException ex) {
+                        vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
+                }
+                else{
+                    try {
+                        List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                                this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),this.reencherir.getRecherche().getText()));
+                        this.reencherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                        vlEnchere.getChildren().add(this.reencherir.getvEnchereGagnante());
+                    } catch (SQLException ex) {
+                        vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
                 }
             }
             vlEnchere.setAlignment(Pos.CENTER);
             JavaFXUtils.addSimpleBorder(vlEnchere, Color.GREEN, 2);
             this.reencherir.getGpEnchere().add(vlEnchere,2,1);
         }
+        
+        
+        
         if(etat==20){
             List<String> a = new ArrayList<>();
             for (String s: this.ventes.getCategories().getSelectionModel().getSelectedItem().split(":")) {
@@ -445,76 +671,150 @@ public class Controleur {
             Categorie categorieChoisie=Categorie.predef(Integer.parseInt(a.get(0)));
             VBox vlObjetsEnVente = new VBox();
             vlObjetsEnVente.getChildren().add(new BigLabel("Vos objets en vente",20));
-            if(categorieChoisie.getId()!=0){
-                try {
-                    List<Objet> datas = BdD.objetsEnVente(
-                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                    this.ventes.setvObjetsEnVente(new ObjetTable(this.vue,datas));
-                    vlObjetsEnVente.getChildren().add(this.ventes.getvObjetsEnVente());
-                } catch (SQLException ex) {
-                    vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+            
+            if(this.ventes.getRecherche()==null){
+                if(categorieChoisie.getId()!=0){
+                    try {
+                        List<Objet> datas = BdD.objetsEnVente(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
+                        this.ventes.setvObjetsEnVente(new ObjetTable(this.vue,datas));
+                        vlObjetsEnVente.getChildren().add(this.ventes.getvObjetsEnVente());
+                    } catch (SQLException ex) {
+                        vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+                }
+                else{
+                    try {
+                        List<Objet> datas = BdD.objetsEnVente(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
+                        this.ventes.setvObjetsEnVente(new ObjetTable(this.vue,datas));
+                        vlObjetsEnVente.getChildren().add(this.ventes.getvObjetsEnVente());
+                    } catch (SQLException ex) {
+                        vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
                 }
             }
             else{
-                try {
-                    List<Objet> datas = BdD.objetsEnVente(
-                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
-                    this.ventes.setvObjetsEnVente(new ObjetTable(this.vue,datas));
-                    vlObjetsEnVente.getChildren().add(this.ventes.getvObjetsEnVente());
-                } catch (SQLException ex) {
-                    vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                if(categorieChoisie.getId()!=0){
+                    try {
+                        List<Objet> datas = BdD.objetsEnVente(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventes.getRecherche().getText(),categorieChoisie);
+                        this.ventes.setvObjetsEnVente(new ObjetTable(this.vue,datas));
+                        vlObjetsEnVente.getChildren().add(this.ventes.getvObjetsEnVente());
+                    } catch (SQLException ex) {
+                        vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
                 }
-            }
+                else{
+                    try {
+                        List<Objet> datas = BdD.objetsEnVente(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventes.getRecherche().getText());
+                        this.ventes.setvObjetsEnVente(new ObjetTable(this.vue,datas));
+                        vlObjetsEnVente.getChildren().add(this.ventes.getvObjetsEnVente());
+                    } catch (SQLException ex) {
+                        vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+                }
+            } 
             JavaFXUtils.addSimpleBorder(vlObjetsEnVente, Color.BLUE, 2);
             vlObjetsEnVente.setAlignment(Pos.CENTER);
             this.ventes.add(vlObjetsEnVente,0,1);
             
             VBox vlObjetsVendus = new VBox();
             vlObjetsVendus.getChildren().add(new BigLabel("Vos objets enchéris",20));
-            if(categorieChoisie.getId()!=0){
-                try {
-                    List<Objet> datas = BdD.objetsVendus(
-                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                    this.ventes.setvObjetsVendus(new ObjetTable(this.vue,datas));
-                    vlObjetsVendus.getChildren().add(this.ventes.getvObjetsVendus());
-                } catch (SQLException ex) {
-                    vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+            if(this.ventes.getRecherche()==null){
+                if(categorieChoisie.getId()!=0){
+                    try {
+                        List<Objet> datas = BdD.objetsVendus(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
+                        this.ventes.setvObjetsVendus(new ObjetTable(this.vue,datas));
+                        vlObjetsVendus.getChildren().add(this.ventes.getvObjetsVendus());
+                    } catch (SQLException ex) {
+                        vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+                }
+                else{
+                    try {
+                        List<Objet> datas = BdD.objetsVendus(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
+                        this.ventes.setvObjetsVendus(new ObjetTable(this.vue,datas));
+                        vlObjetsVendus.getChildren().add(this.ventes.getvObjetsVendus());
+                    } catch (SQLException ex) {
+                        vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
                 }
             }
             else{
-                try {
-                    List<Objet> datas = BdD.objetsVendus(
-                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
-                    this.ventes.setvObjetsVendus(new ObjetTable(this.vue,datas));
-                    vlObjetsVendus.getChildren().add(this.ventes.getvObjetsVendus());
-                } catch (SQLException ex) {
-                    vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                if(categorieChoisie.getId()!=0){
+                    try {
+                        List<Objet> datas = BdD.objetsVendus(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventes.getRecherche().getText(),categorieChoisie);
+                        this.ventes.setvObjetsVendus(new ObjetTable(this.vue,datas));
+                        vlObjetsVendus.getChildren().add(this.ventes.getvObjetsVendus());
+                    } catch (SQLException ex) {
+                        vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
                 }
-            } 
+                else{
+                    try {
+                        List<Objet> datas = BdD.objetsVendus(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventes.getRecherche().getText());
+                        this.ventes.setvObjetsVendus(new ObjetTable(this.vue,datas));
+                        vlObjetsVendus.getChildren().add(this.ventes.getvObjetsVendus());
+                    } catch (SQLException ex) {
+                        vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+                }
+            }       
+                        
             JavaFXUtils.addSimpleBorder(vlObjetsVendus, Color.GREEN, 2);
             vlObjetsVendus.setAlignment(Pos.CENTER);
             this.ventes.add(vlObjetsVendus,1,1);
             
             VBox vlObjetsPasVendus = new VBox();
             vlObjetsPasVendus.getChildren().add(new BigLabel("Vos objets non encheris",20));
-            if(categorieChoisie.getId()!=0){
-                try {
-                    List<Objet> datas = BdD.objetsPasVendus(
-                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                    this.ventes.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
-                    vlObjetsPasVendus.getChildren().add(this.ventes.getvObjetsNonVendus());
-                } catch (SQLException ex) {
-                    vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+            if(this.ventes.getRecherche()==null){
+                if(categorieChoisie.getId()!=0){
+                    try {
+                        List<Objet> datas = BdD.objetsPasVendus(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
+                        this.ventes.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
+                        vlObjetsPasVendus.getChildren().add(this.ventes.getvObjetsNonVendus());
+                    } catch (SQLException ex) {
+                        vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+                }
+                else{
+                    try {
+                        List<Objet> datas = BdD.objetsPasVendus(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
+                        this.ventes.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
+                        vlObjetsPasVendus.getChildren().add(this.ventes.getvObjetsNonVendus());
+                    } catch (SQLException ex) {
+                        vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
                 }
             }
             else{
-                try {
-                    List<Objet> datas = BdD.objetsPasVendus(
-                            this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
-                    this.ventes.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
-                    vlObjetsPasVendus.getChildren().add(this.ventes.getvObjetsNonVendus());
-                } catch (SQLException ex) {
-                    vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                if(categorieChoisie.getId()!=0){
+                    try {
+                        List<Objet> datas = BdD.objetsPasVendus(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventes.getRecherche().getText(),categorieChoisie);
+                        this.ventes.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
+                        vlObjetsPasVendus.getChildren().add(this.ventes.getvObjetsNonVendus());
+                    } catch (SQLException ex) {
+                        vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+                }
+                else{
+                    try {
+                        List<Objet> datas = BdD.objetsPasVendus(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventes.getRecherche().getText());
+                        this.ventes.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
+                        vlObjetsPasVendus.getChildren().add(this.ventes.getvObjetsNonVendus());
+                    } catch (SQLException ex) {
+                        vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
                 }
             }
             JavaFXUtils.addSimpleBorder(vlObjetsPasVendus, Color.RED, 2);
@@ -543,6 +843,396 @@ public class Controleur {
         }
         this.vendre.reInit();
     }
+    
+    public void recherche(){
+        if(etat==10){
+            if(this.encheres.getCategories().getSelectionModel().getSelectedItem()==null || this.encheres.getCategories().getSelectionModel().getSelectedItem().equals("0: All") ){
+                VBox vlEnchere = new VBox();
+                vlEnchere.getChildren().add(new BigLabel("Vos enchères",20));
+                    try {
+                        List<Objet> datas = BdD.objetEncheri(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.encheres.getRecherche().getText());
+                        this.encheres.setvEnchere(new ObjetTable(this.vue,datas));
+                        vlEnchere.getChildren().add(this.encheres.getvEnchere());
+                    } catch (SQLException ex) {
+                        vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+            JavaFXUtils.addSimpleBorder(vlEnchere, Color.BLUE, 2);
+            vlEnchere.setAlignment(Pos.CENTER);
+
+
+            VBox vlEnchereGagnante = new VBox();
+            vlEnchereGagnante.getChildren().add(new BigLabel("Vos enchères gagnantes",20));
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),this.encheres.getRecherche().getText()));
+                    this.encheres.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEnchereGagnante.getChildren().add(this.encheres.getvEnchereGagnante());
+                } catch (SQLException ex) {
+                    vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
+            JavaFXUtils.addSimpleBorder(vlEnchereGagnante, Color.GREEN, 2);
+            vlEnchereGagnante.setAlignment(Pos.CENTER);
+
+            VBox vlEncherePerdante = new VBox();
+            vlEncherePerdante.getChildren().add(new BigLabel("Vos enchères perdantes",20));
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),this.encheres.getRecherche().getText()));
+                    this.encheres.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEncherePerdante.getChildren().add(this.encheres.getvEncherePerdante());
+                } catch (SQLException ex) {
+                    vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
+
+            JavaFXUtils.addSimpleBorder(vlEncherePerdante, Color.RED, 2);
+            vlEncherePerdante.setAlignment(Pos.CENTER);
+
+            this.encheres.add(vlEnchere,0,1);
+            this.encheres.add(vlEnchereGagnante,1,1);
+            this.encheres.add(vlEncherePerdante,2,1);
+
+            }
+            
+            else{
+                List<String> a = new ArrayList<>();
+                for (String s: this.encheres.getCategories().getSelectionModel().getSelectedItem().split(":")) {
+                    a.add(s);
+                }
+                Categorie categorieChoisie=Categorie.predef(Integer.parseInt(a.get(0)));
+                VBox vlEnchere = new VBox();
+                vlEnchere.getChildren().add(new BigLabel("Vos enchères",20));
+                    try {
+                        List<Objet> datas = BdD.objetEncheri(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.encheres.getRecherche().getText(),categorieChoisie);
+                        this.encheres.setvEnchere(new ObjetTable(this.vue,datas));
+                        vlEnchere.getChildren().add(this.encheres.getvEnchere());
+                    } catch (SQLException ex) {
+                        vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+            JavaFXUtils.addSimpleBorder(vlEnchere, Color.BLUE, 2);
+            vlEnchere.setAlignment(Pos.CENTER);
+
+
+            VBox vlEnchereGagnante = new VBox();
+            vlEnchereGagnante.getChildren().add(new BigLabel("Vos enchères gagnantes",20));
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),this.encheres.getRecherche().getText(),categorieChoisie));
+                    this.encheres.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEnchereGagnante.getChildren().add(this.encheres.getvEnchereGagnante());
+                } catch (SQLException ex) {
+                    vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
+            JavaFXUtils.addSimpleBorder(vlEnchereGagnante, Color.GREEN, 2);
+            vlEnchereGagnante.setAlignment(Pos.CENTER);
+
+            VBox vlEncherePerdante = new VBox();
+            vlEncherePerdante.getChildren().add(new BigLabel("Vos enchères perdantes",20));
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),this.encheres.getRecherche().getText(),categorieChoisie));
+                    this.encheres.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEncherePerdante.getChildren().add(this.encheres.getvEncherePerdante());
+                } catch (SQLException ex) {
+                    vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
+
+            JavaFXUtils.addSimpleBorder(vlEncherePerdante, Color.RED, 2);
+            vlEncherePerdante.setAlignment(Pos.CENTER);
+
+            this.encheres.add(vlEnchere,0,1);
+            this.encheres.add(vlEnchereGagnante,1,1);
+            this.encheres.add(vlEncherePerdante,2,1);
+            }
+        }
+        
+        if(etat==11){
+            if(this.encherir.getCategories().getSelectionModel().getSelectedItem()==null || this.encherir.getCategories().getSelectionModel().getSelectedItem().equals("0: All")){
+                VBox vlPasEnchere = new VBox();
+                Label lPasEnchere = new Label("Objets en vente");
+                lPasEnchere.setStyle("-fx-font-size: 20");
+                vlPasEnchere.getChildren().add(lPasEnchere);
+
+                try {
+                    List<Objet> objetsPasEncheris = BdD.objetPasEncheri(
+                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.encherir.getRecherche().getText());
+                    this.encherir.setvPasEnchere(new ObjetTable(this.vue,objetsPasEncheris));
+                    vlPasEnchere.getChildren().add(this.encherir.getvPasEnchere());
+                    } catch (SQLException ex) {
+                        vlPasEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
+            JavaFXUtils.addSimpleBorder(vlPasEnchere, Color.BLUE, 2);
+            vlPasEnchere.setAlignment(Pos.CENTER);
+
+
+            VBox vlEnchere = new VBox();
+            vlEnchere.getChildren().add(new BigLabel("Vos enchères gagnantes",20));
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),this.encherir.getRecherche().getText()));
+                    this.encherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEnchere.getChildren().add(this.encherir.getvEnchereGagnante());
+                } catch (SQLException ex) {
+                    vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
+            JavaFXUtils.addSimpleBorder(vlEnchere, Color.GREEN, 2);           
+            vlEnchere.setAlignment(Pos.CENTER);
+            this.encherir.getGpEnchere().add(vlPasEnchere,0,1);
+            this.encherir.getGpEnchere().add(vlEnchere,2,1);
+            }
+            
+            else{
+                List<String> a = new ArrayList<>();
+                for (String s: this.encherir.getCategories().getSelectionModel().getSelectedItem().split(":")) {
+                    a.add(s);
+                }
+                Categorie categorieChoisie=Categorie.predef(Integer.parseInt(a.get(0)));
+                VBox vlPasEnchere = new VBox();
+                Label lPasEnchere = new Label("Objets en vente");
+                lPasEnchere.setStyle("-fx-font-size: 20");
+                vlPasEnchere.getChildren().add(lPasEnchere);
+
+                try {
+                    List<Objet> objetsPasEncheris = BdD.objetPasEncheri(
+                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.encherir.getRecherche().getText(),categorieChoisie);
+                    this.encherir.setvPasEnchere(new ObjetTable(this.vue,objetsPasEncheris));
+                    vlPasEnchere.getChildren().add(this.encherir.getvPasEnchere());
+                    } catch (SQLException ex) {
+                        vlPasEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
+            JavaFXUtils.addSimpleBorder(vlPasEnchere, Color.BLUE, 2);
+            vlPasEnchere.setAlignment(Pos.CENTER);
+
+
+            VBox vlEnchere = new VBox();
+            vlEnchere.getChildren().add(new BigLabel("Vos enchères gagnantes",20));
+                try {
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                            this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getConBdD(), this.vue.getSession
+                ().getCurUser().orElseThrow(),this.encherir.getRecherche().getText(),categorieChoisie));
+                    this.encherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    vlEnchere.getChildren().add(this.encherir.getvEnchereGagnante());
+                } catch (SQLException ex) {
+                    vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                }
+            JavaFXUtils.addSimpleBorder(vlEnchere, Color.GREEN, 2);           
+            vlEnchere.setAlignment(Pos.CENTER);
+            this.encherir.getGpEnchere().add(vlPasEnchere,0,1);
+            this.encherir.getGpEnchere().add(vlEnchere,2,1);
+            }
+        }
+        
+        if(etat==12){
+            if(this.reencherir.getCategories().getSelectionModel().getSelectedItem()==null || this.reencherir.getCategories().getSelectionModel().getSelectedItem().equals("0: All")){
+                VBox vlEncherePerdante = new VBox();
+                vlEncherePerdante.getChildren().add(new BigLabel("Vos enchères perdantes",20));
+                    try {
+                        List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                                this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),this.reencherir.getRecherche().getText()));
+                        this.reencherir.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                        vlEncherePerdante.getChildren().add(this.reencherir.getvEncherePerdante());
+                    } catch (SQLException ex) {
+                        vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
+
+                vlEncherePerdante.setAlignment(Pos.CENTER);
+                JavaFXUtils.addSimpleBorder(vlEncherePerdante, Color.RED, 2);
+                this.encherir.getGpEnchere().add(vlEncherePerdante,0,1);
+
+
+                VBox vlEnchere = new VBox();
+                vlEnchere.getChildren().add(new BigLabel("Vos enchères gagnantes",20));
+                    try {
+                        List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                                this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),this.reencherir.getRecherche().getText()));
+                        this.reencherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                        vlEnchere.getChildren().add(this.reencherir.getvEnchereGagnante());
+                    } catch (SQLException ex) {
+                        vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
+                vlEnchere.setAlignment(Pos.CENTER);
+                JavaFXUtils.addSimpleBorder(vlEnchere, Color.GREEN, 2);
+                this.reencherir.getGpEnchere().add(vlEnchere,2,1);
+            }
+            else{
+                List<String> a = new ArrayList<>();
+                for (String s: this.reencherir.getCategories().getSelectionModel().getSelectedItem().split(":")) {
+                    a.add(s);
+                }
+                Categorie categorieChoisie=Categorie.predef(Integer.parseInt(a.get(0)));
+                VBox vlEncherePerdante = new VBox();
+                vlEncherePerdante.getChildren().add(new BigLabel("Vos enchères perdantes",20));
+                    try {
+                        List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                                this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),this.reencherir.getRecherche().getText(),categorieChoisie));
+                        this.reencherir.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                        vlEncherePerdante.getChildren().add(this.reencherir.getvEncherePerdante());
+                    } catch (SQLException ex) {
+                        vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
+
+                vlEncherePerdante.setAlignment(Pos.CENTER);
+                JavaFXUtils.addSimpleBorder(vlEncherePerdante, Color.RED, 2);
+                this.encherir.getGpEnchere().add(vlEncherePerdante,0,1);
+
+
+                VBox vlEnchere = new VBox();
+                vlEnchere.getChildren().add(new BigLabel("Vos enchères gagnantes",20));
+                    try {
+                        List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                                this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                    ().getConBdD(), this.vue.getSession
+                    ().getCurUser().orElseThrow(),this.reencherir.getRecherche().getText(),categorieChoisie));
+                        this.reencherir.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                        vlEnchere.getChildren().add(this.reencherir.getvEnchereGagnante());
+                    } catch (SQLException ex) {
+                        vlEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
+                    }
+                vlEnchere.setAlignment(Pos.CENTER);
+                JavaFXUtils.addSimpleBorder(vlEnchere, Color.GREEN, 2);
+                this.reencherir.getGpEnchere().add(vlEnchere,2,1);
+            }
+        }
+               
+        if(etat==20){
+            if(this.ventes.getCategories().getSelectionModel().getSelectedItem()==null || this.ventes.getCategories().getSelectionModel().getSelectedItem().equals("0: All")){
+                VBox vlObjetsEnVente = new VBox();
+                vlObjetsEnVente.getChildren().add(new BigLabel("Vos objets en vente",20));
+                    try {
+                        List<Objet> datas = BdD.objetsEnVente(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventes.getRecherche().getText());
+                        this.ventes.setvObjetsEnVente(new ObjetTable(this.vue,datas));
+                        vlObjetsEnVente.getChildren().add(this.ventes.getvObjetsEnVente());
+                    } catch (SQLException ex) {
+                        vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+
+                JavaFXUtils.addSimpleBorder(vlObjetsEnVente, Color.BLUE, 2);
+                vlObjetsEnVente.setAlignment(Pos.CENTER);
+                this.ventes.add(vlObjetsEnVente,0,1);
+
+                VBox vlObjetsVendus = new VBox();
+                vlObjetsVendus.getChildren().add(new BigLabel("Vos objets enchéris",20));
+                    try {
+                        List<Objet> datas = BdD.objetsVendus(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventes.getRecherche().getText());
+                        this.ventes.setvObjetsVendus(new ObjetTable(this.vue,datas));
+                        vlObjetsVendus.getChildren().add(this.ventes.getvObjetsVendus());
+                    } catch (SQLException ex) {
+                        vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+
+
+                JavaFXUtils.addSimpleBorder(vlObjetsVendus, Color.GREEN, 2);
+                vlObjetsVendus.setAlignment(Pos.CENTER);
+                this.ventes.add(vlObjetsVendus,1,1);
+
+                VBox vlObjetsPasVendus = new VBox();
+                vlObjetsPasVendus.getChildren().add(new BigLabel("Vos objets non encheris",20));
+                    try {
+                        List<Objet> datas = BdD.objetsPasVendus(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventes.getRecherche().getText());
+                        this.ventes.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
+                        vlObjetsPasVendus.getChildren().add(this.ventes.getvObjetsNonVendus());
+                    } catch (SQLException ex) {
+                        vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+                JavaFXUtils.addSimpleBorder(vlObjetsPasVendus, Color.RED, 2);
+                vlObjetsPasVendus.setAlignment(Pos.CENTER);
+                this.ventes.add(vlObjetsPasVendus,2,1);
+            }
+            else{
+                 List<String> a = new ArrayList<>();
+                for (String s: this.ventes.getCategories().getSelectionModel().getSelectedItem().split(":")) {
+                    a.add(s);
+                }
+                Categorie categorieChoisie=Categorie.predef(Integer.parseInt(a.get(0)));
+                                VBox vlObjetsEnVente = new VBox();
+                vlObjetsEnVente.getChildren().add(new BigLabel("Vos objets en vente",20));
+                    try {
+                        List<Objet> datas = BdD.objetsEnVente(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventes.getRecherche().getText(),categorieChoisie);
+                        this.ventes.setvObjetsEnVente(new ObjetTable(this.vue,datas));
+                        vlObjetsEnVente.getChildren().add(this.ventes.getvObjetsEnVente());
+                    } catch (SQLException ex) {
+                        vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+
+                JavaFXUtils.addSimpleBorder(vlObjetsEnVente, Color.BLUE, 2);
+                vlObjetsEnVente.setAlignment(Pos.CENTER);
+                this.ventes.add(vlObjetsEnVente,0,1);
+
+                VBox vlObjetsVendus = new VBox();
+                vlObjetsVendus.getChildren().add(new BigLabel("Vos objets enchéris",20));
+                    try {
+                        List<Objet> datas = BdD.objetsVendus(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventes.getRecherche().getText(),categorieChoisie);
+                        this.ventes.setvObjetsVendus(new ObjetTable(this.vue,datas));
+                        vlObjetsVendus.getChildren().add(this.ventes.getvObjetsVendus());
+                    } catch (SQLException ex) {
+                        vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+
+
+                JavaFXUtils.addSimpleBorder(vlObjetsVendus, Color.GREEN, 2);
+                vlObjetsVendus.setAlignment(Pos.CENTER);
+                this.ventes.add(vlObjetsVendus,1,1);
+
+                VBox vlObjetsPasVendus = new VBox();
+                vlObjetsPasVendus.getChildren().add(new BigLabel("Vos objets non encheris",20));
+                    try {
+                        List<Objet> datas = BdD.objetsPasVendus(
+                                this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventes.getRecherche().getText(),categorieChoisie);
+                        this.ventes.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
+                        vlObjetsPasVendus.getChildren().add(this.ventes.getvObjetsNonVendus());
+                    } catch (SQLException ex) {
+                        vlObjetsPasVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
+                    }
+                JavaFXUtils.addSimpleBorder(vlObjetsPasVendus, Color.RED, 2);
+                vlObjetsPasVendus.setAlignment(Pos.CENTER);
+                this.ventes.add(vlObjetsPasVendus,2,1);
+            }
+        }
+    }
+    
         
     public void setEtat(int etat) {
         this.etat = etat;
@@ -566,6 +1256,14 @@ public class Controleur {
 
     public void setVendre(Vendre vendre) {
         this.vendre = vendre;
+    }
+
+    public void setEncheresTerminees(PanneauShowEnchereTerminees encheresTerminees) {
+        this.encheresTerminees = encheresTerminees;
+    }
+
+    public void setVentesTerminees(PanneauShowVenteTerminees ventesTerminees) {
+        this.ventesTerminees = ventesTerminees;
     }
     
     

@@ -32,6 +32,7 @@ import javafx.geometry.VPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -48,9 +49,9 @@ public class Encherir extends VBox {
     private ObjetTable vEnchereGagnante;
     private Button vbEncherir;
     private Button vbInfos;
-    private Label categorie;
     private GridPane gpEnchere;
     private ComboBox<String> categories;
+    private TextField recherche;
            
 
     public Encherir(MainPane main) {
@@ -60,21 +61,25 @@ public class Encherir extends VBox {
     
     public void reInit() {
         this.getChildren().clear();
+        this.main = main;
         this.gpEnchere = new GridPane();
         this.main.getControleur().setEncherir(this);
-        this.main.getControleur().changeEtat(11);
+        this.main.getControleur().changeEtat(11); 
         
-        this.main = main;
-        this.categorie=new BigLabel("                                            Categorie",20);
-            this.categories=new ComboBox<String>();
-            for (Categorie cat: Categorie.ListCategorie()){
-                categories.getItems().addAll(cat.toString());
-            }
+        this.recherche=new TextField();
+        this.recherche.setPromptText("Rechercher un mot-clé");
+        this.recherche.setMaxWidth(170);
+        gpEnchere.add(this.recherche,1,0);
+        
+        this.categories=new ComboBox<String>();
+        this.categories.setPromptText("Choisissez une catégorie");
+        for (Categorie cat: Categorie.ListCategorie()){
+            categories.getItems().addAll(cat.toString());
+        }
         this.vbInfos=new Button("Infos");
         this.vbInfos.setMinWidth(60);
         this.vbInfos.setMaxWidth(60);
-        gpEnchere.add(categorie,0,0);
-        gpEnchere.add(categories,1,0);
+        gpEnchere.add(categories,0,0);
         gpEnchere.add(this.vbInfos,2,0);
         
         this.vbInfos.setOnAction ((i) -> {
@@ -95,6 +100,10 @@ public class Encherir extends VBox {
         
         this.categories.setOnAction ((i) -> {
             this.main.getControleur().categorie();
+        });
+        
+        recherche.setOnAction ((i) -> {
+            this.main.getControleur().recherche();
         });
         
         
@@ -139,7 +148,9 @@ public class Encherir extends VBox {
         gpEnchere.setVgap(20);
         gpEnchere.setAlignment(Pos.CENTER);
         gpEnchere.setHalignment(this.vbInfos, HPos.CENTER);
-        
+        gpEnchere.setHalignment(this.categories, HPos.CENTER);
+        gpEnchere.setHalignment(this.recherche, HPos.CENTER);
+        gpEnchere.setValignment(this.vbEncherir, VPos.CENTER);
         
     }
 
@@ -165,10 +176,6 @@ public class Encherir extends VBox {
         return vbInfos;
     }
 
-    public Label getCategorie() {
-        return categorie;
-    }
-
     public ComboBox<String> getCategories() {
         return categories;
     }
@@ -183,6 +190,10 @@ public class Encherir extends VBox {
 
     public GridPane getGpEnchere() {
         return gpEnchere;
+    }
+
+    public TextField getRecherche() {
+        return recherche;
     }
 
     

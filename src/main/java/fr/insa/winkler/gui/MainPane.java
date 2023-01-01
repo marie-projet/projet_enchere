@@ -6,19 +6,16 @@
 package fr.insa.winkler.gui;
 
 import fr.insa.winkler.gui.vues.EnteteAfterLogin;
-import fr.insa.winkler.gui.vues.EnteteLogin;
 import fr.insa.winkler.gui.vues.MainAfterLogin;
 import fr.insa.winkler.projet.BdD;
 import fr.insa.winkler.projet.Utilisateur;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
+
 import javafx.scene.Node;
-import javafx.scene.control.MenuButton;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
@@ -97,6 +94,10 @@ public class MainPane extends BorderPane{
 
     public Controleur getControleur() {
         return controleur;
+    }
+
+    public HBox getEntete() {
+        return entete;
     }
     
     

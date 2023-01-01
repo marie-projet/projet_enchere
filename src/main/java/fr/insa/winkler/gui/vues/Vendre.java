@@ -68,17 +68,21 @@ public class Vendre extends VBox {
 
         Label Ltitre=new Label("Titre:");
         this.titre=new TextField();
+        this.titre.setPromptText("Titre de l'objet");
   
         
         Label Ldescription=new Label("Description :");
         this.description=new TextField();
+        this.description.setPromptText("Description de l'objet");
         
         Label Ldatefin=new Label("Date de fin :");
         this.dateFin = new DatePicker();
+        this.dateFin.setPromptText("Date de fin de vente");
         
 
         Label LprixBase=new Label("Prix de base :");
         this.prixBase=new TextField();
+        this.prixBase.setPromptText("Prix de mise en vente");
 
         
 
@@ -87,6 +91,7 @@ public class Vendre extends VBox {
             for (Categorie cat: Categorie.ListCategorie()){
                 this.categorie.getItems().addAll(cat.toString());
             }
+        this.categorie.setPromptText("Catégorie de l'objet");
         this.vbVendre = new Button("METTRE EN VENTE");
 
         

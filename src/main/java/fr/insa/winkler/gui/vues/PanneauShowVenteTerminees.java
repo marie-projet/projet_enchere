@@ -38,7 +38,7 @@ import javafx.scene.paint.Color;
  *
  * @author francois
  */
-public class PanneauShowVente extends GridPane {
+public class PanneauShowVenteTerminees extends GridPane {
 
     private MainPane main;
     private ObjetTable vObjetsEnVente;
@@ -50,10 +50,10 @@ public class PanneauShowVente extends GridPane {
     
     
 
-    public PanneauShowVente(MainPane main) {
+    public PanneauShowVenteTerminees(MainPane main) {
         this.main = main;
-        this.main.getControleur().setVentes(this);
-        this.main.getControleur().setEtat(20);
+        this.main.getControleur().setVentesTerminees(this);
+        this.main.getControleur().setEtat(22);
         
         this.recherche=new TextField();
         this.recherche.setPromptText("Rechercher un mot-clé");
@@ -84,7 +84,7 @@ public class PanneauShowVente extends GridPane {
         });
    
         VBox vlObjetsEnVente = new VBox();
-        vlObjetsEnVente.getChildren().add(new BigLabel("Vos objets en vente",20));
+        vlObjetsEnVente.getChildren().add(new BigLabel("Vos objets mis en vente",20));
         try {
             List<Objet> datas = BdD.objetsEnVente(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
@@ -97,7 +97,7 @@ public class PanneauShowVente extends GridPane {
         this.add(vlObjetsEnVente,0,1);
         
         VBox vlObjetsVendus = new VBox();
-        vlObjetsVendus.getChildren().add(new BigLabel("Vos objets enchéris",20));
+        vlObjetsVendus.getChildren().add(new BigLabel("Vos objets vendus",20));
         try {
             List<Objet> datas = BdD.objetsVendus(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
@@ -111,7 +111,7 @@ public class PanneauShowVente extends GridPane {
         
         
         VBox vlObjetsPasVendus = new VBox();
-        vlObjetsPasVendus.getChildren().add(new BigLabel("Vos objets non enchéris",20));
+        vlObjetsPasVendus.getChildren().add(new BigLabel("Vos objets non vendus",20));
         try {
             List<Objet> datas = BdD.objetsPasVendus(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());

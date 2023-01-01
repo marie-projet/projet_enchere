@@ -19,7 +19,7 @@
 package fr.insa.winkler.gui.vues;
 
 import fr.insa.winkler.gui.MainPane;
-import fr.insa.winkler.projet.Categorie;
+import javafx.geometry.Insets;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.VBox;
@@ -36,6 +36,7 @@ public class MainAfterLogin extends VBox {
     private Tab EnchereCurrentUser;
     private Tab encherir;
     private Tab reencherir;
+    private Tab encheresTerminees;
     private TabPane allTabs;
 
     public MainAfterLogin(MainPane main) {
@@ -56,7 +57,12 @@ public class MainAfterLogin extends VBox {
            this.reencherir.setContent(new Reencherir(this.main));
         });
         this.reencherir.setContent(new Reencherir(this.main));
-        this.allTabs = new TabPane(this.EnchereCurrentUser,this.encherir,this.reencherir);
+        this.encheresTerminees = new Tab("Enchères terminées");
+        this.encheresTerminees.setOnSelectionChanged((t) -> {
+           this.encheresTerminees.setContent(new PanneauShowEnchereTerminees(this.main));
+        });
+        this.encheresTerminees.setContent(new PanneauShowEnchereTerminees(this.main));
+        this.allTabs = new TabPane(this.EnchereCurrentUser,this.encherir,this.reencherir,this.encheresTerminees);
         this.getChildren().addAll(this.allTabs);
         this.allTabs.getSelectionModel().select(this.EnchereCurrentUser);
      }

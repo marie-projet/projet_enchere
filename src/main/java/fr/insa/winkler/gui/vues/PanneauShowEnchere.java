@@ -24,16 +24,16 @@ import fr.insa.winkler.gui.MainPane;
 import fr.insa.winkler.projet.Categorie;
 import fr.insa.winkler.projet.Objet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.geometry.Insets;
 
 /**
  *
@@ -46,24 +46,28 @@ public class PanneauShowEnchere extends GridPane {
     private ObjetTable vEnchereGagnante;
     private ObjetTable vEncherePerdante;
     private Button vbInfos;
-    private Label categorie;
     private ComboBox<String> categories;
+    private TextField recherche;
 
     public PanneauShowEnchere(MainPane main) {
         this.main = main;
         this.main.getControleur().setEncheres(this);
         this.main.getControleur().setEtat(10);
         
-        this.categorie=new BigLabel("                                            Categorie",20);
-            this.categories=new ComboBox<String>();
-            for (Categorie cat: Categorie.ListCategorie()){
-                categories.getItems().addAll(cat.toString());
-            }
+        this.recherche=new TextField();
+        this.recherche.setPromptText("Rechercher un mot-clé");
+        this.recherche.setMaxWidth(170);
+        this.add(this.recherche,1,0);
+        
+        this.categories=new ComboBox<String>();
+        this.categories.setPromptText("Choisissez une catégorie");
+        for (Categorie cat: Categorie.ListCategorie()){
+            categories.getItems().addAll(cat.toString());
+        }
         this.vbInfos=new Button("Infos");
         this.vbInfos.setMinWidth(60);
         this.vbInfos.setMaxWidth(60);
-        this.add(categorie,0,0);
-        this.add(categories,1,0);
+        this.add(categories,0,0);
         this.add(this.vbInfos,2,0);
         
         this.vbInfos.setOnAction ((i) -> {
@@ -72,6 +76,10 @@ public class PanneauShowEnchere extends GridPane {
         
         categories.setOnAction ((i) -> {
             this.main.getControleur().categorie();
+        });
+        
+        recherche.setOnAction ((i) -> {
+            this.main.getControleur().recherche();
         });
         
                
@@ -125,6 +133,8 @@ public class PanneauShowEnchere extends GridPane {
         this.setVgap(20);
         this.setAlignment(Pos.CENTER);
         this.setHalignment(this.vbInfos, HPos.CENTER);
+        this.setHalignment(this.categories, HPos.CENTER);
+        this.setHalignment(this.recherche, HPos.CENTER);
  
     }
 
@@ -148,9 +158,6 @@ public class PanneauShowEnchere extends GridPane {
         return vbInfos;
     }
 
-    public Label getCategorie() {
-        return categorie;
-    }
 
     public ComboBox<String> getCategories() {
         return categories;
@@ -167,6 +174,11 @@ public class PanneauShowEnchere extends GridPane {
     public void setvEncherePerdante(ObjetTable vEncherePerdante) {
         this.vEncherePerdante = vEncherePerdante;
     }
+
+    public TextField getRecherche() {
+        return recherche;
+    }
    
+    
 }
 

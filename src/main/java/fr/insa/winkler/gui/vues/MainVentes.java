@@ -35,6 +35,7 @@ public class MainVentes extends VBox {
 
     private Tab VenteCurrentUser;
     private Tab vendre;
+    private Tab ventesTerminees;
 
     private TabPane allTabs;
 
@@ -51,7 +52,12 @@ public class MainVentes extends VBox {
             this.vendre.setContent(new Vendre(this.main));
         });
         this.vendre.setContent(new Vendre(this.main));
-        this.allTabs = new TabPane(this.VenteCurrentUser,this.vendre);
+        this.ventesTerminees = new Tab("Ventes terminées");
+        this.ventesTerminees.setOnSelectionChanged((t) -> {
+            this.ventesTerminees.setContent(new PanneauShowVenteTerminees(this.main));
+        });
+        this.vendre.setContent(new PanneauShowVenteTerminees(this.main));
+        this.allTabs = new TabPane(this.VenteCurrentUser,this.vendre,this.ventesTerminees);
         this.getChildren().addAll(this.allTabs);
         this.allTabs.getSelectionModel().select(this.VenteCurrentUser);
      }
