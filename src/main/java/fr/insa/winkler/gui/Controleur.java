@@ -285,9 +285,9 @@ public class Controleur {
         JavaFXUtils.addSimpleBorder(vlEncherePerdante, Color.RED, 2);
         vlEncherePerdante.setAlignment(Pos.CENTER);
 
-        this.encheres.add(this.encheres.getCategorie(),0,0);
-        this.encheres.add(this.encheres.getCategories(),1,0);
-        this.encheres.add(this.encheres.getVbInfos(),2,0);
+        this.encheres.add(vlEnchere,0,1);
+        this.encheres.add(vlEnchereGagnante,1,1);
+        this.encheres.add(vlEncherePerdante,2,1);
 
         }
         if(etat==11){
@@ -296,12 +296,11 @@ public class Controleur {
                 a.add(s);
             }
             Categorie categorieChoisie=Categorie.predef(Integer.parseInt(a.get(0)));
-            
             VBox vlPasEnchere = new VBox();
             Label lPasEnchere = new Label("Objets en vente");
             lPasEnchere.setStyle("-fx-font-size: 20");
             vlPasEnchere.getChildren().add(lPasEnchere);
-            
+
             if(categorieChoisie.getId()!=0){
                try {
                 List<Objet> objetsPasEncheris = BdD.objetPasEncheri(
@@ -324,8 +323,6 @@ public class Controleur {
             }
         JavaFXUtils.addSimpleBorder(vlPasEnchere, Color.BLUE, 2);
         vlPasEnchere.setAlignment(Pos.CENTER);
-        this.encherir.getGpEnchere().setAlignment(Pos.CENTER);
-       
         
      
         VBox vlEnchere = new VBox();
@@ -360,8 +357,8 @@ public class Controleur {
         }
         JavaFXUtils.addSimpleBorder(vlEnchere, Color.GREEN, 2);           
         vlEnchere.setAlignment(Pos.CENTER);
+        this.encherir.getGpEnchere().add(vlPasEnchere,0,1);
         this.encherir.getGpEnchere().add(vlEnchere,2,1);
-        this.encherir.getChildren().add(this.encherir.getGpEnchere());
         }
         
         if(etat==12){
@@ -439,7 +436,6 @@ public class Controleur {
             vlEnchere.setAlignment(Pos.CENTER);
             JavaFXUtils.addSimpleBorder(vlEnchere, Color.GREEN, 2);
             this.reencherir.getGpEnchere().add(vlEnchere,2,1);
-            this.reencherir.getChildren().add(this.reencherir.getGpEnchere());
         }
         if(etat==20){
             List<String> a = new ArrayList<>();
@@ -474,7 +470,7 @@ public class Controleur {
             this.ventes.add(vlObjetsEnVente,0,1);
             
             VBox vlObjetsVendus = new VBox();
-            vlObjetsVendus.getChildren().add(new BigLabel("Vos objets vendus",20));
+            vlObjetsVendus.getChildren().add(new BigLabel("Vos objets enchéris",20));
             if(categorieChoisie.getId()!=0){
                 try {
                     List<Objet> datas = BdD.objetsVendus(
@@ -500,7 +496,7 @@ public class Controleur {
             this.ventes.add(vlObjetsVendus,1,1);
             
             VBox vlObjetsPasVendus = new VBox();
-            vlObjetsPasVendus.getChildren().add(new BigLabel("Vos objets non vendus",20));
+            vlObjetsPasVendus.getChildren().add(new BigLabel("Vos objets non encheris",20));
             if(categorieChoisie.getId()!=0){
                 try {
                     List<Objet> datas = BdD.objetsPasVendus(

@@ -93,7 +93,7 @@ public class Objet {
     public String toString() {
         String res="";
         res=res+"                             "+this.getTitre().toUpperCase()+"\n"+"\n";
-        res=res+this.getDescription()+"\n";
+        res=res+"Description: "+this.getDescription()+"\n";
         res=res+"Catégorie: "+this.getCategorie()+"\n";
         res=res+"Prixe de base: "+this.getPrixBase()+"\n";
         res=res+"Prix actuel : "+this.getPrixActuel()+"\n";
