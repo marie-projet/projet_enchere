@@ -647,11 +647,12 @@ public class BdD {
         try ( PreparedStatement st = con.prepareStatement(
         """
         select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
-        where objet.id not in (select enchere.sur from enchere where enchere.de=?) and objet.categorie=?
+        where objet.id not in (select enchere.sur from enchere where enchere.de=?) and objet.categorie=? and objet.proposepar!=?
         
         """)) {
             st.setInt(1,utilisateur.getId());
             st.setInt(2,cat.getId());
+            st.setInt(3,utilisateur.getId());
             try ( ResultSet rs = st.executeQuery()){
                 while (rs.next()) {
                     int id = rs.getInt(1);
