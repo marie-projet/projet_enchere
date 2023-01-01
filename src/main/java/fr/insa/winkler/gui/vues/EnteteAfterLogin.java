@@ -39,9 +39,9 @@ public class EnteteAfterLogin extends HBox {
         this.main = main;
         this.setAlignment(Pos.TOP_LEFT);
         
-        this.vbLogout = new Button("Logout");
-        this.vbLogout.setMinWidth(60);
-        this.vbLogout.setMaxWidth(60);
+        this.vbLogout = new Button("Déconnexion");
+        this.vbLogout.setMinWidth(100);
+        this.vbLogout.setMaxWidth(100);
         this.vbLogout.setOnAction((event) -> {
             this.doLogout();
         });

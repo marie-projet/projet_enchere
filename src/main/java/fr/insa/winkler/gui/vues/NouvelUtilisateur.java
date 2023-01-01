@@ -25,6 +25,9 @@ import fr.insa.winkler.projet.Utilisateur;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -49,12 +52,22 @@ public class NouvelUtilisateur extends GridPane {
 
     public NouvelUtilisateur(MainPane main) {
         this.main = main;
+        this.setMinWidth(780);
+        this.setPadding(new Insets(40,0,0,0));
+        this.setVgap(10);
+        this.setAlignment(Pos.CENTER);
         this.vtNom = new TextField();
+        this.vtNom.setPromptText("Nom");
         this.vtPrenom = new TextField();
+        this.vtPrenom.setPromptText("Prénom");
         this.vtCodePostal = new TextField();
+        this.vtCodePostal.setPromptText("Code postal");
         this.vtEmail = new TextField();
+        this.vtEmail.setPromptText("Email");
         this.vtPass = new PasswordField();
+        this.vtPass.setPromptText("Mot de passe");
         this.vtPass2 = new PasswordField();
+        this.vtPass2.setPromptText("Mot de passe");
         this.vbValidate = new Button("Valider");
         this.vbValidate.setOnAction((event) -> {
             Connection con = this.main.getSession().getConBdD();
@@ -80,23 +93,24 @@ public class NouvelUtilisateur extends GridPane {
             }
 
         });
+        this.setHalignment(this.vbValidate,HPos.CENTER);
         int lig = 0;
-        this.add(new Label("nom : "), 0, lig);
+        this.add(new Label("Nom : "), 0, lig);
         this.add(this.vtNom, 1, lig);
         lig++;
-        this.add(new Label("prenom : "), 0, lig);
+        this.add(new Label("Prénom : "), 0, lig);
         this.add(this.vtPrenom, 1, lig);
         lig++;
-        this.add(new Label("code postal : "), 0, lig);
+        this.add(new Label("Code postal : "), 0, lig);
         this.add(this.vtCodePostal, 1, lig);
         lig++;
-        this.add(new Label("email : "), 0, lig);
+        this.add(new Label("Email : "), 0, lig);
         this.add(this.vtEmail, 1, lig);
         lig++;
-        this.add(new Label("pass : "), 0, lig);
+        this.add(new Label("Pass : "), 0, lig);
         this.add(this.vtPass, 1, lig);
         lig++;
-        this.add(new Label("confirmation pass : "), 0, lig);
+        this.add(new Label("Confirmation pass : "), 0, lig);
         this.add(this.vtPass2, 1, lig);
         lig++;
         this.add(this.vbValidate, 0, lig, 2, 1);

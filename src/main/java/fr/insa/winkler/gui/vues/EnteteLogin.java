@@ -38,9 +38,9 @@ public class EnteteLogin extends HBox {
 
                 this.main = main;
         
-        this.bLogin = new Button("Login");
-        this.bLogin.setMinWidth(60);
-        this.bLogin.setMaxWidth(60);
+        this.bLogin = new Button("Connexion");
+        this.bLogin.setMinWidth(90);
+        this.bLogin.setMaxWidth(90);
         this.bLogin.setOnAction((event) -> {
             this.main.setMainContent(new Login(this.main));
         });

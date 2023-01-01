@@ -25,6 +25,9 @@ import fr.insa.winkler.projet.Utilisateur;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -46,14 +49,20 @@ public class Login extends GridPane{
     
     public Login(MainPane main) {
         this.main = main;
+        this.setMinWidth(780);
+        this.setPadding(new Insets(40,0,0,0));
+        this.setVgap(10);
+        this.setAlignment(Pos.CENTER);
         this.TFemail= new TextField();
+        this.TFemail.setPromptText("Email");
         this.PFpass = new PasswordField();
-        this.bLogin = new Button("login");
+        this.PFpass.setPromptText("Mot de passe");
+        this.bLogin = new Button("Connexion");
         int lig = 0;
-        this.add(new Label("email : "), 0, lig);
+        this.add(new Label("Email : "), 0, lig);
         this.add(this.TFemail, 1, lig);
         lig ++;
-        this.add(new Label("pass : "), 0, lig);
+        this.add(new Label("Pass : "), 0, lig);
         this.add(this.PFpass, 1, lig);
         lig ++;
         this.add(this.bLogin, 0, lig,2,1);
@@ -61,6 +70,7 @@ public class Login extends GridPane{
         this.bLogin.setOnAction((event) -> {
             this.doLogin();
         });
+        this.setHalignment(this.bLogin,HPos.CENTER);
     }
     
     public void doLogin() {
