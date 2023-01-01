@@ -167,12 +167,6 @@ public class PanneauShowEnchere extends GridPane {
     public void setvEncherePerdante(ObjetTable vEncherePerdante) {
         this.vEncherePerdante = vEncherePerdante;
     }
-    
-    
-    
-
-    
-    
-    
+   
 }
 

@@ -12,13 +12,18 @@ import fr.insa.winkler.gui.vues.ObjetTable2;
 import fr.insa.winkler.gui.vues.PanneauShowEnchere;
 import fr.insa.winkler.gui.vues.PanneauShowVente;
 import fr.insa.winkler.gui.vues.Reencherir;
+import fr.insa.winkler.gui.vues.Vendre;
 import fr.insa.winkler.projet.BdD;
 import fr.insa.winkler.projet.Categorie;
 import fr.insa.winkler.projet.Objet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -34,6 +39,7 @@ public class Controleur {
     private Encherir encherir;
     private Reencherir reencherir;
     private PanneauShowVente ventes;
+    private Vendre vendre;
     private int etat;
     
     public Controleur (MainPane vue){
@@ -211,7 +217,7 @@ public class Controleur {
             }
         JavaFXUtils.addSimpleBorder(vlEnchere, Color.BLUE, 2);
         vlEnchere.setAlignment(Pos.CENTER);
-        this.encheres.add(vlEnchere,0,1);
+        
         
         VBox vlEnchereGagnante = new VBox();
         vlEnchereGagnante.getChildren().add(new BigLabel("Vos enchères gagnantes",20));
@@ -245,8 +251,7 @@ public class Controleur {
         }
         JavaFXUtils.addSimpleBorder(vlEnchereGagnante, Color.GREEN, 2);
         vlEnchereGagnante.setAlignment(Pos.CENTER);
-        this.encheres.add(vlEnchereGagnante,1,1);
-        
+                
         VBox vlEncherePerdante = new VBox();
         vlEncherePerdante.getChildren().add(new BigLabel("Vos enchères perdantes",20));
         if(categorieChoisie.getId()!=0){
@@ -279,7 +284,11 @@ public class Controleur {
         }
         JavaFXUtils.addSimpleBorder(vlEncherePerdante, Color.RED, 2);
         vlEncherePerdante.setAlignment(Pos.CENTER);
-        this.encheres.add(vlEncherePerdante,2,1);
+
+        this.encheres.add(this.encheres.getCategorie(),0,0);
+        this.encheres.add(this.encheres.getCategories(),1,0);
+        this.encheres.add(this.encheres.getVbInfos(),2,0);
+
         }
         if(etat==11){
             List<String> a = new ArrayList<>();
@@ -518,6 +527,26 @@ public class Controleur {
         }
         
     }
+    
+    public void vendre(){
+        Long datetime = System.currentTimeMillis();
+        Timestamp debut = new Timestamp(datetime);
+        String titre=this.vendre.getTitre().getText();
+        String description=this.vendre.getDescription().getText();
+        Timestamp fin=Timestamp.valueOf(this.vendre.getDateFin().getValue().atStartOfDay());
+        int prixBase=Integer.parseInt(this.vendre.getPrixBase().getText());
+        List<String> a = new ArrayList<>();
+            for (String s: this.vendre.getCategorie().getSelectionModel().getSelectedItem().split(":")) {
+                a.add(s);
+            }
+            Categorie categorieChoisie=Categorie.predef(Integer.parseInt(a.get(0)));
+        try{
+            BdD.ajouterObjet(this.vue.getSession().getConBdD(), titre,description, debut, fin, prixBase, categorieChoisie.getId(), this.vue.getSession().getCurUser().orElseThrow().getId());
+        }catch (SQLException ex) {
+             JavaFXUtils.showErrorInAlert("Problème rencontré, veuillez réessayer");
+        }
+        this.vendre.reInit();
+    }
         
     public void setEtat(int etat) {
         this.etat = etat;
@@ -538,6 +567,12 @@ public class Controleur {
     public void setVentes(PanneauShowVente ventes) {
         this.ventes = ventes;
     }
+
+    public void setVendre(Vendre vendre) {
+        this.vendre = vendre;
+    }
+    
+    
     
     
     

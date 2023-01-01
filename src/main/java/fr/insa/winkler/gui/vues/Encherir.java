@@ -104,10 +104,14 @@ public class Encherir extends VBox {
         lPasEnchere.setStyle("-fx-font-size: 20");
         vlPasEnchere.getChildren().add(lPasEnchere);
         try {
+            System.out.println("debug");
             List<Objet> objetsPasEncheris = BdD.objetPasEncheri(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
+            System.out.println("debug");
             this.vPasEnchere = new ObjetTable(this.main,objetsPasEncheris);
+            System.out.println("debug");
             vlPasEnchere.getChildren().add(this.vPasEnchere);
+            System.out.println("debug");
         } catch (SQLException ex) {
             vlPasEnchere.getChildren().add(new BigLabel("Probleme BdD",20));
         }
