@@ -101,6 +101,17 @@ public class Objet {
         return res;
     }
     
+    public String toString2() {
+        String res="";
+        res=res+"                             "+this.getTitre().toUpperCase()+"\n"+"\n";
+        res=res+"Description: "+this.getDescription()+"\n";
+        res=res+"Catégorie: "+this.getCategorie()+"\n";
+        res=res+"Prixe de base: "+this.getPrixBase()+"\n";
+        res=res+"Prix final : "+this.getPrixActuel()+"\n";
+        res=res+"Fin de l'enchère : "+this.getFin()+"\n";
+        return res;
+    }
+    
     public void print(Connection con){
         System.out.println("____________Objet____________");
         System.out.println(this.getTitre());
