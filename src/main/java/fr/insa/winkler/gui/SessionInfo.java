@@ -70,7 +70,7 @@ public class SessionInfo {
      * @return the userName
      */
     public String getUserName() {
-        return this.curUser.orElseThrow().getNom();
+        return this.curUser.orElseThrow().getPrenom();
     }
 
 }

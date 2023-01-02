@@ -81,7 +81,7 @@ public class NouvelUtilisateur extends GridPane {
                 try {
                     Utilisateur curU = BdD.ajouterUtilisateur(con, nom, prenom, email, pass,codePostal);
                     this.main.getSession().setCurUser(Optional.of(curU));
-                    JavaFXUtils.showInfoInAlert("Utilisateur " + nom + " créé");
+                    JavaFXUtils.showInfoInAlert("Utilisateur " + prenom + " créé");
                     this.main.setMainContent(new MainAfterLogin(this.main));
                     this.main.setEntete(new EnteteAfterLogin(this.main));
                 } catch (SQLException ex) {
