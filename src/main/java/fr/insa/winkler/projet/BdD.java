@@ -35,7 +35,7 @@ public class BdD {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439,
+        return connectGeneralPostGres("localhost", 5432,
                 "postgres", "postgres", "pass");
     }
 
@@ -392,6 +392,65 @@ public class BdD {
         }
     }
     
+    /*
+    Liste des objets dont la date de fin n'est pas depassee.
+    */
+    public static List<Objet> listObjetFrais(Connection con) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( Statement st = con.createStatement()) {
+            try ( ResultSet rs = st.executeQuery(
+                    """
+                    select id,titre,description,debut,fin,prixbase,categorie,proposepar from objet 
+                    """)) {
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String categorie = rs.getString(7);
+                    int proposePar = rs.getInt(8);
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, proposePar));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+    
+    /*
+    Liste des objets dont la date de fin est depassee.
+    */
+    public static List<Objet> listObjetPerime(Connection con) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( Statement st = con.createStatement()) {
+            try ( ResultSet rs = st.executeQuery(
+                    """
+                    select id,titre,description,debut,fin,prixbase,categorie,proposepar from objet 
+                    """)) {
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String categorie = rs.getString(7);
+                    int proposePar = rs.getInt(8);
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, proposePar));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+    
+    
     public static void afficheListObjet(Connection con, List<Objet> list)throws SQLException {
         for(Objet objet: list){
             objet.print(con);
@@ -473,9 +532,10 @@ public class BdD {
     }
     
     /*
-    Donne la liste des objets dont l'utilisateur a enchéri au moins une fois.
+    Donne la liste des objets dont l'utilisateur a enchéri au moins une fois lorsque l'objet est toujours en vente.
     */
     public static List<Objet> objetEncheri(Connection con, Utilisateur utilisateur) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -497,7 +557,44 @@ public class BdD {
                     Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
                     String categorie=cat.getNom();
                     int proposePar = rs.getInt(8);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, proposePar));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, proposePar));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+    
+    /*
+    La même chose mais lorsque l'objet n'est plus en vente.
+    */
+    public static List<Objet> objetEncheriPerime(Connection con, Utilisateur utilisateur) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select distinct on (objet.id) objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie, objet.proposepar from enchere
+        join objet on objet.id = enchere.sur
+        where enchere.de=?
+        
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String idcategorie = rs.getString(8);
+                    Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
+                    String categorie=cat.getNom();
+                    int proposePar = rs.getInt(8);
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, proposePar));
+                    }
                 }
                 return res;
             }
@@ -507,6 +604,7 @@ public class BdD {
     La même chose mais avec un mot correspondant dans la description/titre.
     */
     public static List<Objet> objetEncheri(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -532,7 +630,48 @@ public class BdD {
                     String idcategorie = rs.getString(8);
                     Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
                     String categorie=cat.getNom();
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, proposePar));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, proposePar));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+    
+    /*
+    La même chose mais lorsque l'objet n'est plus en vente.
+    */
+    public static List<Objet> objetEncheriPerime(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select distinct on (objet.id) objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.proposepar, objet.categorie from enchere
+        join objet on objet.id = enchere.sur
+        where enchere.de=?
+        and (objet.description like ? or objet.titre like ?)
+        
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setString(2,"%" + mot + "%");
+            st.setString(3,"%" + mot + "%");
+            
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    int proposePar = rs.getInt(7);
+                    String idcategorie = rs.getString(8);
+                    Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
+                    String categorie=cat.getNom();
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, proposePar));
+                    }
                 }
                 return res;
             }
@@ -543,6 +682,7 @@ public class BdD {
     La même chose mais avec une catégorie précise.
     */
     public static List<Objet> objetEncheri(Connection con, Utilisateur utilisateur, Categorie categorie) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -563,14 +703,48 @@ public class BdD {
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
                     int proposePar = rs.getInt(7);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie.getNom(), proposePar));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie.getNom(), proposePar));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+    public static List<Objet> objetEncheriPerime(Connection con, Utilisateur utilisateur, Categorie categorie) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select distinct on (objet.id) objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.proposepar from enchere
+        join objet on objet.id = enchere.sur
+        where enchere.de=?
+        and objet.categorie=?
+        
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setInt(2,categorie.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    int proposePar = rs.getInt(7);
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie.getNom(), proposePar));
+                    }
                 }
                 return res;
             }
         }
     }
     
+    
         public static List<Objet> objetEncheri(Connection con, Utilisateur utilisateur, String mot,Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -593,7 +767,42 @@ public class BdD {
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
                     int proposePar = rs.getInt(7);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), proposePar));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), proposePar));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+        
+        public static List<Objet> objetEncheriPerime(Connection con, Utilisateur utilisateur, String mot,Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select distinct on (objet.id) objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.proposepar, objet.categorie from enchere
+        join objet on objet.id = enchere.sur
+        where enchere.de=?
+        and (objet.description like ? or objet.titre like ?) and objet.categorie=?
+        
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setString(2,"%" + mot + "%");
+            st.setString(3,"%" + mot + "%");
+            st.setInt(4,cat.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    int proposePar = rs.getInt(7);
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), proposePar));
+                    }
                 }
                 return res;
             }
@@ -606,9 +815,21 @@ public class BdD {
     Donne la liste des objets dont l'utilisateur à l'enchère la plus élevé. Prend la liste de objetEncheri en entrée.
     */
     public static List<Objet> objetEncheriGagnant(Connection con, Utilisateur utilisateur, List<Objet> list) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         for(Objet objet: list){
-            if(dernierEnchereSurObjet(con,objet.getId()) == dernierEnchereSurObjetDunUtilisateur(con,objet.getId(),utilisateur)){
+            if(dernierEnchereSurObjet(con,objet.getId()) == dernierEnchereSurObjetDunUtilisateur(con,objet.getId(),utilisateur) && objet.getFin().after(now)){
+                res.add(objet);
+            }
+        }
+        return res;
+    }
+    
+    public static List<Objet> objetEncheriGagnantPerime(Connection con, Utilisateur utilisateur, List<Objet> list) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        for(Objet objet: list){
+            if(dernierEnchereSurObjet(con,objet.getId()) == dernierEnchereSurObjetDunUtilisateur(con,objet.getId(),utilisateur) && objet.getFin().before(now)){
                 res.add(objet);
             }
         }
@@ -619,14 +840,27 @@ public class BdD {
     Donne la liste des objets dont l'utilisateur à enchéri au moins une fois mais un autre utilisateur à enchéri plus que lui. Prend la liste de objetEncheri en entrée.
     */
     public static List<Objet> objetEncheriPerdant(Connection con, Utilisateur utilisateur, List<Objet> list) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         for(Objet objet: list){
-            if(dernierEnchereSurObjet(con,objet.getId()) > dernierEnchereSurObjetDunUtilisateur(con,objet.getId(),utilisateur)){
+            if(dernierEnchereSurObjet(con,objet.getId()) > dernierEnchereSurObjetDunUtilisateur(con,objet.getId(),utilisateur) && objet.getFin().after(now)){
                 res.add(objet);
             }
         }
         return res;
     }
+    
+    public static List<Objet> objetEncheriPerdantPerime(Connection con, Utilisateur utilisateur, List<Objet> list) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        for(Objet objet: list){
+            if(dernierEnchereSurObjet(con,objet.getId()) > dernierEnchereSurObjetDunUtilisateur(con,objet.getId(),utilisateur) && objet.getFin().before(now)){
+                res.add(objet);
+            }
+        }
+        return res;
+    }
+    
     /*
     Pas tiptop mais en haut ça marche pas.
     */
@@ -641,6 +875,7 @@ public class BdD {
     }
     
     public static List<Objet> objetPasEncheri(Connection con, Utilisateur utilisateur) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -661,7 +896,9 @@ public class BdD {
                     String idcategorie = rs.getString(7);
                     Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
                     String categorie=cat.getNom();
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    }     
                 }
                 return res;
             }
@@ -674,6 +911,7 @@ public class BdD {
     }
     
         public static List<Objet> objetPasEncheri(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -692,7 +930,9 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
                 }
                 return res;
             }
@@ -700,6 +940,7 @@ public class BdD {
     }
         
     public static List<Objet> objetPasEncheri(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -720,13 +961,16 @@ public class BdD {
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
                     String categorie = rs.getString(7);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    }
                 }
                 return res;
             }
         }
     }
      public static List<Objet> objetPasEncheri(Connection con, Utilisateur utilisateur, String mot,Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -747,7 +991,9 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
                 }
                 return res;
             }
@@ -755,6 +1001,7 @@ public class BdD {
     }
     
     public static List<Objet> objetsEnVente(Connection con, Utilisateur utilisateur) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -773,7 +1020,9 @@ public class BdD {
                     String idcategorie = rs.getString(7);
                     Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
                     String categorie=cat.getNom();
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    }
                 }
                 return res;
             }
@@ -783,6 +1032,7 @@ public class BdD {
     Objets mis en vente par un utilisateur avec un mot en description/titre.
     */
     public static List<Objet> objetsEnVente(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -805,7 +1055,9 @@ public class BdD {
                     String idcategorie = rs.getString(7);
                     Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
                     String categorie=cat.getNom();
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    }
                 }
                 return res;
             }
@@ -816,6 +1068,7 @@ public class BdD {
     Objets mis en vente par un utilisateur avec une categorie.
     */
         public static List<Objet> objetsEnVente(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -832,7 +1085,9 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
                 }
                 return res;
             }
@@ -840,6 +1095,7 @@ public class BdD {
     }
         
         public static List<Objet> objetsEnVente(Connection con, Utilisateur utilisateur, String mot, Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -859,7 +1115,133 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+        
+        public static List<Objet> objetsEnVentePerime(Connection con, Utilisateur utilisateur) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=?  
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String idcategorie = rs.getString(7);
+                    Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
+                    String categorie=cat.getNom();
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+    /*
+    Objets mis en vente par un utilisateur avec un mot en description/titre.
+    */
+    public static List<Objet> objetsEnVentePerime(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=? 
+        and (objet.description like ? or objet.titre like ?)
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setString(2,"%" + mot + "%");
+            st.setString(3,"%" + mot + "%");
+            
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String idcategorie = rs.getString(7);
+                    Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
+                    String categorie=cat.getNom();
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+    
+    /*
+    Objets mis en vente par un utilisateur avec une categorie.
+    */
+        public static List<Objet> objetsEnVentePerime(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=? and objet.categorie=?
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setInt(2,cat.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+        
+        public static List<Objet> objetsEnVentePerime(Connection con, Utilisateur utilisateur, String mot, Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=? 
+        and (objet.description like ? or objet.titre like ?) and objet.categorie=?
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setString(2,"%" + mot + "%");
+            st.setString(3,"%" + mot + "%");
+            st.setInt(4,cat.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
                 }
                 return res;
             }
@@ -867,6 +1249,7 @@ public class BdD {
     }
     
     public static List<Objet> objetsPasVendus(Connection con, Utilisateur utilisateur) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -885,7 +1268,9 @@ public class BdD {
                     String idcategorie = rs.getString(7);
                     Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
                     String categorie=cat.getNom();
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    }
                 }
                 return res;
             }
@@ -893,6 +1278,7 @@ public class BdD {
     }
     
     public static List<Objet> objetsPasVendus(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -909,7 +1295,9 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
                 }
                 return res;
             }
@@ -917,6 +1305,7 @@ public class BdD {
     }
         
     public static List<Objet> objetsPasVendus(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -936,14 +1325,17 @@ public class BdD {
                     int prixBase = rs.getInt(6);
                     String idcategorie = rs.getString(7);
                     Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
                 }
                 return res;
             }
         }
     }
     
-        public static List<Objet> objetsPasVendus(Connection con, Utilisateur utilisateur, String mot, Categorie cat) throws SQLException {
+    public static List<Objet> objetsPasVendus(Connection con, Utilisateur utilisateur, String mot, Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -962,14 +1354,136 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
                 }
                 return res;
             }
         }
     }
     
+    public static List<Objet> objetsPasVendusPerime(Connection con, Utilisateur utilisateur) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=? and objet.id not in (select enchere.sur from enchere)
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String idcategorie = rs.getString(7);
+                    Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
+                    String categorie=cat.getNom();
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+    
+    public static List<Objet> objetsPasVendusPerime(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=? and objet.id not in (select enchere.sur from enchere) and objet.categorie=?
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setInt(2,cat.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+        
+    public static List<Objet> objetsPasVendusPerime(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=? and objet.id not in (select enchere.sur from enchere) and (objet.description like ? or objet.titre like ?)
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setString(2,"%" + mot + "%");
+            st.setString(3,"%" + mot + "%");
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String idcategorie = rs.getString(7);
+                    Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+    
+    public static List<Objet> objetsPasVendusPerime(Connection con, Utilisateur utilisateur, String mot, Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=? and objet.id not in (select enchere.sur from enchere) and (objet.description like ? or objet.titre like ?) and objet.categorie=?
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setString(2,"%" + mot + "%");
+            st.setString(3,"%" + mot + "%");
+            st.setInt(4,cat.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+    
+    
+    
+    
+    
     public static List<Objet> objetsVendus(Connection con, Utilisateur utilisateur) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -988,7 +1502,9 @@ public class BdD {
                     String idcategorie = rs.getString(7);
                     Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
                     String categorie=cat.getNom();
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    }
                 }
                 return res;
             }
@@ -997,6 +1513,7 @@ public class BdD {
     
     
     public static List<Objet> objetsVendus(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -1013,7 +1530,9 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
                 }
                 return res;
             }
@@ -1021,6 +1540,7 @@ public class BdD {
     }
     
     public static List<Objet> objetsVendus(Connection con, Utilisateur utilisateur,String mot) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
@@ -1041,18 +1561,21 @@ public class BdD {
                     String idcategorie = rs.getString(7);
                     Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
                     String categorie=cat.getNom();
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    }
                 }
                 return res;
             }
         }
     }
     
-        public static List<Objet> objetsVendus(Connection con, Utilisateur utilisateur,String mot,Categorie cat) throws SQLException {
+    public static List<Objet> objetsVendus(Connection con, Utilisateur utilisateur,String mot,Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
         """
-        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase from objet
         where objet.proposepar=? and objet.id in (select enchere.sur from enchere) and (objet.description like ? or objet.titre like ?) and objet.categorie=?
         """)) {
             st.setInt(1,utilisateur.getId());
@@ -1067,13 +1590,137 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    String idcategorie = rs.getString(7);
-                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    if(fin.after(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
                 }
                 return res;
             }
         }
     }
+    
+    public static List<Objet> objetsVendusPerime(Connection con, Utilisateur utilisateur) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=? and objet.id in (select enchere.sur from enchere)
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String idcategorie = rs.getString(7);
+                    Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
+                    String categorie=cat.getNom();
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+    
+    
+    public static List<Objet> objetsVendusPerime(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=? and objet.id in (select enchere.sur from enchere) and objet.categorie=?
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setInt(2,cat.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+    
+    public static List<Objet> objetsVendusPerime(Connection con, Utilisateur utilisateur,String mot) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+        where objet.proposepar=? and objet.id in (select enchere.sur from enchere) and (objet.description like ? or objet.titre like ?)
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setString(2,"%" + mot + "%");
+            st.setString(3,"%" + mot + "%");
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    String idcategorie = rs.getString(7);
+                    Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
+                    String categorie=cat.getNom();
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, categorie, utilisateur.getId()));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+    
+    public static List<Objet> objetsVendusPerime(Connection con, Utilisateur utilisateur,String mot,Categorie cat) throws SQLException {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        List<Objet> res = new ArrayList<>();
+        try ( PreparedStatement st = con.prepareStatement(
+        """
+        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase from objet
+        where objet.proposepar=? and objet.id in (select enchere.sur from enchere) and (objet.description like ? or objet.titre like ?) and objet.categorie=?
+        """)) {
+            st.setInt(1,utilisateur.getId());
+            st.setString(2,"%" + mot + "%");
+            st.setString(3,"%" + mot + "%");
+            st.setInt(4,cat.getId());
+            try ( ResultSet rs = st.executeQuery()){
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String titre = rs.getString(2);
+                    String description = rs.getString(3);
+                    Timestamp debut = rs.getTimestamp(4);
+                    Timestamp fin = rs.getTimestamp(5);
+                    int prixBase = rs.getInt(6);
+                    if(fin.before(now)){
+                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), utilisateur.getId()));
+                    }
+                }
+                return res;
+            }
+        }
+    }
+    
+    
+    
+    
+    
+    
 
     public static void trouveParNom(Connection con, String nom) throws SQLException {
         try ( PreparedStatement st = con.prepareStatement(
@@ -1291,28 +1938,38 @@ public class BdD {
     }
    
    public static void ajouterEnchere(Connection con, int de, int sur, Timestamp quand, int montant) throws SQLException {
-        int prix=dernierEnchereSurObjet(con, sur);
-        if (montant>prix){  
-            try ( PreparedStatement pst = con.prepareStatement(
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        
+        try ( Statement st = con.createStatement()) {
+            try ( ResultSet rs = st.executeQuery(
                     """
-                    insert into enchere (de, sur, quand, montant) values (?,?,?,?)
+                    select fin from objet 
                     """)) {
+                rs.next();
+                Timestamp fin = rs.getTimestamp(1);
+                int prix=dernierEnchereSurObjet(con, sur);
+                    if (montant>prix && fin.after(now)){  
+                        try ( PreparedStatement pst = con.prepareStatement(
+                            """
+                                insert into enchere (de, sur, quand, montant) values (?,?,?,?)
+                                """)) {
 
-                pst.setInt(1, de);
-                pst.setInt(2, sur);
-                pst.setTimestamp(3, quand);
-                pst.setInt(4, montant);
-
-                pst.executeUpdate();
-
-            } 
-        }else {
-            JavaFXUtils.showErrorInAlert("Montant inférieur à l'enchère précédente");
-            throw new Error("Montant inférieur à l'enchère précédente");
+                            pst.setInt(1, de);
+                            pst.setInt(2, sur);
+                            pst.setTimestamp(3, quand);
+                            pst.setInt(4, montant);
+                            pst.executeUpdate();
+                        }
+                }else{
+                    JavaFXUtils.showErrorInAlert("Montant inférieur à l'enchère précédente");
+                    throw new Error("Montant inférieur à l'enchère précédente");
+                }
+            }
         }
     }
    
     public static void ajouterEnchere(Connection con, Utilisateur utilisateur) throws SQLException {
+        
         int de=utilisateur.getId();
         int sur=choisirObjet(con);
         afficheEnchereObjet(con,sur);
@@ -1323,10 +1980,21 @@ public class BdD {
     }
     
     public static void ajouterEnchere(Connection con, Utilisateur utilisateur, int montant,int sur) throws SQLException {
+        
         int de=utilisateur.getId();
         Long datetime = System.currentTimeMillis();
         Timestamp quand = new Timestamp(datetime);
         ajouterEnchere(con,de,sur,quand,montant);
+    }
+    
+    public static void ajouterEnchere(Connection con, Utilisateur utilisateur, int montant, Objet obj) throws SQLException {
+        int de=utilisateur.getId();
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        if(obj.getFin().before(now)){
+            ajouterEnchere(con,de,obj.getId(),now,montant);
+        }else{
+            throw new Error("Date depassee");
+        }
     }
     
  
@@ -1555,8 +2223,8 @@ public class BdD {
         try ( Connection con = defautConnect()) {
             System.out.println("connecté !");
             //afficheToutesLesEncheres(con);
-            afficheListCategorie(listCategorie(con));
-            afficheListObjet(con,listObjet(con));
+            //afficheListCategorie(listCategorie(con));
+            //afficheListObjet(con,listObjet(con));
             menu(con);
         } catch (Exception ex) {
             throw new Error(ex);
