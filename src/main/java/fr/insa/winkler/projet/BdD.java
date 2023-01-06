@@ -1936,19 +1936,24 @@ public class BdD {
             }
         }
     }
-   
+    
+    
    public static void ajouterEnchere(Connection con, int de, int sur, Timestamp quand, int montant) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         
-        try ( Statement st = con.createStatement()) {
-            try ( ResultSet rs = st.executeQuery(
-                    """
-                    select fin from objet 
-                    """)) {
+        try ( PreparedStatement st = con.prepareStatement(
+                "select fin from objet "
+                + "where objet.id = ?")) {
+            st.setInt(1, sur);
+
+            try ( ResultSet rs = st.executeQuery()) {
                 rs.next();
-                Timestamp fin = rs.getTimestamp(1);
-                int prix=dernierEnchereSurObjet(con, sur);
-                    if (montant>prix && fin.after(now)){  
+                Timestamp fin = rs.getTimestamp("fin");
+                
+                if(fin.after(now)){
+                    
+                    int prix=dernierEnchereSurObjet(con, sur);
+                    if (montant>prix){  
                         try ( PreparedStatement pst = con.prepareStatement(
                             """
                                 insert into enchere (de, sur, quand, montant) values (?,?,?,?)
@@ -1963,6 +1968,11 @@ public class BdD {
                 }else{
                     JavaFXUtils.showErrorInAlert("Montant inférieur à l'enchère précédente");
                     throw new Error("Montant inférieur à l'enchère précédente");
+                }
+                    
+                }else{
+                    JavaFXUtils.showErrorInAlert("Date depassée");
+                    throw new Error("Date depassée");
                 }
             }
         }
@@ -1985,16 +1995,6 @@ public class BdD {
         Long datetime = System.currentTimeMillis();
         Timestamp quand = new Timestamp(datetime);
         ajouterEnchere(con,de,sur,quand,montant);
-    }
-    
-    public static void ajouterEnchere(Connection con, Utilisateur utilisateur, int montant, Objet obj) throws SQLException {
-        int de=utilisateur.getId();
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        if(obj.getFin().before(now)){
-            ajouterEnchere(con,de,obj.getId(),now,montant);
-        }else{
-            throw new Error("Date depassee");
-        }
     }
     
  
