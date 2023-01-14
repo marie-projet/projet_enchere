@@ -9,6 +9,7 @@ import fr.insa.winkler.gui.vues.BigLabel;
 import fr.insa.winkler.gui.vues.Encherir;
 import fr.insa.winkler.gui.vues.ObjetTable;
 import fr.insa.winkler.gui.vues.ObjetTable2;
+import fr.insa.winkler.gui.vues.ObjetTable3;
 import fr.insa.winkler.gui.vues.PanneauShowEnchere;
 import fr.insa.winkler.gui.vues.PanneauShowEnchereTerminees;
 import fr.insa.winkler.gui.vues.PanneauShowVente;
@@ -721,9 +722,9 @@ public class Controleur {
             if(this.encheresTerminees.getRecherche()==null){
                 if(categorieChoisie.getId()!=0){
                     try {
-                        List<Objet> datas = BdD.objetEncheri(
+                        List<Objet> datas = BdD.objetEncheriPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                        this.encheresTerminees.setvEnchere(new ObjetTable(this.vue,datas));
+                        this.encheresTerminees.setvEnchere(new ObjetTable3(this.vue,datas));
                         vlEnchere.getChildren().add(this.encheresTerminees.getvEnchere());
                     } catch (SQLException ex) {
                         vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -731,9 +732,9 @@ public class Controleur {
                 }
                 else{
                     try {
-                    List<Objet> datas = BdD.objetEncheri(
+                    List<Objet> datas = BdD.objetEncheriPerime(
                             this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
-                    this.encheresTerminees.setvEnchere(new ObjetTable(this.vue,datas));
+                    this.encheresTerminees.setvEnchere(new ObjetTable3(this.vue,datas));
                     vlEnchere.getChildren().add(this.encheresTerminees.getvEnchere());
                     } catch (SQLException ex) {
                         vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -743,9 +744,9 @@ public class Controleur {
             else{
                 if(categorieChoisie.getId()!=0){
                     try {
-                        List<Objet> datas = BdD.objetEncheri(
+                        List<Objet> datas = BdD.objetEncheriPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.encheresTerminees.getRecherche().getText(),categorieChoisie);
-                        this.encheresTerminees.setvEnchere(new ObjetTable(this.vue,datas));
+                        this.encheresTerminees.setvEnchere(new ObjetTable3(this.vue,datas));
                         vlEnchere.getChildren().add(this.encheresTerminees.getvEnchere());
                     } catch (SQLException ex) {
                         vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -753,9 +754,9 @@ public class Controleur {
                 }
                 else{
                     try {
-                    List<Objet> datas = BdD.objetEncheri(
+                    List<Objet> datas = BdD.objetEncheriPerime(
                             this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.encheresTerminees.getRecherche().getText());
-                    this.encheresTerminees.setvEnchere(new ObjetTable(this.vue,datas));
+                    this.encheresTerminees.setvEnchere(new ObjetTable3(this.vue,datas));
                     vlEnchere.getChildren().add(this.encheresTerminees.getvEnchere());
                     } catch (SQLException ex) {
                         vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -771,13 +772,13 @@ public class Controleur {
         if(this.encheresTerminees.getRecherche()==null){
             if(categorieChoisie.getId()!=0){
                 try {
-                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnantPerime(
                             this.vue.getSession
                 ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheriPerime(this.vue.getSession
                 ().getConBdD(), this.vue.getSession
                 ().getCurUser().orElseThrow(),categorieChoisie));
-                    this.encheresTerminees.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    this.encheresTerminees.setvEnchereGagnante(new ObjetTable3(this.vue,objetsEncheris));
                     vlEnchereGagnante.getChildren().add(this.encheresTerminees.getvEnchereGagnante());
                 } catch (SQLException ex) {
                     vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
@@ -785,13 +786,13 @@ public class Controleur {
             }
             else{
                 try {
-                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnantPerime(
                             this.vue.getSession
                 ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheriPerime(this.vue.getSession
                 ().getConBdD(), this.vue.getSession
                 ().getCurUser().orElseThrow()));
-                    this.encheresTerminees.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    this.encheresTerminees.setvEnchereGagnante(new ObjetTable3(this.vue,objetsEncheris));
                     vlEnchereGagnante.getChildren().add(this.encheresTerminees.getvEnchereGagnante());
                 } catch (SQLException ex) {
                     vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
@@ -801,13 +802,13 @@ public class Controleur {
         else{
             if(categorieChoisie.getId()!=0){
                 try {
-                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnantPerime(
                             this.vue.getSession
                 ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheriPerime(this.vue.getSession
                 ().getConBdD(), this.vue.getSession
                 ().getCurUser().orElseThrow(),this.encheresTerminees.getRecherche().getText(),categorieChoisie));
-                    this.encheresTerminees.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    this.encheresTerminees.setvEnchereGagnante(new ObjetTable3(this.vue,objetsEncheris));
                     vlEnchereGagnante.getChildren().add(this.encheresTerminees.getvEnchereGagnante());
                 } catch (SQLException ex) {
                     vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
@@ -815,13 +816,13 @@ public class Controleur {
             }
             else{
                 try {
-                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnantPerime(
                             this.vue.getSession
                 ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheriPerime(this.vue.getSession
                 ().getConBdD(), this.vue.getSession
                 ().getCurUser().orElseThrow(),this.encheresTerminees.getRecherche().getText()));
-                    this.encheresTerminees.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    this.encheresTerminees.setvEnchereGagnante(new ObjetTable3(this.vue,objetsEncheris));
                     vlEnchereGagnante.getChildren().add(this.encheresTerminees.getvEnchereGagnante());
                 } catch (SQLException ex) {
                     vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
@@ -836,13 +837,13 @@ public class Controleur {
         if(this.encheresTerminees.getRecherche()==null){
             if(categorieChoisie.getId()!=0){
                 try {
-                    List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                    List<Objet> objetsEncheris = BdD.objetEncheriPerdantPerime(
                             this.vue.getSession
                 ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheriPerime(this.vue.getSession
                 ().getConBdD(), this.vue.getSession
                 ().getCurUser().orElseThrow(),categorieChoisie));
-                    this.encheresTerminees.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                    this.encheresTerminees.setvEncherePerdante(new ObjetTable3(this.vue,objetsEncheris));
                     vlEncherePerdante.getChildren().add(this.encheresTerminees.getvEncherePerdante());
                 } catch (SQLException ex) {
                     vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
@@ -850,13 +851,13 @@ public class Controleur {
             }
             else{
                 try {
-                List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                List<Objet> objetsEncheris = BdD.objetEncheriPerdantPerime(
                         this.vue.getSession
                 ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheriPerime(this.vue.getSession
                 ().getConBdD(), this.vue.getSession
                 ().getCurUser().orElseThrow()));
-                    this.encheresTerminees.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                    this.encheresTerminees.setvEncherePerdante(new ObjetTable3(this.vue,objetsEncheris));
                     vlEncherePerdante.getChildren().add(this.encheresTerminees.getvEncherePerdante());
                 } catch (SQLException ex) {
                     vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
@@ -866,13 +867,13 @@ public class Controleur {
         else{
             if(categorieChoisie.getId()!=0){
                 try {
-                    List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                    List<Objet> objetsEncheris = BdD.objetEncheriPerdantPerime(
                                 this.vue.getSession
                     ().getConBdD(), this.vue.getSession
-                    ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                    ().getCurUser().orElseThrow(),BdD.objetEncheriPerime(this.vue.getSession
                     ().getConBdD(), this.vue.getSession
                     ().getCurUser().orElseThrow(),this.encheresTerminees.getRecherche().getText(),categorieChoisie));
-                        this.encheresTerminees.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                        this.encheresTerminees.setvEncherePerdante(new ObjetTable3(this.vue,objetsEncheris));
                         vlEncherePerdante.getChildren().add(this.encheresTerminees.getvEncherePerdante());
                     } catch (SQLException ex) {
                         vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
@@ -880,13 +881,13 @@ public class Controleur {
             }
             else{
                 try {
-                List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                List<Objet> objetsEncheris = BdD.objetEncheriPerdantPerime(
                         this.vue.getSession
                 ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheriPerime(this.vue.getSession
                 ().getConBdD(), this.vue.getSession
                 ().getCurUser().orElseThrow(),this.encheresTerminees.getRecherche().getText()));
-                    this.encheresTerminees.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                    this.encheresTerminees.setvEncherePerdante(new ObjetTable3(this.vue,objetsEncheris));
                     vlEncherePerdante.getChildren().add(this.encheresTerminees.getvEncherePerdante());
                 } catch (SQLException ex) {
                     vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
@@ -1074,9 +1075,9 @@ public class Controleur {
             if(this.ventesTerminees.getRecherche()==null){
                 if(categorieChoisie.getId()!=0){
                     try {
-                        List<Objet> datas = BdD.objetsEnVente(
+                        List<Objet> datas = BdD.objetsEnVentePerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                        this.ventesTerminees.setvObjetsEnVente(new ObjetTable(this.vue,datas));
+                        this.ventesTerminees.setvObjetsEnVente(new ObjetTable3(this.vue,datas));
                         vlObjetsEnVente.getChildren().add(this.ventesTerminees.getvObjetsEnVente());
                     } catch (SQLException ex) {
                         vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -1084,9 +1085,9 @@ public class Controleur {
                 }
                 else{
                     try {
-                        List<Objet> datas = BdD.objetsEnVente(
+                        List<Objet> datas = BdD.objetsEnVentePerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
-                        this.ventesTerminees.setvObjetsEnVente(new ObjetTable(this.vue,datas));
+                        this.ventesTerminees.setvObjetsEnVente(new ObjetTable3(this.vue,datas));
                         vlObjetsEnVente.getChildren().add(this.ventesTerminees.getvObjetsEnVente());
                     } catch (SQLException ex) {
                         vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -1096,9 +1097,9 @@ public class Controleur {
             else{
                 if(categorieChoisie.getId()!=0){
                     try {
-                        List<Objet> datas = BdD.objetsEnVente(
+                        List<Objet> datas = BdD.objetsEnVentePerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventesTerminees.getRecherche().getText(),categorieChoisie);
-                        this.ventesTerminees.setvObjetsEnVente(new ObjetTable(this.vue,datas));
+                        this.ventesTerminees.setvObjetsEnVente(new ObjetTable3(this.vue,datas));
                         vlObjetsEnVente.getChildren().add(this.ventesTerminees.getvObjetsEnVente());
                     } catch (SQLException ex) {
                         vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -1106,9 +1107,9 @@ public class Controleur {
                 }
                 else{
                     try {
-                        List<Objet> datas = BdD.objetsEnVente(
+                        List<Objet> datas = BdD.objetsEnVentePerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventesTerminees.getRecherche().getText());
-                        this.ventesTerminees.setvObjetsEnVente(new ObjetTable(this.vue,datas));
+                        this.ventesTerminees.setvObjetsEnVente(new ObjetTable3(this.vue,datas));
                         vlObjetsEnVente.getChildren().add(this.ventesTerminees.getvObjetsEnVente());
                     } catch (SQLException ex) {
                         vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -1124,9 +1125,9 @@ public class Controleur {
             if(this.ventesTerminees.getRecherche()==null){
                 if(categorieChoisie.getId()!=0){
                     try {
-                        List<Objet> datas = BdD.objetsVendus(
+                        List<Objet> datas = BdD.objetsVendusPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
-                        this.ventesTerminees.setvObjetsVendus(new ObjetTable(this.vue,datas));
+                        this.ventesTerminees.setvObjetsVendus(new ObjetTable3(this.vue,datas));
                         vlObjetsVendus.getChildren().add(this.ventesTerminees.getvObjetsVendus());
                     } catch (SQLException ex) {
                         vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -1134,9 +1135,9 @@ public class Controleur {
                 }
                 else{
                     try {
-                        List<Objet> datas = BdD.objetsVendus(
+                        List<Objet> datas = BdD.objetsVendusPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
-                        this.ventesTerminees.setvObjetsVendus(new ObjetTable(this.vue,datas));
+                        this.ventesTerminees.setvObjetsVendus(new ObjetTable3(this.vue,datas));
                         vlObjetsVendus.getChildren().add(this.ventesTerminees.getvObjetsVendus());
                     } catch (SQLException ex) {
                         vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -1146,9 +1147,9 @@ public class Controleur {
             else{
                 if(categorieChoisie.getId()!=0){
                     try {
-                        List<Objet> datas = BdD.objetsVendus(
+                        List<Objet> datas = BdD.objetsVendusPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventesTerminees.getRecherche().getText(),categorieChoisie);
-                        this.ventesTerminees.setvObjetsVendus(new ObjetTable(this.vue,datas));
+                        this.ventesTerminees.setvObjetsVendus(new ObjetTable3(this.vue,datas));
                         vlObjetsVendus.getChildren().add(this.ventesTerminees.getvObjetsVendus());
                     } catch (SQLException ex) {
                         vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -1156,9 +1157,9 @@ public class Controleur {
                 }
                 else{
                     try {
-                        List<Objet> datas = BdD.objetsVendus(
+                        List<Objet> datas = BdD.objetsVendusPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventesTerminees.getRecherche().getText());
-                        this.ventesTerminees.setvObjetsVendus(new ObjetTable(this.vue,datas));
+                        this.ventesTerminees.setvObjetsVendus(new ObjetTable3(this.vue,datas));
                         vlObjetsVendus.getChildren().add(this.ventesTerminees.getvObjetsVendus());
                     } catch (SQLException ex) {
                         vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -1175,7 +1176,7 @@ public class Controleur {
             if(this.ventesTerminees.getRecherche()==null){
                 if(categorieChoisie.getId()!=0){
                     try {
-                        List<Objet> datas = BdD.objetsPasVendus(
+                        List<Objet> datas = BdD.objetsPasVendusPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),categorieChoisie);
                         this.ventesTerminees.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
                         vlObjetsPasVendus.getChildren().add(this.ventesTerminees.getvObjetsNonVendus());
@@ -1185,7 +1186,7 @@ public class Controleur {
                 }
                 else{
                     try {
-                        List<Objet> datas = BdD.objetsPasVendus(
+                        List<Objet> datas = BdD.objetsPasVendusPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow());
                         this.ventesTerminees.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
                         vlObjetsPasVendus.getChildren().add(this.ventesTerminees.getvObjetsNonVendus());
@@ -1197,7 +1198,7 @@ public class Controleur {
             else{
                 if(categorieChoisie.getId()!=0){
                     try {
-                        List<Objet> datas = BdD.objetsPasVendus(
+                        List<Objet> datas = BdD.objetsPasVendusPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventesTerminees.getRecherche().getText(),categorieChoisie);
                         this.ventesTerminees.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
                         vlObjetsPasVendus.getChildren().add(this.ventesTerminees.getvObjetsNonVendus());
@@ -1207,7 +1208,7 @@ public class Controleur {
                 }
                 else{
                     try {
-                        List<Objet> datas = BdD.objetsPasVendus(
+                        List<Objet> datas = BdD.objetsPasVendusPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventesTerminees.getRecherche().getText());
                         this.ventesTerminees.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
                         vlObjetsPasVendus.getChildren().add(this.ventesTerminees.getvObjetsNonVendus());
@@ -1536,9 +1537,9 @@ public class Controleur {
                 VBox vlEnchere = new VBox();
                 vlEnchere.getChildren().add(new BigLabel("Vos enchères terminées",20));
                     try {
-                        List<Objet> datas = BdD.objetEncheri(
+                        List<Objet> datas = BdD.objetEncheriPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.encheresTerminees.getRecherche().getText());
-                        this.encheresTerminees.setvEnchere(new ObjetTable(this.vue,datas));
+                        this.encheresTerminees.setvEnchere(new ObjetTable3(this.vue,datas));
                         vlEnchere.getChildren().add(this.encheresTerminees.getvEnchere());
                     } catch (SQLException ex) {
                         vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -1550,13 +1551,13 @@ public class Controleur {
             VBox vlEnchereGagnante = new VBox();
             vlEnchereGagnante.getChildren().add(new BigLabel("Vos enchères gagnées",20));
                 try {
-                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnantPerime(
                             this.vue.getSession
                 ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheriPerime(this.vue.getSession
                 ().getConBdD(), this.vue.getSession
                 ().getCurUser().orElseThrow(),this.encheresTerminees.getRecherche().getText()));
-                    this.encheresTerminees.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    this.encheresTerminees.setvEnchereGagnante(new ObjetTable3(this.vue,objetsEncheris));
                     vlEnchereGagnante.getChildren().add(this.encheresTerminees.getvEnchereGagnante());
                 } catch (SQLException ex) {
                     vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
@@ -1567,13 +1568,13 @@ public class Controleur {
             VBox vlEncherePerdante = new VBox();
             vlEncherePerdante.getChildren().add(new BigLabel("Vos enchères perdues",20));
                 try {
-                    List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                    List<Objet> objetsEncheris = BdD.objetEncheriPerdantPerime(
                             this.vue.getSession
                 ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheriPerime(this.vue.getSession
                 ().getConBdD(), this.vue.getSession
                 ().getCurUser().orElseThrow(),this.encheresTerminees.getRecherche().getText()));
-                    this.encheresTerminees.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                    this.encheresTerminees.setvEncherePerdante(new ObjetTable3(this.vue,objetsEncheris));
                     vlEncherePerdante.getChildren().add(this.encheresTerminees.getvEncherePerdante());
                 } catch (SQLException ex) {
                     vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
@@ -1597,9 +1598,9 @@ public class Controleur {
                 VBox vlEnchere = new VBox();
                 vlEnchere.getChildren().add(new BigLabel("Vos enchères terminées",20));
                     try {
-                        List<Objet> datas = BdD.objetEncheri(
+                        List<Objet> datas = BdD.objetEncheriPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.encheresTerminees.getRecherche().getText(),categorieChoisie);
-                        this.encheresTerminees.setvEnchere(new ObjetTable(this.vue,datas));
+                        this.encheresTerminees.setvEnchere(new ObjetTable3(this.vue,datas));
                         vlEnchere.getChildren().add(this.encheresTerminees.getvEnchere());
                     } catch (SQLException ex) {
                         vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -1611,13 +1612,13 @@ public class Controleur {
             VBox vlEnchereGagnante = new VBox();
             vlEnchereGagnante.getChildren().add(new BigLabel("Vos enchères gagnées",20));
                 try {
-                    List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+                    List<Objet> objetsEncheris = BdD.objetEncheriGagnantPerime(
                             this.vue.getSession
                 ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheriPerime(this.vue.getSession
                 ().getConBdD(), this.vue.getSession
                 ().getCurUser().orElseThrow(),this.encheresTerminees.getRecherche().getText(),categorieChoisie));
-                    this.encheresTerminees.setvEnchereGagnante(new ObjetTable(this.vue,objetsEncheris));
+                    this.encheresTerminees.setvEnchereGagnante(new ObjetTable3(this.vue,objetsEncheris));
                     vlEnchereGagnante.getChildren().add(this.encheresTerminees.getvEnchereGagnante());
                 } catch (SQLException ex) {
                     vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
@@ -1628,13 +1629,13 @@ public class Controleur {
             VBox vlEncherePerdante = new VBox();
             vlEncherePerdante.getChildren().add(new BigLabel("Vos enchères perdues",20));
                 try {
-                    List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+                    List<Objet> objetsEncheris = BdD.objetEncheriPerdantPerime(
                             this.vue.getSession
                 ().getConBdD(), this.vue.getSession
-                ().getCurUser().orElseThrow(),BdD.objetEncheri(this.vue.getSession
+                ().getCurUser().orElseThrow(),BdD.objetEncheriPerime(this.vue.getSession
                 ().getConBdD(), this.vue.getSession
                 ().getCurUser().orElseThrow(),this.encheresTerminees.getRecherche().getText(),categorieChoisie));
-                    this.encheresTerminees.setvEncherePerdante(new ObjetTable(this.vue,objetsEncheris));
+                    this.encheresTerminees.setvEncherePerdante(new ObjetTable3(this.vue,objetsEncheris));
                     vlEncherePerdante.getChildren().add(this.encheresTerminees.getvEncherePerdante());
                 } catch (SQLException ex) {
                     vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
@@ -1754,9 +1755,9 @@ public class Controleur {
                 VBox vlObjetsEnVente = new VBox();
                 vlObjetsEnVente.getChildren().add(new BigLabel("Vos objets mis en vente",20));
                     try {
-                        List<Objet> datas = BdD.objetsEnVente(
+                        List<Objet> datas = BdD.objetsEnVentePerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventesTerminees.getRecherche().getText());
-                        this.ventesTerminees.setvObjetsEnVente(new ObjetTable(this.vue,datas));
+                        this.ventesTerminees.setvObjetsEnVente(new ObjetTable3(this.vue,datas));
                         vlObjetsEnVente.getChildren().add(this.ventesTerminees.getvObjetsEnVente());
                     } catch (SQLException ex) {
                         vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -1769,9 +1770,9 @@ public class Controleur {
                 VBox vlObjetsVendus = new VBox();
                 vlObjetsVendus.getChildren().add(new BigLabel("Vos objets vendus",20));
                     try {
-                        List<Objet> datas = BdD.objetsVendus(
+                        List<Objet> datas = BdD.objetsVendusPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventesTerminees.getRecherche().getText());
-                        this.ventesTerminees.setvObjetsVendus(new ObjetTable(this.vue,datas));
+                        this.ventesTerminees.setvObjetsVendus(new ObjetTable3(this.vue,datas));
                         vlObjetsVendus.getChildren().add(this.ventesTerminees.getvObjetsVendus());
                     } catch (SQLException ex) {
                         vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -1785,7 +1786,7 @@ public class Controleur {
                 VBox vlObjetsPasVendus = new VBox();
                 vlObjetsPasVendus.getChildren().add(new BigLabel("Vos objets non vendus",20));
                     try {
-                        List<Objet> datas = BdD.objetsPasVendus(
+                        List<Objet> datas = BdD.objetsPasVendusPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventesTerminees.getRecherche().getText());
                         this.ventesTerminees.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
                         vlObjetsPasVendus.getChildren().add(this.ventesTerminees.getvObjetsNonVendus());
@@ -1805,9 +1806,9 @@ public class Controleur {
                                 VBox vlObjetsEnVente = new VBox();
                 vlObjetsEnVente.getChildren().add(new BigLabel("Vos objets mis en vente",20));
                     try {
-                        List<Objet> datas = BdD.objetsEnVente(
+                        List<Objet> datas = BdD.objetsEnVentePerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventesTerminees.getRecherche().getText(),categorieChoisie);
-                        this.ventesTerminees.setvObjetsEnVente(new ObjetTable(this.vue,datas));
+                        this.ventesTerminees.setvObjetsEnVente(new ObjetTable3(this.vue,datas));
                         vlObjetsEnVente.getChildren().add(this.ventesTerminees.getvObjetsEnVente());
                     } catch (SQLException ex) {
                         vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -1820,9 +1821,9 @@ public class Controleur {
                 VBox vlObjetsVendus = new VBox();
                 vlObjetsVendus.getChildren().add(new BigLabel("Vos objets vendus",20));
                     try {
-                        List<Objet> datas = BdD.objetsVendus(
+                        List<Objet> datas = BdD.objetsVendusPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventesTerminees.getRecherche().getText(),categorieChoisie);
-                        this.ventesTerminees.setvObjetsVendus(new ObjetTable(this.vue,datas));
+                        this.ventesTerminees.setvObjetsVendus(new ObjetTable3(this.vue,datas));
                         vlObjetsVendus.getChildren().add(this.ventesTerminees.getvObjetsVendus());
                     } catch (SQLException ex) {
                         vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
@@ -1836,7 +1837,7 @@ public class Controleur {
                 VBox vlObjetsPasVendus = new VBox();
                 vlObjetsPasVendus.getChildren().add(new BigLabel("Vos objets non vendus",20));
                     try {
-                        List<Objet> datas = BdD.objetsPasVendus(
+                        List<Objet> datas = BdD.objetsPasVendusPerime(
                                 this.vue.getSession().getConBdD(), this.vue.getSession().getCurUser().orElseThrow(),this.ventesTerminees.getRecherche().getText(),categorieChoisie);
                         this.ventesTerminees.setvObjetsNonVendus(new ObjetTable2(this.vue,datas));
                         vlObjetsPasVendus.getChildren().add(this.ventesTerminees.getvObjetsNonVendus());

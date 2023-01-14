@@ -19,7 +19,18 @@ import java.util.Optional;
  * @author marie et théo
  */
 public class BdD {
-
+    
+    /**
+     * méthode générale de connexion à la base de données
+     * @param host String
+     * @param port int
+     * @param database String
+     * @param user String
+     * @param pass String
+     * @return Connection
+     * @throws ClassNotFoundException
+     * @throws SQLException 
+     */
     public static Connection connectGeneralPostGres(String host,
             int port, String database,
             String user, String pass)
@@ -32,17 +43,26 @@ public class BdD {
         con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         return con;
     }
-
+    
+    /**
+     * méthode de connexion par défault à la base de données
+     * @return Connection
+     * @throws ClassNotFoundException
+     * @throws SQLException 
+     */
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5432,
+        return connectGeneralPostGres("localhost", 5439,
                 "postgres", "postgres", "pass");
     }
-
+    
+    /**
+     * cree les tables et contraintes de la base de données 
+     * @param con Connection
+     * @throws SQLException 
+     */
     public static void creeSchema(Connection con)
             throws SQLException {
-        // je veux que le schema soit entierement créé ou pas du tout
-        // je vais donc gérer explicitement une transaction
         con.setAutoCommit(false);
         try ( Statement st = con.createStatement()) {
             // creation des tables
@@ -99,7 +119,7 @@ public class BdD {
                     )
             """);
 
-            // je defini les liens entre les clés externes et les clés primaires
+            // on definit les liens entre les clés externes et les clés primaires
             // correspondantes
             st.executeUpdate(
                     """
@@ -125,27 +145,25 @@ public class BdD {
                         ADD CONSTRAINT fk_enchere_utilisateur FOREIGN KEY (de)
                         REFERENCES utilisateur (id) 
                     """);
-            
-            // si j'arrive jusqu'ici, c'est que tout s'est bien passé
-            // je confirme (commit) la transaction
+            // on confirme (commit) la transaction puisque tout s'est bien passe
             con.commit();
         } catch (SQLException ex) {
-            // quelque chose s'est mal passé
-            // j'annule la transaction
+            // on annule la transaction
             con.rollback();
-            // puis je renvoie l'exeption pour qu'elle puisse éventuellement
+            // on renvoie l'exeption pour qu'elle puisse éventuellement
             // être gérée (message à l'utilisateur...)
             throw ex;
         } finally {
-            // je retourne dans le mode par défaut de gestion des transaction :
-            // chaque ordre au SGBD sera considéré comme une transaction indépendante
+            // on retourne dans le mode par défaut de gestion des transaction :
             con.setAutoCommit(true);
         }
     }
 
-    // vous serez bien contents, en phase de développement de pouvoir
-    // "repartir de zero" : il est parfois plus facile de tout supprimer
-    // et de tout recréer que d'essayer de modifier le schema et les données
+    /**
+     * supprime les contraintes et les table de la BDD
+     * @param con Connection
+     * @throws SQLException 
+     */
     public static void deleteSchema(Connection con) throws SQLException {
         try ( Statement st = con.createStatement()) {
             // pour être sûr de pouvoir supprimer, il faut d'abord supprimer les liens
@@ -240,23 +258,38 @@ public class BdD {
             }
         }
     }
-
+    
+    
+    /**
+     * supprime et recree les tables de la BDD
+     * @param con Connection
+     * @throws SQLException 
+     */
     public static void recreeTout(Connection con) throws SQLException {
         deleteSchema(con);
         creeSchema(con);
     }
     
+    
+    /**
+     * cree la BDD exemple (BDD initiale)
+     * @param con Connection
+     * @throws SQLException 
+     */
     public static void creeExemple( Connection con) throws SQLException{
         try ( Statement st = con.createStatement()) {
             st.executeUpdate(
             """
             INSERT INTO utilisateur (nom,prenom,email,pass,codepostal) 
             values 
+            ('admin','admin','admin','admin','00000'),
             ('Toto',null,'toto@mail.fr','pass1','67084'),
             ('Morane','Bob','bob@mail.fr','felicidad','FR-75007'),
             ('Marley','Bob','bob@mail.com','gg','JAM-JMAAW14'),
-            ('L''Eponge','Bob','bob@fond.ocean','pass2',null)
+            ('L''Eponge','Bob','bob@fond.ocean','pass2',null),
+            ('Winkler','Marie','winkler.marie@icloud.com','pass','67110')
             """); 
+            
             
             st.executeUpdate(
             """
@@ -280,22 +313,44 @@ public class BdD {
             """
             INSERT INTO objet (titre,description,debut,fin,prixbase,categorie,proposepar) 
             values 
-            ('chaise','à bascule','2022-09-01 10:00:00.0','2022-09-02 11:00:00.0','5000','1','1'),
-            ('lit','superbe lit bla bla','2022-09-02 09:00:00.0','2022-09-04 10:00:00.0','20000','1','3'),
-            ('blouson','en cuir noir trop beau','2022-09-02 09:00:00.0',' 2022-09-02 11:00:00.0','30000','2','2')
+            ('chaise','à bascule','2022-09-01 10:00:00.0','2022-09-02 11:00:00.0','5000','11','2'),
+            ('lit','superbe lit bla bla','2022-01-01 09:00:00.0','2022-09-04 10:00:00.0','20000','11','4'),
+            ('blouson','en cuir noir trop beau','2022-01-01 09:00:00.0',' 2022-09-02 11:00:00.0','30000','3','3'),
+            ('ordinateur','macbook','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','5000','8','2'),
+            ('collier','perles','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','200','5','2'), 
+            ('vase','en porcelaine','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','5000','4','2'), 
+            ('meuble tele','en marbre','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','2000','11','2'), 
+            ('voiture','renault 21 de collection','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','10000','13','2'), 
+            ('tableau','du 17e siecle','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','50000','4','2'), 
+            ('robe de mariage','blanche avec dentelle','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','4000','3','2'), 
+            ('encyclopedie','du 20e siecle','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','100','6','2') 
             """);
             
             st.executeUpdate(
             """
             INSERT INTO enchere (de,sur,quand,montant) values
-            ('3','1','2022-09-01 12:00:00.0','5500'),
-            ('2','1','2022-09-01 13:00:00.0','6000'),
-            ('3','1','2022-09-02 10:00:00.0','7000'),
-            ('3','3','2022-09-02 10:00:00.0','30000')
+            ('4','1','2022-09-01 12:00:00.0','5500'),
+            ('3','1','2022-09-01 13:00:00.0','6000'),
+            ('4','1','2022-09-02 10:00:00.0','7000'),
+            ('4','3','2022-09-02 10:00:00.0','30000'),
+            ('3','6','2023-01-02 10:00:00.0','5500'),
+            ('2','7','2023-01-02 10:00:00.0','3000'),
+            ('4','9','2023-01-02 10:00:00.0','55000'),
+            ('4','7','2023-01-02 10:00:00.0','2999'),
+            ('4','1','2023-01-02 10:00:00.0','6000')
             """);
+        }catch(SQLException ex){
+            System.out.println(ex);
         }
     }
-        
+    
+    
+    /**
+     * renvoie la liste des utilisateurs de la BDD
+     * @param con Connection
+     * @return List<Utilisateur>
+     * @throws SQLException 
+     */
     public static List<Utilisateur> listUtilisateur(Connection con) throws SQLException {
         List<Utilisateur> res = new ArrayList<Utilisateur>();
         try ( PreparedStatement pst = con.prepareStatement("select id,nom,prenom,email,pass,codepostal from utilisateur ")) {
@@ -305,34 +360,28 @@ public class BdD {
                 }
                 return res;
             }
-        }
     }
+    }
+
     
+    /**
+     * affiche la liste des utilisateurs de la BDD dans la console
+     * @param list List<Utilisateur>
+     * @throws SQLException 
+     */
     public static void afficheListUtilisateur(List<Utilisateur> list)throws SQLException {
         for(Utilisateur utilisateur: list){
             utilisateur.print();
         }
     }
     
-    /*
-    public static void afficheTousLesUtilisateurs(Connection con) throws SQLException {
-        try ( Statement st = con.createStatement()) {
-            try ( ResultSet rs = st.executeQuery(
-                    "select id,nom,prenom,email,pass from utilisateur")) {
-                while (rs.next()) {
-                    int id = rs.getInt(1);
-                    String nom = rs.getString(2);
-                    String prenom = rs.getString(3);
-                    String email= rs.getString(4);
-                    String motDePasse = rs.getString("pass");
-                    
-                    System.out.println(id + " : " + nom +" "+ prenom +" "+email+"(" + motDePasse+ ")");
-                }
-            }
-        }
-    }
-    */
     
+    /**
+     * renvoie la liste des catégories de la BDD
+     * @param con Connection
+     * @return List<Categorie>
+     * @throws SQLException 
+     */
     public static List<Categorie> listCategorie(Connection con) throws SQLException {
         List<Categorie> res = new ArrayList<>();
         try ( PreparedStatement pst = con.prepareStatement("select id,nom from categorie ")) {
@@ -345,30 +394,24 @@ public class BdD {
         }
     }
     
+    /**
+     * affiche la liste des catégories de la BDD dans la console
+     * @param list List<Categorie>
+     * @throws SQLException 
+     */
     public static void afficheListCategorie(List<Categorie> list)throws SQLException {
         for(Categorie categorie: list){
             categorie.print();
         }
     }
     
-    /*
-    public static void afficheToutesLesCategories(Connection con) throws SQLException {
-        try ( Statement st = con.createStatement()) {
-            try ( ResultSet rs = st.executeQuery(
-                    "select nom from categorie")) {
-                while (rs.next()) {
-                    int id = rs.getInt(1);
-                    String nom = rs.getString(2);
-                    System.out.println(id + " : " + nom );
-                }
-            }
-        }
-    }
     
-    
-    //dernierEnchereSurObjet(con,rs.getInt("id"))
-    */
-    
+    /**
+     * renvoie la liste des objets de la BDD
+     * @param con Connection
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> listObjet(Connection con) throws SQLException {
         List<Objet> res = new ArrayList<>();
         try ( Statement st = con.createStatement()) {
@@ -392,9 +435,13 @@ public class BdD {
         }
     }
     
-    /*
-    Liste des objets dont la date de fin n'est pas depassee.
-    */
+    
+    /**
+     * renvoie la liste des objets dont la date de fin n'est pas encore dépassée
+     * @param con Connection
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> listObjetFrais(Connection con) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -421,9 +468,14 @@ public class BdD {
         }
     }
     
-    /*
-    Liste des objets dont la date de fin est depassee.
-    */
+    
+    
+    /**
+     * renvoie la liste des objets dont la date de fin est dépassée
+     * @param con Connection
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> listObjetPerime(Connection con) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -450,16 +502,26 @@ public class BdD {
         }
     }
     
-    
+    /**
+     * affiche une liste d'objets dans la console
+     * @param con Connection
+     * @param list List<Objet>
+     * @throws SQLException 
+     */
     public static void afficheListObjet(Connection con, List<Objet> list)throws SQLException {
         for(Objet objet: list){
             objet.print(con);
         }
     }
     
-    /*
-    Donne la liste des objets mis en enchère par un utilisateur.
-    */
+    
+    /**
+     * renvoie la liste des objets proposés par un utilisateur
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> listObjetDunUtilisateur(Connection con, Utilisateur utilisateur) throws SQLException {
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
@@ -484,7 +546,13 @@ public class BdD {
         }
     }
     
-        public static void afficheToutesLesEncheres(Connection con) throws SQLException {
+    
+    /**
+     * affiche toutes les enchères dans la console
+     * @param con Connection
+     * @throws SQLException 
+     */
+    public static void afficheToutesLesEncheres(Connection con) throws SQLException {
             try ( Statement st = con.createStatement()) {
                 try ( ResultSet rs = st.executeQuery(
                 """
@@ -506,6 +574,13 @@ public class BdD {
         }
     }
     
+    
+    /**
+     * affiches les enchères effectuées sur un objet dans la console
+     * @param con Connection
+     * @param identifiant int (identifiant objet)
+     * @throws SQLException 
+     */
     public static void afficheEnchereObjet(Connection con, int identifiant) throws SQLException {
     try ( PreparedStatement st = con.prepareStatement(
         """
@@ -531,9 +606,14 @@ public class BdD {
         }
     }
     
-    /*
-    Donne la liste des objets dont l'utilisateur a enchéri au moins une fois lorsque l'objet est toujours en vente.
-    */
+
+    /**
+     * renvoie la liste des objets en vente surlesquels l'utilisateur a enchéri au moins une fois 
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetEncheri(Connection con, Utilisateur utilisateur) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -553,7 +633,7 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    String idcategorie = rs.getString(8);
+                    String idcategorie = rs.getString(7);
                     Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
                     String categorie=cat.getNom();
                     int proposePar = rs.getInt(8);
@@ -566,9 +646,14 @@ public class BdD {
         }
     }
     
-    /*
-    La même chose mais lorsque l'objet n'est plus en vente.
-    */
+    
+    /**
+     * renvoie la liste des objets qui ne sont plus en vente surlesquels l'utilisateur avait enchéri au moins une fois 
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetEncheriPerime(Connection con, Utilisateur utilisateur) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -588,7 +673,7 @@ public class BdD {
                     Timestamp debut = rs.getTimestamp(4);
                     Timestamp fin = rs.getTimestamp(5);
                     int prixBase = rs.getInt(6);
-                    String idcategorie = rs.getString(8);
+                    String idcategorie = rs.getString(7);
                     Categorie cat=Categorie.predef(Integer.parseInt(idcategorie));
                     String categorie=cat.getNom();
                     int proposePar = rs.getInt(8);
@@ -600,9 +685,18 @@ public class BdD {
             }
         }
     }
-    /*
-    La même chose mais avec un mot correspondant dans la description/titre.
-    */
+    
+    
+    
+    /**
+     * renvoie la liste des objets en vente dont la description/le titre 
+     * contient un mot surlesquels l'utilisateur a enchéri au moins une fois 
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetEncheri(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -639,9 +733,16 @@ public class BdD {
         }
     }
     
-    /*
-    La même chose mais lorsque l'objet n'est plus en vente.
-    */
+    
+    /**
+     * renvoie la liste des objets plus en vente dont la description/le titre 
+     * contient un mot surlesquels l'utilisateur a enchéri au moins une fois 
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetEncheriPerime(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -678,9 +779,15 @@ public class BdD {
         }
     }
     
-    /*
-    La même chose mais avec une catégorie précise.
-    */
+    /**
+     * renvoie la liste d'objets en vente correspondant à une catégorie
+     * surlesquels l'utilisateur a enchéri au moins une fois
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param categorie Categorie
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetEncheri(Connection con, Utilisateur utilisateur, Categorie categorie) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -711,6 +818,17 @@ public class BdD {
             }
         }
     }
+    
+    
+    /**
+     * renvoie la liste d'objets plus en vente correspondant à une catégorie
+     * surlesquels l'utilisateur a enchéri au moins une fois
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param categorie Categorie
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetEncheriPerime(Connection con, Utilisateur utilisateur, Categorie categorie) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -743,17 +861,27 @@ public class BdD {
     }
     
     
-        public static List<Objet> objetEncheri(Connection con, Utilisateur utilisateur, String mot,Categorie cat) throws SQLException {
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        List<Objet> res = new ArrayList<>();
-        try ( PreparedStatement st = con.prepareStatement(
-        """
-        select distinct on (objet.id) objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.proposepar, objet.categorie from enchere
-        join objet on objet.id = enchere.sur
-        where enchere.de=?
-        and (objet.description like ? or objet.titre like ?) and objet.categorie=?
-        
-        """)) {
+    /**
+     * renvoie la liste des objets en vente correspondant à une catégorie et dont 
+     * le titre/description contient un mot surlesquels l'utilisateur a fait au moins une enchère
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @param cat Categorie
+     * @return
+     * @throws SQLException 
+     */
+    public static List<Objet> objetEncheri(Connection con, Utilisateur utilisateur, String mot,Categorie cat) throws SQLException {
+    Timestamp now = new Timestamp(System.currentTimeMillis());
+    List<Objet> res = new ArrayList<>();
+    try ( PreparedStatement st = con.prepareStatement(
+    """
+    select distinct on (objet.id) objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.proposepar, objet.categorie from enchere
+    join objet on objet.id = enchere.sur
+    where enchere.de=?
+    and (objet.description like ? or objet.titre like ?) and objet.categorie=?
+
+    """)) {
             st.setInt(1,utilisateur.getId());
             st.setString(2,"%" + mot + "%");
             st.setString(3,"%" + mot + "%");
@@ -775,45 +903,60 @@ public class BdD {
             }
         }
     }
-        
-        public static List<Objet> objetEncheriPerime(Connection con, Utilisateur utilisateur, String mot,Categorie cat) throws SQLException {
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        List<Objet> res = new ArrayList<>();
-        try ( PreparedStatement st = con.prepareStatement(
-        """
-        select distinct on (objet.id) objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.proposepar, objet.categorie from enchere
-        join objet on objet.id = enchere.sur
-        where enchere.de=?
-        and (objet.description like ? or objet.titre like ?) and objet.categorie=?
-        
-        """)) {
-            st.setInt(1,utilisateur.getId());
-            st.setString(2,"%" + mot + "%");
-            st.setString(3,"%" + mot + "%");
-            st.setInt(4,cat.getId());
-            try ( ResultSet rs = st.executeQuery()){
-                while (rs.next()) {
-                    int id = rs.getInt(1);
-                    String titre = rs.getString(2);
-                    String description = rs.getString(3);
-                    Timestamp debut = rs.getTimestamp(4);
-                    Timestamp fin = rs.getTimestamp(5);
-                    int prixBase = rs.getInt(6);
-                    int proposePar = rs.getInt(7);
-                    if(fin.before(now)){
-                        res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), proposePar));
-                    }
+    
+    /**
+     * renvoie la liste des objets plus en vente correspondant à une catégorie et dont 
+     * le titre/description contient un mot surlesquels l'utilisateur a fait au moins une enchère
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @param cat Categorie
+     * @return
+     * @throws SQLException 
+     */        
+    public static List<Objet> objetEncheriPerime(Connection con, Utilisateur utilisateur, String mot,Categorie cat) throws SQLException {
+    Timestamp now = new Timestamp(System.currentTimeMillis());
+    List<Objet> res = new ArrayList<>();
+    try ( PreparedStatement st = con.prepareStatement(
+    """
+    select distinct on (objet.id) objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.proposepar, objet.categorie from enchere
+    join objet on objet.id = enchere.sur
+    where enchere.de=?
+    and (objet.description like ? or objet.titre like ?) and objet.categorie=?
+
+    """)) {
+        st.setInt(1,utilisateur.getId());
+        st.setString(2,"%" + mot + "%");
+        st.setString(3,"%" + mot + "%");
+        st.setInt(4,cat.getId());
+        try ( ResultSet rs = st.executeQuery()){
+            while (rs.next()) {
+                int id = rs.getInt(1);
+                String titre = rs.getString(2);
+                String description = rs.getString(3);
+                Timestamp debut = rs.getTimestamp(4);
+                Timestamp fin = rs.getTimestamp(5);
+                int prixBase = rs.getInt(6);
+                int proposePar = rs.getInt(7);
+                if(fin.before(now)){
+                    res.add(new Objet(con,id, titre, prixBase, description, debut, fin, cat.getNom(), proposePar));
                 }
-                return res;
+            }
+            return res;
             }
         }
     }
     
     
     
-    /*
-    Donne la liste des objets dont l'utilisateur à l'enchère la plus élevé. Prend la liste de objetEncheri en entrée.
-    */
+    /**
+     * renvoie la liste des objets en vente pour lesquels l'utilisateur a l'enchère la plus élevée
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param list List<Objet>
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetEncheriGagnant(Connection con, Utilisateur utilisateur, List<Objet> list) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -825,10 +968,20 @@ public class BdD {
         return res;
     }
     
+    
+    /**
+     * renvoie la liste des objets plus en vente pour lesquels l'utilisateur a l'enchère la plus élevée
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param list List<Objet>
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetEncheriGagnantPerime(Connection con, Utilisateur utilisateur, List<Objet> list) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         for(Objet objet: list){
+            
             if(dernierEnchereSurObjet(con,objet.getId()) == dernierEnchereSurObjetDunUtilisateur(con,objet.getId(),utilisateur) && objet.getFin().before(now)){
                 res.add(objet);
             }
@@ -836,9 +989,16 @@ public class BdD {
         return res;
     }
     
-    /*
-    Donne la liste des objets dont l'utilisateur à enchéri au moins une fois mais un autre utilisateur à enchéri plus que lui. Prend la liste de objetEncheri en entrée.
-    */
+
+    /**
+     * renvoie la liste des objets en vente pour lesquels l'utilisateur a enchéri 
+     * au moins une fois mais un autre utilisateur a fait une enchère supérieure
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param list List<Objet>
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetEncheriPerdant(Connection con, Utilisateur utilisateur, List<Objet> list) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -850,20 +1010,37 @@ public class BdD {
         return res;
     }
     
+    
+    /**
+     * renvoie la liste des objets plus en vente pour lesquels l'utilisateur a enchéri 
+     * au moins une fois mais un autre utilisateur a fait une enchère supérieure
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param list List<Objet>
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetEncheriPerdantPerime(Connection con, Utilisateur utilisateur, List<Objet> list) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         for(Objet objet: list){
+            System.out.println(objet.getFin());
             if(dernierEnchereSurObjet(con,objet.getId()) > dernierEnchereSurObjetDunUtilisateur(con,objet.getId(),utilisateur) && objet.getFin().before(now)){
+                System.out.print("&");
                 res.add(objet);
             }
         }
         return res;
     }
     
-    /*
-    Pas tiptop mais en haut ça marche pas.
-    */
+    /**
+     * renvoie la liste des objets correspondant à une catégorie
+     * @param con Connection
+     * @param categorie Categorie
+     * @param list List<Objet>
+     * @return
+     * @throws SQLException 
+     */
     public static List<Objet> objetParCategorie(Connection con, Categorie categorie, List<Objet> list) throws SQLException {
         List<Objet> res = new ArrayList<>();
         for(Objet objet: list){
@@ -874,6 +1051,14 @@ public class BdD {
         return res;
     }
     
+    
+    /**
+     * renvoie la liste des objets en vente surlesquels un utilisateur n'a pas fait d'enchère
+     * @param con
+     * @param utilisateur
+     * @return Lis<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetPasEncheri(Connection con, Utilisateur utilisateur) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -910,14 +1095,24 @@ public class BdD {
         return res;
     }
     
-        public static List<Objet> objetPasEncheri(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        List<Objet> res = new ArrayList<>();
-        try ( PreparedStatement st = con.prepareStatement(
-        """
-        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
-        where objet.id not in (select enchere.sur from enchere where enchere.de=?) and objet.categorie=? and objet.proposepar!=?
-        
+    
+    /**
+     * renvoie la liste des objets en vente correspondant à une catégorie 
+     * surlesquels un utilisateur n'a pas fait d'enchère
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param cat Categorie
+     * @return List<Objet>
+     * @throws SQLException 
+     */
+    public static List<Objet> objetPasEncheri(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
+    Timestamp now = new Timestamp(System.currentTimeMillis());
+    List<Objet> res = new ArrayList<>();
+    try ( PreparedStatement st = con.prepareStatement(
+    """
+    select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+    where objet.id not in (select enchere.sur from enchere where enchere.de=?) and objet.categorie=? and objet.proposepar!=?
+
         """)) {
             st.setInt(1,utilisateur.getId());
             st.setInt(2,cat.getId());
@@ -938,7 +1133,17 @@ public class BdD {
             }
         }
     }
-        
+    
+
+    /**
+     * renvoie la liste des objets en vente dont le titre/description contient un mot
+     * surlesquels un utilisateur n'a pas fait d'enchère
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetPasEncheri(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -969,7 +1174,20 @@ public class BdD {
             }
         }
     }
-     public static List<Objet> objetPasEncheri(Connection con, Utilisateur utilisateur, String mot,Categorie cat) throws SQLException {
+    
+    
+    /**
+     * renvoie la liste des objets en vente correspondant à une catégorie 
+     * dont le titre/description contient un mot
+     * et surlesquels un utilisateur n'a pas fait d'enchère
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @param cat Categorie
+     * @return List<Objet>
+     * @throws SQLException 
+     */
+    public static List<Objet> objetPasEncheri(Connection con, Utilisateur utilisateur, String mot,Categorie cat) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         try ( PreparedStatement st = con.prepareStatement(
@@ -1000,6 +1218,14 @@ public class BdD {
         }
     }
     
+    
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsEnVente(Connection con, Utilisateur utilisateur) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1028,9 +1254,17 @@ public class BdD {
             }
         }
     }
-    /*
-    Objets mis en vente par un utilisateur avec un mot en description/titre.
-    */
+    
+    
+    
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur dont le titre/la description contient un mot
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsEnVente(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1064,17 +1298,22 @@ public class BdD {
         }
     }
     
-    /*
-    Objets mis en vente par un utilisateur avec une categorie.
-    */
-        public static List<Objet> objetsEnVente(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        List<Objet> res = new ArrayList<>();
-        try ( PreparedStatement st = con.prepareStatement(
-        """
-        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
-        where objet.proposepar=? and objet.categorie=?
-        """)) {
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur correspondant à une catégorie
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param cat Categorie
+     * @return List<Objet>
+     * @throws SQLException 
+     */
+    public static List<Objet> objetsEnVente(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
+    Timestamp now = new Timestamp(System.currentTimeMillis());
+    List<Objet> res = new ArrayList<>();
+    try ( PreparedStatement st = con.prepareStatement(
+    """
+    select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+    where objet.proposepar=? and objet.categorie=?
+    """)) {
             st.setInt(1,utilisateur.getId());
             st.setInt(2,cat.getId());
             try ( ResultSet rs = st.executeQuery()){
@@ -1093,16 +1332,27 @@ public class BdD {
             }
         }
     }
-        
-        public static List<Objet> objetsEnVente(Connection con, Utilisateur utilisateur, String mot, Categorie cat) throws SQLException {
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        List<Objet> res = new ArrayList<>();
-        try ( PreparedStatement st = con.prepareStatement(
-        """
-        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
-        where objet.proposepar=? 
-        and (objet.description like ? or objet.titre like ?) and objet.categorie=?
-        """)) {
+    
+    
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur correspondant à une catégorie
+     * et dont le titre/description contient un mot
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @param cat Categorie
+     * @returnList<Objet>
+     * @throws SQLException 
+     */
+    public static List<Objet> objetsEnVente(Connection con, Utilisateur utilisateur, String mot, Categorie cat) throws SQLException {
+    Timestamp now = new Timestamp(System.currentTimeMillis());
+    List<Objet> res = new ArrayList<>();
+    try ( PreparedStatement st = con.prepareStatement(
+    """
+    select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+    where objet.proposepar=? 
+    and (objet.description like ? or objet.titre like ?) and objet.categorie=?
+    """)) {
             st.setInt(1,utilisateur.getId());
             st.setString(2,"%" + mot + "%");
             st.setString(3,"%" + mot + "%");
@@ -1123,15 +1373,24 @@ public class BdD {
             }
         }
     }
-        
-        public static List<Objet> objetsEnVentePerime(Connection con, Utilisateur utilisateur) throws SQLException {
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        List<Objet> res = new ArrayList<>();
-        try ( PreparedStatement st = con.prepareStatement(
-        """
-        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
-        where objet.proposepar=?  
-        """)) {
+    
+    
+    
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur dont la date de fin est dépassée
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @return List<Objet>
+     * @throws SQLException 
+     */
+    public static List<Objet> objetsEnVentePerime(Connection con, Utilisateur utilisateur) throws SQLException {
+    Timestamp now = new Timestamp(System.currentTimeMillis());
+    List<Objet> res = new ArrayList<>();
+    try ( PreparedStatement st = con.prepareStatement(
+    """
+    select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+    where objet.proposepar=?  
+    """)) {
             st.setInt(1,utilisateur.getId());
             try ( ResultSet rs = st.executeQuery()){
                 while (rs.next()) {
@@ -1152,9 +1411,18 @@ public class BdD {
             }
         }
     }
-    /*
-    Objets mis en vente par un utilisateur avec un mot en description/titre.
-    */
+    
+    
+    
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur dont la date de fin est dépassée
+     * et dont le titre/la description contient un mot
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsEnVentePerime(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1188,17 +1456,24 @@ public class BdD {
         }
     }
     
-    /*
-    Objets mis en vente par un utilisateur avec une categorie.
-    */
-        public static List<Objet> objetsEnVentePerime(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        List<Objet> res = new ArrayList<>();
-        try ( PreparedStatement st = con.prepareStatement(
-        """
-        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
-        where objet.proposepar=? and objet.categorie=?
-        """)) {
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur dont la date de fin est dépassée 
+     * correspondant à une catégorie 
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @param cat Categorie
+     * @returnList<Objet>
+     * @throws SQLException 
+     */
+    public static List<Objet> objetsEnVentePerime(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
+    Timestamp now = new Timestamp(System.currentTimeMillis());
+    List<Objet> res = new ArrayList<>();
+    try ( PreparedStatement st = con.prepareStatement(
+    """
+    select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+    where objet.proposepar=? and objet.categorie=?
+    """)) {
             st.setInt(1,utilisateur.getId());
             st.setInt(2,cat.getId());
             try ( ResultSet rs = st.executeQuery()){
@@ -1217,16 +1492,27 @@ public class BdD {
             }
         }
     }
-        
-        public static List<Objet> objetsEnVentePerime(Connection con, Utilisateur utilisateur, String mot, Categorie cat) throws SQLException {
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        List<Objet> res = new ArrayList<>();
-        try ( PreparedStatement st = con.prepareStatement(
-        """
-        select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
-        where objet.proposepar=? 
-        and (objet.description like ? or objet.titre like ?) and objet.categorie=?
-        """)) {
+    
+    
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur dont la date de fin est dépassée 
+     * correspondant à une catégorie et dont le titre/description contient un mot
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @param cat Categorie
+     * @returnList<Objet>
+     * @throws SQLException 
+     */
+    public static List<Objet> objetsEnVentePerime(Connection con, Utilisateur utilisateur, String mot, Categorie cat) throws SQLException {
+    Timestamp now = new Timestamp(System.currentTimeMillis());
+    List<Objet> res = new ArrayList<>();
+    try ( PreparedStatement st = con.prepareStatement(
+    """
+    select objet.id, objet.titre, objet.description, objet.debut, objet.fin, objet.prixbase, objet.categorie from objet
+    where objet.proposepar=? 
+    and (objet.description like ? or objet.titre like ?) and objet.categorie=?
+    """)) {
             st.setInt(1,utilisateur.getId());
             st.setString(2,"%" + mot + "%");
             st.setString(3,"%" + mot + "%");
@@ -1248,6 +1534,14 @@ public class BdD {
         }
     }
     
+    
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur surlesquels personne n'a fait d'enchère
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @return List>Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsPasVendus(Connection con, Utilisateur utilisateur) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1277,6 +1571,16 @@ public class BdD {
         }
     }
     
+    
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur surlesquels personne n'a fait d'enchère
+     * correspondant à une catégorie
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param cat Categorie
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsPasVendus(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1303,7 +1607,17 @@ public class BdD {
             }
         }
     }
-        
+    
+    
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur surlesquels personne n'a fait d'enchère
+     * dont le titre/la description contient un mot
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @return List<Objet>
+     * @throws SQLException 
+     */    
     public static List<Objet> objetsPasVendus(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1334,6 +1648,17 @@ public class BdD {
         }
     }
     
+    
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur surlesquels personne n'a fait d'enchère
+     * dont le titre/la description contient un mot et correspondant à une catégorie
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @param cat Categorie
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsPasVendus(Connection con, Utilisateur utilisateur, String mot, Categorie cat) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1363,6 +1688,15 @@ public class BdD {
         }
     }
     
+    
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur surlesquels personne n'a fait d'enchère
+     * et dont la date de fin est dépassée
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @return List>Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsPasVendusPerime(Connection con, Utilisateur utilisateur) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1392,6 +1726,16 @@ public class BdD {
         }
     }
     
+    
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur surlesquels personne n'a fait d'enchère
+     * correspondant à une catégorie et dont la date de fin est dépassée
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param cat Categorie
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsPasVendusPerime(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1418,7 +1762,17 @@ public class BdD {
             }
         }
     }
-        
+    
+    
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur surlesquels personne n'a fait d'enchère
+     * dont le titre/la description contient un mot et dont la date de fin est dépassée
+     * @param con Conneciton
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @return List<Objet>
+     * @throws SQLException 
+     */  
     public static List<Objet> objetsPasVendusPerime(Connection con, Utilisateur utilisateur, String mot) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1449,6 +1803,18 @@ public class BdD {
         }
     }
     
+    
+    /**
+     * renvoie la liste des objets mis en vente par un utilisateur surlesquels personne n'a fait d'enchère
+     * dont le titre/la description contient un mot et correspondant à une catégorie
+     * et dont la date de fin est dépassée
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @param cat Categorie
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsPasVendusPerime(Connection con, Utilisateur utilisateur, String mot, Categorie cat) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1479,9 +1845,14 @@ public class BdD {
     }
     
     
-    
-    
-    
+    /**
+     * rencoie la liste des objets en vente d'un utilisateur pour lesquels
+     * une enchère a été faite
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsVendus(Connection con, Utilisateur utilisateur) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1511,7 +1882,15 @@ public class BdD {
         }
     }
     
-    
+    /**
+     * renvoie la liste des objets en vente correspondant à une catégorie d'un utilisateur
+     * pour lesquels une enchère a été faite
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param cat Categorie
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsVendus(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1539,6 +1918,16 @@ public class BdD {
         }
     }
     
+    
+    /**
+     * renvoie la liste des objets en vente dont le titre/la description contient un mot d'un utilisateur
+     * pour lesquels une enchère a été faite
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsVendus(Connection con, Utilisateur utilisateur,String mot) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1570,6 +1959,17 @@ public class BdD {
         }
     }
     
+    
+    /**
+     * renvoie la liste des objets en vente dont le titre/la description contient un mot 
+     * et correspondant à une catégorie, d'un utilisateur pour lesquels une enchère a été faite
+     * @param con Connection
+     * @param utilisateur utilisateur
+     * @param mot String 
+     * @param cat Categorie
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsVendus(Connection con, Utilisateur utilisateur,String mot,Categorie cat) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1599,6 +1999,14 @@ public class BdD {
         }
     }
     
+    
+    /**
+     * renvoie la liste des objets vendus par un utilisateur
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @return List<Obejt>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsVendusPerime(Connection con, Utilisateur utilisateur) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1629,6 +2037,14 @@ public class BdD {
     }
     
     
+    /**
+     * renvoie la liste des objets correspondant à une catégorie vendus par un utilisateur
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param cat Categorie
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsVendusPerime(Connection con, Utilisateur utilisateur, Categorie cat) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1656,6 +2072,15 @@ public class BdD {
         }
     }
     
+    
+    /**
+     * renvoie la liste des objets dont le titre/la description contient un mot vendus par un utilisateur
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsVendusPerime(Connection con, Utilisateur utilisateur,String mot) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1687,6 +2112,17 @@ public class BdD {
         }
     }
     
+    
+    /**
+     * renvoie la liste des objets correspondant à une catégorie 
+     * et dont le titre/la description contient un mot, vendus par un utilisateur
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @param mot String
+     * @param cat Categorie
+     * @return List<Objet>
+     * @throws SQLException 
+     */
     public static List<Objet> objetsVendusPerime(Connection con, Utilisateur utilisateur,String mot,Categorie cat) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
@@ -1719,9 +2155,14 @@ public class BdD {
     
     
     
+   
     
-    
-
+    /**
+     * permet de rechercher un utilisateur par son nom et d'afficher son identifiant et don mdp dans la console
+     * @param con Connection
+     * @param nom String
+     * @throws SQLException 
+     */
     public static void trouveParNom(Connection con, String nom) throws SQLException {
         try ( PreparedStatement st = con.prepareStatement(
                 "select id,nom,pass from utilisateur "
@@ -1738,6 +2179,18 @@ public class BdD {
         }
     }
     
+    
+    /**
+     * permet d'ajouter un utilisateur à la BDD
+     * @param con Connection
+     * @param nom String
+     * @param prenom String
+     * @param email String
+     * @param pass String
+     * @param codePostal String
+     * @return Utilisateur
+     * @throws SQLException 
+     */
     public static Utilisateur ajouterUtilisateur(Connection con, String nom, String prenom, String email, String pass, String codePostal) throws SQLException {
         con.setAutoCommit(false);
         try ( PreparedStatement chercheEmail = con.prepareStatement(
@@ -1773,10 +2226,26 @@ public class BdD {
     }
     
     
+    /**
+     * permet d'ajouter un utilisateur sans prénom ni code postal
+     * @param con Connection
+     * @param nom String
+     * @param email String
+     * @param pass String
+     * @return Utilisateur
+     * @throws SQLException 
+     */
     public static Utilisateur ajouterUtilisateur(Connection con, String nom, String email, String pass, String codepostal) throws SQLException {
         return ajouterUtilisateur(con, nom, null, email, pass, codepostal);
     }
 
+    
+    /**
+     * permet d'ajouter un utilisateur en demandant les informations dans la console
+     * @param con Connection
+     * @return Utilisateur
+     * @throws SQLException 
+     */
     public static Utilisateur ajouterUtilisateur(Connection con) throws SQLException {
         String nom = Console.entreeString("nom : ");
         String prenom = Console.entreeString("prénom : ");
@@ -1794,39 +2263,38 @@ public class BdD {
         return ajouterUtilisateur(con,nom,prenom,email,pass,codepostal);
     }
     
-    /*_________________________________ON DECIDE DE NE PAS AVOIR ADMIN DANS LA BDD_________________________________
-    public static void ajouterAdmin(Connection con) throws SQLException {
-        con.setAutoCommit(false);
-        try ( PreparedStatement pst = con.prepareStatement(
-        """
-            insert into utilisateur (nom,email,pass,codepostal) values (?,?,?,?)
-            """,PreparedStatement.RETURN_GENERATED_KEYS)) {
-            pst.setString(1, "admin");
-            pst.setString(2, "admin");
-            pst.setString(3, "admin");
-            pst.setString(4, "00000");
-            pst.executeUpdate();
-            con.commit();
-        } catch (Exception ex) {
-            con.rollback();
-            throw ex;
-        }
-    }
+
+    
+   /**
+    * permet d'ajouter une catégorie
+    * @param con Connection
+    * @param nom String
+    * @throws SQLException 
     */
-   
    public static void ajouterCategorie(Connection con, String nom) throws SQLException {
+       con.setAutoCommit(false);
        try ( PreparedStatement pst = con.prepareStatement(
                """
                insert into categorie (nom) values (?)
                """)) {
 
            pst.setString(1, nom);
-           //coucou marie
            pst.executeUpdate();
-
+           con.commit();
+        } catch (Exception ex) {
+            con.rollback();
+            throw ex;
+        } finally {
+            con.setAutoCommit(true);
         }
     }
    
+   
+   /**
+    * permet d'ajouter une catégorie depuis la console
+    * @param con Connection
+    * @throws SQLException 
+    */
    public static void ajouterCategorie(Connection con) throws SQLException {
        // lors de la creation du PreparedStatement, il faut que je précise
        // que je veux qu'il conserve les clés générées
@@ -1834,6 +2302,13 @@ public class BdD {
         ajouterCategorie(con,nom);
     }
    
+   
+   /**
+    * permet de demander une date depuis la console
+    * @param con Connection
+    * @return String
+    * @throws SQLException 
+    */
     public static String demanderDate (Connection con) throws SQLException{
         String jour =Console.entreeString("Jour de fin de vente sour la forme annee-mois-jour:");
         String heure=Console.entreeString("Heure de fin de vente sour la forme heure:minute:seconde");
@@ -1841,17 +2316,45 @@ public class BdD {
         return date;
    }
    
+    
+   /**
+    * permet de choisir une catégorie parmi la liste depuis la console
+    * @param con Connection
+    * @return int (identifiant catégorie)
+    * @throws SQLException 
+    */
    public static int choisirCategorie(Connection con) throws SQLException{
        afficheListCategorie(listCategorie(con));
        return Console.entreeEntier("Entrez l'identifiant de la categorie de votre objet");
    }
    
+   
+   /**
+    * permet de choisir un objet parmi la liste depuis la console
+    * @param con Conneciton
+    * @return int (identifiant objet)
+    * @throws SQLException 
+    */
    public static int choisirObjet(Connection con) throws SQLException{
        afficheListObjet(con,listObjet(con));
        return Console.entreeEntier("Entrez l'identifiant de l'objet de votre choix");
    }
    
-   public static void ajouterObjet(Connection con, String titre, String description, Timestamp debut, Timestamp fin, int prixbase, int categorie, int proposepar) throws SQLException {
+   
+   /**
+    * permet d'ajouter un objet
+    * @param con Connection
+    * @param titre String
+    * @param description String
+    * @param debut Timestamp
+    * @param fin Timestamp
+    * @param prixbase int
+    * @param categorie int (identifiant categorie)
+    * @param proposepar in (identifiant utilisateur)
+    * @throws SQLException 
+    */
+    public static void ajouterObjet(Connection con, String titre, String description, Timestamp debut, Timestamp fin, int prixbase, int categorie, int proposepar) throws SQLException {
+       con.setAutoCommit(false);
        try ( PreparedStatement pst = con.prepareStatement(
                """
                insert into objet (titre, description, debut, fin, prixbase,categorie, proposepar) values (?,?,?,?,?,?,?)
@@ -1866,11 +2369,24 @@ public class BdD {
            pst.setInt(7, proposepar);
 
            pst.executeUpdate();
-
+           con.commit();
+           } catch (Exception ex) {
+            con.rollback();
+            throw ex;
+        } finally {
+            con.setAutoCommit(true);
         }
+
     }
    
-   public static void ajouterObjet(Connection con, Utilisateur utilisateur) throws SQLException {
+    
+    /**
+     * permet d'ajouter un objet depuis la console
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @throws SQLException 
+     */
+    public static void ajouterObjet(Connection con, Utilisateur utilisateur) throws SQLException {
         String titre = Console.entreeString("titre : ");
         String description = Console.entreeString("description : ");
         Long datetime = System.currentTimeMillis();
@@ -1886,6 +2402,14 @@ public class BdD {
     /*
     Donne le montant le plus élevé enchéri sur l'objet "sur".
     */
+    /**
+     * renvoie le montant maximal des enchères sur un objet 
+     * ou son prix de base si aucune enchère n'a été faite
+     * @param con Connection
+     * @param sur int (identifiant objet)
+     * @return int (montant)
+     * @throws SQLException 
+     */
     public static int dernierEnchereSurObjet(Connection con, int sur) throws SQLException {
         try ( PreparedStatement chercheMontant = con.prepareStatement(
          "select max(montant) as montant from enchere where enchere.sur=?")) {
@@ -1910,9 +2434,15 @@ public class BdD {
     }
     
     
-    /*
-    Donne le montant le plus élevé qu'un utilisateur à enchérit sur l'objet d'id "sur".
-    */
+    /**
+     * renvoie le montant maximal des enchères faites par un utilisateur sur un objet 
+     * ou son prix de base si aucune enchère n'a été faite
+     * @param con Connection
+     * @param sur int (identifiant objet)
+     * @param utilisateur Utilisateur
+     * @return int (montant)
+     * @throws SQLException 
+     */
     public static int dernierEnchereSurObjetDunUtilisateur(Connection con, int sur, Utilisateur utilisateur) throws SQLException {
         try ( PreparedStatement chercheMontant = con.prepareStatement(
          "select max(montant) as montant from enchere where enchere.sur=? and enchere.de=?")) {
@@ -1938,9 +2468,18 @@ public class BdD {
     }
     
     
-   public static void ajouterEnchere(Connection con, int de, int sur, Timestamp quand, int montant) throws SQLException {
+    /**
+     * permet d'ajouter une enchère
+     * @param con Connection
+     * @param de int (identifiant utilisateur)
+     * @param sur int (identifiant objet)
+     * @param quand Timestamp
+     * @param montant int 
+     * @throws SQLException 
+     */
+    public static void ajouterEnchere(Connection con, int de, int sur, Timestamp quand, int montant) throws SQLException {
         Timestamp now = new Timestamp(System.currentTimeMillis());
-        
+        con.setAutoCommit(false);
         try ( PreparedStatement st = con.prepareStatement(
                 "select fin from objet "
                 + "where objet.id = ?")) {
@@ -1964,8 +2503,10 @@ public class BdD {
                             pst.setTimestamp(3, quand);
                             pst.setInt(4, montant);
                             pst.executeUpdate();
+                            con.commit();
                         }
                 }else{
+                    con.rollback();
                     JavaFXUtils.showErrorInAlert("Montant inférieur à l'enchère précédente");
                     throw new Error("Montant inférieur à l'enchère précédente");
                 }
@@ -1973,11 +2514,20 @@ public class BdD {
                 }else{
                     JavaFXUtils.showErrorInAlert("Date depassée");
                     throw new Error("Date depassée");
-                }
+                }               
             }
+        }finally{
+            con.setAutoCommit(true);
         }
     }
    
+    
+    /**
+     * permet d'ajouter une enchère depuis la console
+     * @param con Connection
+     * @param utilisateur Utilisateur
+     * @throws SQLException 
+     */
     public static void ajouterEnchere(Connection con, Utilisateur utilisateur) throws SQLException {
         
         int de=utilisateur.getId();
@@ -1989,38 +2539,30 @@ public class BdD {
         ajouterEnchere(con,de,sur,quand,montant);
     }
     
-    public static void ajouterEnchere(Connection con, Utilisateur utilisateur, int montant,int sur) throws SQLException {
-        
+    
+    /**
+     * permet d'ajouter une enchère en fixant debut au moment présent
+     * @param con Conenction
+     * @param utilisateur Utilisateur
+     * @param montant int
+     * @param sur int (identifiant objet)
+     * @throws SQLException 
+     */
+    public static void ajouterEnchere(Connection con, Utilisateur utilisateur, int montant,int sur) throws SQLException {       
         int de=utilisateur.getId();
         Long datetime = System.currentTimeMillis();
         Timestamp quand = new Timestamp(datetime);
         ajouterEnchere(con,de,sur,quand,montant);
     }
     
- 
-   
-    /*
-   public static Utilisateur connexionUtilisateur(Connection con, String email, String pass) throws SQLException {
-       //coucou téo
-        try ( PreparedStatement pst = con.prepareStatement("select * from utilisateur where email = ? and pass = ?")) {
-            pst.setString(1, email);
-            pst.setString(2, pass);
-            ResultSet res = pst.executeQuery();
-            if (res.next()) {
-                return new Utilisateur(res.getInt("id"), res.getString("nom"), res.getString("prenom"), email, pass, res.getString("codepostal"));
-            } else {
-                return new Utilisateur();//en cas de problème
-            }
-        }
-    }
-   
-   public static Utilisateur connexionUtilisateur(Connection con) throws SQLException {
-       String email = Console.entreeString("email : ");
-       String pass = Console.entreeString("pass : ");
-       return connexionUtilisateur(con, email, pass);
-    }
-*/
-
+    /**
+     * permet à un utilisateur de se connecter
+     * @param con Connection
+     * @param email String
+     * @param pass String
+     * @return Utilisateur
+     * @throws SQLException 
+     */
     public static Optional<Utilisateur> connexionUtilisateur(Connection con, String email, String pass) throws SQLException {
         if(email.equals("admin") && pass.equals("admin")){
             return Optional.of(Utilisateur.admin());
@@ -2038,16 +2580,27 @@ public class BdD {
         }
     }
    
-   public static Optional<Utilisateur> connexionUtilisateur(Connection con) throws SQLException {
+    
+    /**
+     * permet à un utilisateur de se connecter depuis la console
+     * @param con Connection
+     * @return Utilisateur
+     * @throws SQLException 
+     */
+    public static Optional<Utilisateur> connexionUtilisateur(Connection con) throws SQLException {
        String email = Console.entreeString("email : ");
        String pass = Console.entreeString("pass : ");
        return connexionUtilisateur(con, email, pass);
     }
 
     
-   
-   
-   public static void BilanUtilisateur(Connection con, Utilisateur utilisateur) throws SQLException {
+   /**
+    * affiche le bilan des enchères d'un utilisateur dans la console
+    * @param con Connection
+    * @param utilisateur Utilisateur
+    * @throws SQLException 
+    */
+    public static void BilanUtilisateur(Connection con, Utilisateur utilisateur) throws SQLException {
        int identifiant=utilisateur.getId();
        try ( PreparedStatement chercheEncheres = con.prepareStatement(
          "select objet.titre, objet.categorie, objet.prixbase, objet.debut, objet.fin from enchere"
@@ -2061,8 +2614,13 @@ public class BdD {
         }
     }
    
-   
-   public static void menu(Connection con) throws SQLException {
+    
+    /**
+     * menu textuel permettant de simuler le site de ventes aux enchères dans la console
+     * @param con Connection
+     * @throws SQLException 
+     */
+    public static void menu(Connection con) throws SQLException {
         int rep = -1;
         while (rep != 0) {
             System.out.println("Menu BdD Encheres");
@@ -2109,13 +2667,19 @@ public class BdD {
         }
         
     }
-   
+    
+    
+    /**
+     * menu textuel permettant de simuler le site de ventes aux enchères dans la console
+     * avec option administrateur
+     * @param con Connection
+     * @throws SQLException 
+     */
     public static void menuV2(Connection con) throws SQLException {
         int rep = 0;
         Utilisateur utilActif = new Utilisateur();
         while (true) {
             System.out.println("__________MENU_BASE__________");
-            
             System.out.println("[1] Se connecter");
             System.out.println("[2] Créer un nouveau compte");
             System.out.println("[0] Quitter");
@@ -2130,7 +2694,7 @@ public class BdD {
                 break;
             }
             rep = -1;
-            if (utilActif.getId() == 0){ // menu admin
+            if (utilActif.getId()==0){ // menu admin
                 while (rep != 0) {
                     System.out.println("__________MENU_ADMIN__________");
                     
@@ -2225,7 +2789,7 @@ public class BdD {
             //afficheToutesLesEncheres(con);
             //afficheListCategorie(listCategorie(con));
             //afficheListObjet(con,listObjet(con));
-            menu(con);
+            menuV2(con);
         } catch (Exception ex) {
             throw new Error(ex);
         }

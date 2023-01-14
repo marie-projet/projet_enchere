@@ -91,7 +91,7 @@ public class Objet {
     }
     
     
-    public String toStringJoli() {
+    public String toString() {
         String horloge = this.getFin().toString().substring(11,16);
         String calendrier = (this.getFin().getDay()+1) + "/" + (this.getFin().getMonth()+1) + "/" + (this.getFin().getYear()+1900);
         //System.out.print(horloge+" le "+calendrier);
@@ -106,17 +106,7 @@ public class Objet {
         return res;
     }
         
-        
-    public String toString() {
-        String res="";
-        res=res+"                             "+this.getTitre().toUpperCase()+"\n"+"\n";
-        res=res+"Description: "+this.getDescription()+"\n";
-        res=res+"Catégorie: "+this.getCategorie()+"\n";
-        res=res+"Prixe de base: "+this.getPrixBase()+"\n";
-        res=res+"Prix actuel : "+this.getPrixActuel()+"\n";
-        res=res+"Fin de l'enchère : "+this.getFin()+"\n";
-        return res;
-    }
+       
     
     public String toString2() {
         String res="";

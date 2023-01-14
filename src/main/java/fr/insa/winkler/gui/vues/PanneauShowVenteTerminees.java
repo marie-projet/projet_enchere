@@ -41,8 +41,8 @@ import javafx.scene.paint.Color;
 public class PanneauShowVenteTerminees extends GridPane {
 
     private MainPane main;
-    private ObjetTable vObjetsEnVente;
-    private ObjetTable vObjetsVendus;
+    private ObjetTable3 vObjetsEnVente;
+    private ObjetTable3 vObjetsVendus;
     private ObjetTable2 vObjetsNonVendus;
     private ComboBox<String> categories;
     private Button vbInfos;
@@ -86,9 +86,9 @@ public class PanneauShowVenteTerminees extends GridPane {
         VBox vlObjetsEnVente = new VBox();
         vlObjetsEnVente.getChildren().add(new BigLabel("Vos objets mis en vente",20));
         try {
-            List<Objet> datas = BdD.objetsEnVente(
+            List<Objet> datas = BdD.objetsEnVentePerime(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-            vlObjetsEnVente.getChildren().add(this.vObjetsEnVente=new ObjetTable(this.main,datas));
+            vlObjetsEnVente.getChildren().add(this.vObjetsEnVente=new ObjetTable3(this.main,datas));
         } catch (SQLException ex) {
             vlObjetsEnVente.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
         }
@@ -99,9 +99,9 @@ public class PanneauShowVenteTerminees extends GridPane {
         VBox vlObjetsVendus = new VBox();
         vlObjetsVendus.getChildren().add(new BigLabel("Vos objets vendus",20));
         try {
-            List<Objet> datas = BdD.objetsVendus(
+            List<Objet> datas = BdD.objetsVendusPerime(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-            vlObjetsVendus.getChildren().add(this.vObjetsVendus=new ObjetTable(this.main,datas));
+            vlObjetsVendus.getChildren().add(this.vObjetsVendus=new ObjetTable3(this.main,datas));
         } catch (SQLException ex) {
             vlObjetsVendus.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
         }
@@ -113,7 +113,7 @@ public class PanneauShowVenteTerminees extends GridPane {
         VBox vlObjetsPasVendus = new VBox();
         vlObjetsPasVendus.getChildren().add(new BigLabel("Vos objets non vendus",20));
         try {
-            List<Objet> datas = BdD.objetsPasVendus(
+            List<Objet> datas = BdD.objetsPasVendusPerime(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
             vlObjetsPasVendus.getChildren().add(this.vObjetsNonVendus=new ObjetTable2(this.main,datas));
         } catch (SQLException ex) {
@@ -129,11 +129,11 @@ public class PanneauShowVenteTerminees extends GridPane {
         this.setHalignment(this.recherche, HPos.CENTER);
     }
 
-    public ObjetTable getvObjetsEnVente() {
+    public ObjetTable3 getvObjetsEnVente() {
         return vObjetsEnVente;
     }
 
-    public ObjetTable getvObjetsVendus() {
+    public ObjetTable3 getvObjetsVendus() {
         return vObjetsVendus;
     }
 
@@ -150,11 +150,11 @@ public class PanneauShowVenteTerminees extends GridPane {
         return vbInfos;
     }
 
-    public void setvObjetsEnVente(ObjetTable vObjetsEnVente) {
+    public void setvObjetsEnVente(ObjetTable3 vObjetsEnVente) {
         this.vObjetsEnVente = vObjetsEnVente;
     }
 
-    public void setvObjetsVendus(ObjetTable vObjetsVendus) {
+    public void setvObjetsVendus(ObjetTable3 vObjetsVendus) {
         this.vObjetsVendus = vObjetsVendus;
     }
 

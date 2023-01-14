@@ -33,7 +33,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.geometry.Insets;
 
 /**
  *
@@ -42,9 +41,9 @@ import javafx.geometry.Insets;
 public class PanneauShowEnchereTerminees extends GridPane {
 
     private MainPane main;
-    private ObjetTable vEnchere;
-    private ObjetTable vEnchereGagnante;
-    private ObjetTable vEncherePerdante;
+    private ObjetTable3 vEnchere;
+    private ObjetTable3 vEnchereGagnante;
+    private ObjetTable3 vEncherePerdante;
     private Button vbInfos;
     private ComboBox<String> categories;
     private TextField recherche;
@@ -86,9 +85,9 @@ public class PanneauShowEnchereTerminees extends GridPane {
         VBox vlEnchere = new VBox();
         vlEnchere.getChildren().add(new BigLabel("Vos enchères terminées",20));
         try {
-            List<Objet> datas = BdD.objetEncheri(
+            List<Objet> datas = BdD.objetEncheriPerime(
                     this.main.getSession().getConBdD(), this.main.getSession().getCurUser().orElseThrow());
-            vlEnchere.getChildren().add(this.vEnchere=new ObjetTable(this.main,datas));
+            vlEnchere.getChildren().add(this.vEnchere=new ObjetTable3(this.main,datas));
         } catch (SQLException ex) {
             vlEnchere.getChildren().add(new BigLabel("Probleme BdD : "+ex.getLocalizedMessage(),20));
         }
@@ -99,13 +98,13 @@ public class PanneauShowEnchereTerminees extends GridPane {
         VBox vlEnchereGagnante = new VBox();
         vlEnchereGagnante.getChildren().add(new BigLabel("Vos enchères gagnées",20));
         try {
-            List<Objet> objetsEncheris = BdD.objetEncheriGagnant(
+            List<Objet> objetsEncheris = BdD.objetEncheriGagnantPerime(
                     this.main.getSession
         ().getConBdD(), this.main.getSession
-        ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
+        ().getCurUser().orElseThrow(),BdD.objetEncheriPerime(this.main.getSession
         ().getConBdD(), this.main.getSession
         ().getCurUser().orElseThrow()));
-            vlEnchereGagnante.getChildren().add(this.vEnchereGagnante=new ObjetTable(this.main,objetsEncheris));
+            vlEnchereGagnante.getChildren().add(this.vEnchereGagnante=new ObjetTable3(this.main,objetsEncheris));
         } catch (SQLException ex) {
             vlEnchereGagnante.getChildren().add(new BigLabel("Probleme BdD",20));
         }
@@ -116,13 +115,13 @@ public class PanneauShowEnchereTerminees extends GridPane {
         VBox vlEncherePerdante = new VBox();
         vlEncherePerdante.getChildren().add(new BigLabel("Vos enchères perdues",20));
         try {
-            List<Objet> objetsEncheris = BdD.objetEncheriPerdant(
+            List<Objet> objetsEncheris = BdD.objetEncheriPerdantPerime(
                     this.main.getSession
         ().getConBdD(), this.main.getSession
-        ().getCurUser().orElseThrow(),BdD.objetEncheri(this.main.getSession
+        ().getCurUser().orElseThrow(),BdD.objetEncheriPerime(this.main.getSession
         ().getConBdD(), this.main.getSession
         ().getCurUser().orElseThrow()));
-            vlEncherePerdante.getChildren().add(this.vEncherePerdante=new ObjetTable(this.main,objetsEncheris));
+            vlEncherePerdante.getChildren().add(this.vEncherePerdante=new ObjetTable3(this.main,objetsEncheris));
         } catch (SQLException ex) {
             vlEncherePerdante.getChildren().add(new BigLabel("Probleme BdD",20));
         }
@@ -142,15 +141,15 @@ public class PanneauShowEnchereTerminees extends GridPane {
         return main;
     }
 
-    public ObjetTable getvEnchere() {
+    public ObjetTable3 getvEnchere() {
         return vEnchere;
     }
 
-    public ObjetTable getvEnchereGagnante() {
+    public ObjetTable3 getvEnchereGagnante() {
         return vEnchereGagnante;
     }
 
-    public ObjetTable getvEncherePerdante() {
+    public ObjetTable3 getvEncherePerdante() {
         return vEncherePerdante;
     }
 
@@ -163,15 +162,15 @@ public class PanneauShowEnchereTerminees extends GridPane {
         return categories;
     }
 
-    public void setvEnchere(ObjetTable vEnchere) {
+    public void setvEnchere(ObjetTable3 vEnchere) {
         this.vEnchere = vEnchere;
     }
 
-    public void setvEnchereGagnante(ObjetTable vEnchereGagnante) {
+    public void setvEnchereGagnante(ObjetTable3 vEnchereGagnante) {
         this.vEnchereGagnante = vEnchereGagnante;
     }
 
-    public void setvEncherePerdante(ObjetTable vEncherePerdante) {
+    public void setvEncherePerdante(ObjetTable3 vEncherePerdante) {
         this.vEncherePerdante = vEncherePerdante;
     }
 

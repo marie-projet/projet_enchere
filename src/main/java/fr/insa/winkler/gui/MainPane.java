@@ -7,10 +7,12 @@ package fr.insa.winkler.gui;
 
 import fr.insa.winkler.gui.vues.BienvenueMainVue;
 import fr.insa.winkler.gui.vues.EnteteAfterLogin;
-import fr.insa.winkler.gui.vues.EnteteLogin;
+import fr.insa.winkler.gui.vues.MainAfterLogin;
 import fr.insa.winkler.projet.BdD;
+import fr.insa.winkler.projet.Utilisateur;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Optional;
 
 import javafx.scene.Node;
 import javafx.scene.layout.BorderPane;
@@ -51,33 +53,18 @@ public class MainPane extends BorderPane{
          try {
             this.session.setConBdD(BdD.defautConnect());
             Connection con = this.getSession().getConBdD();
-            //Optional<Utilisateur> user = BdD.connexionUtilisateur(con, "bob@mail.com", "gg");
-            //this.getSession().setCurUser(user);
-            this.setEntete(new EnteteLogin(this));
-            //this.setEntete(new EnteteAfterLogin(this));
-            //this.setMainContent(new MainAfterLogin(this));
-            this.setMainContent(new BienvenueMainVue(this));
+            Optional<Utilisateur> user = BdD.connexionUtilisateur(con, "bob@mail.com", "gg");
+            this.getSession().setCurUser(user);
+            //this.setEntete(new EnteteLogin(this));
+            this.setEntete(new EnteteAfterLogin(this));
+            this.setMainContent(new MainAfterLogin(this));
+            //this.setMainContent(new BienvenueMainVue(this));
         } catch (ClassNotFoundException | SQLException ex) {
             //this.setMainContent(new BdDNonAccessible(this));
         }
         
     }
 
-    //public MenuButton getMbUtilisateur() {
-        //return mbUtilisateur;
-    //}
-
-    //public Button getbConnexion() {
-        //return bConnexion;
-    //}
-
-    //public Button getbNouvelUtilisateur() {
-       // return bNouvelUtilisateur;
-    //}
-
-    //public TextArea getMessage() {
-     //   return message;
-    //}
 
     public ScrollPane getMainContent() {
         return mainContent;
