@@ -2218,6 +2218,9 @@ public class BdD {
      */
     public static Utilisateur ajouterUtilisateur(Connection con, String nom, String prenom, String email, String pass, String codePostal) throws SQLException {
         con.setAutoCommit(false);
+        nom = stringCorrecter(nom);
+        prenom = stringCorrecter(prenom);
+        
         try ( PreparedStatement chercheEmail = con.prepareStatement(
                 "select id from utilisateur where email = ?")) {
             chercheEmail.setString(1, email);
@@ -2365,6 +2368,26 @@ public class BdD {
        return Console.entreeEntier("Entrez l'identifiant de l'objet de votre choix");
    }
    
+   /**
+    * corrige un text si nécessaire pour ne pas entrainer d'erreur
+    * @param txt String
+    * @return boolean
+    */
+   public static String stringCorrecter(String str){
+       char restab[] = new char [str.length()];
+        if(str.contains("'")){
+            for(int i = 0; i < str.length(); i++){
+                if(str.charAt(i) == 39){
+                    restab[i]=32;
+                }else{
+                    restab[i]=str.charAt(i);
+                }
+            }
+            return new String(restab);
+        }else{
+            return str;
+        }
+   }
    
    /**
     * permet d'ajouter un objet
@@ -2379,7 +2402,10 @@ public class BdD {
     * @throws SQLException 
     */
     public static void ajouterObjet(Connection con, String titre, String description, Timestamp debut, Timestamp fin, int prixbase, int categorie, int proposepar) throws SQLException {
-       con.setAutoCommit(false);     
+       con.setAutoCommit(false);
+       titre = stringCorrecter(titre);
+       description = stringCorrecter(description);
+       
        try ( PreparedStatement pst = con.prepareStatement(
                """
                insert into objet (titre, description, debut, fin, prixbase,categorie, proposepar) values (?,?,?,?,?,?,?)
