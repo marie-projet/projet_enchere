@@ -281,8 +281,7 @@ public class BdD {
             st.executeUpdate(
             """
             INSERT INTO utilisateur (nom,prenom,email,pass,codepostal) 
-            values 
-            ('admin','admin','admin','admin','00000'),
+            values
             ('Toto',null,'toto@mail.fr','pass1','67084'),
             ('Morane','Bob','bob@mail.fr','felicidad','FR-75007'),
             ('Marley','Bob','bob@mail.com','gg','JAM-JMAAW14'),
@@ -337,7 +336,7 @@ public class BdD {
             ('Barbecue charbon','Barbecue charbon de bois Weber Kettle, diamètre 57cm.','2023-01-09 07:04:00.0','2023-05-01 01:00:00.0','100','12','3'),
             ('Veste chaude en fourrure','Veste noire unicolore avec manche longue pour femme. Fourrure artificielle évidemment.','2022-10-10 18:20:00.0',' 2023-03-20 13:00:00.0','3700','3','5'),
             ('Bible en allemand','Livre manuscrit datant du 15e siècle. Pièce exceptionnelle du monastère de Leipzig.','2023-01-01 08:00:00.0','2023-09-02 02:00:00.0','2000','6','1'),
-            ('Tableau carte du monde','Tableau planisphère pour faire genre en soirée.','2022-01-01 13:00:00.0','2022-03-02 13:00:00.0','5980','4','3')
+            ('Tableau carte du monde','Tableau planisphère pour faire genre en soirée.','2022-01-01 13:00:00.0','2023-03-02 13:00:00.0','5980','4','3')
             """);
             
             st.executeUpdate(
@@ -2754,7 +2753,7 @@ public class BdD {
                     System.out.println("[2] Créer la base de donée exemple");
                     System.out.println("[3] Liste des utilisateurs");
                     System.out.println("[4] Chercher un utilisateur par nom");
-                    System.out.println("[5] Ajouter un utilisateur");
+                    System.out.println("[5] Ajouter/Supprimer un utilisateur");
                     System.out.println("[6] Ajouter une categorie");
                     System.out.println("[0] Se déconecter");
 
@@ -2784,10 +2783,6 @@ public class BdD {
                 }
             } else { // menu utilisateur
                 while (rep != 0) {
-                    
-                    //afficheListObjet(con,objetEncheri(con,utilActif,Categorie.predef(1)));
-                    //afficheListObjet(con,objetsEnVente(con,utilActif,"lit"));
-                    afficheListObjet(con,objetEncheri(con,utilActif,"e"));
                     
                     System.out.println("_______MENU_UTILISATEUR_______");
                     
