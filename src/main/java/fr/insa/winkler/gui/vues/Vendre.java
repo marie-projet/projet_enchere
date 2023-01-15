@@ -77,6 +77,7 @@ public class Vendre extends VBox {
             for (Categorie cat: Categorie.ListCategorie()){
                 this.categorie.getItems().addAll(cat.toString());
             }
+        this.categorie.getItems().remove(0);
         this.categorie.setPromptText("Catégorie de l'objet");
         this.vbVendre = new Button("METTRE EN VENTE");
 

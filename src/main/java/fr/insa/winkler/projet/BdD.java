@@ -52,7 +52,7 @@ public class BdD {
      */
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5432,
+        return connectGeneralPostGres("localhost", 5439,
                 "postgres", "postgres", "pass");
     }
     
@@ -325,7 +325,7 @@ public class BdD {
             ('Vase ancien','Vase en porcelaine. Motifs variés.','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','5000','4','2'), 
             ('Meuble télé','Meuble en marbre ayant appartenu à Elvis Presley. Attention meuble massif, extrêmement lourd.','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','2000','11','2'), 
             ('Ancienne Voiture','Renault 21 de collection.','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','10000','13','2'), 
-            ('Tableau inconnu','Tableau du 17e siècle. Artiste inconnu.','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','50000','4','3'), 
+            ('Tableau inconnu','Tableau du 17e siècle. Artiste inconnu.','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','50000','4','1'), 
             ('Robe de mariage','Robe de mariage blanche avec dentelle.','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','4000','3','2'), 
             ('Encyclopédie','Encyclopédie du 20e siècle.','2023-01-01 10:00:00.0','2023-09-02 11:00:00.0','100','6','2'),
             ('La Cène','Copie du tableau de la renaissance de Léonard de Vinci. Taille réelle.','2022-04-12 10:00:00.0','2023-01-01 23:59:00.0','25000','4','9'), 
@@ -336,7 +336,7 @@ public class BdD {
             ('Barbecue charbon','Barbecue charbon de bois Weber Kettle, diamètre 57cm.','2023-01-09 07:04:00.0','2023-05-01 01:00:00.0','100','12','3'),
             ('Veste chaude en fourrure','Veste noire unicolore avec manche longue pour femme. Fourrure artificielle évidemment.','2022-10-10 18:20:00.0',' 2023-03-20 13:00:00.0','3700','3','5'),
             ('Bible en allemand','Livre manuscrit datant du 15e siècle. Pièce exceptionnelle du monastère de Leipzig.','2023-01-01 08:00:00.0','2023-09-02 02:00:00.0','2000','6','1'),
-            ('Tableau carte du monde','Tableau planisphère pour faire genre en soirée.','2022-01-01 13:00:00.0','2023-03-02 13:00:00.0','5980','4','3')
+            ('Tableau carte du monde','Tableau planisphère pour faire genre en soirée.','2022-01-01 13:00:00.0','2023-03-02 13:00:00.0','5980','4','2')
             """);
             
             st.executeUpdate(
@@ -351,16 +351,16 @@ public class BdD {
             ('8','10','2022-12-01 04:54:00.0','50000'),
             ('7','14','2023-01-02 07:50:00.0','500000'),
             ('8','14','2023-01-10 23:10:00.0','1000000'),
-            ('4','1','2022-09-01 12:00:00.0','5500'),
-            ('3','1','2022-09-01 13:00:00.0','6000'),
+            ('3','1','2022-09-01 12:00:00.0','5500'),
+            ('4','1','2022-09-01 13:00:00.0','6000'),
             ('4','1','2022-09-02 09:10:00.0','7000'),
-            ('4','3','2022-09-02 11:00:00.0','30000'),
+            ('3','3','2022-09-02 11:00:00.0','30000'),
             ('3','6','2023-01-02 12:02:00.0','5500'),
             ('2','7','2023-01-02 02:35:00.0','3000'),
-            ('4','9','2023-01-02 03:38:00.0','55000'),
+            ('3','9','2023-01-02 03:38:00.0','55000'),
             ('4','7','2023-01-02 04:09:00.0','2999'),
             ('4','1','2023-01-02 07:10:00.0','6000'),
-            ('1','20','2022-01-02 10:11:00.0','5990'),
+            ('3','20','2022-01-02 10:11:00.0','5990'),
             ('2','20','2022-02-03 13:12:00.0','6300')
             
             """);
