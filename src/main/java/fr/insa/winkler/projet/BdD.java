@@ -2371,7 +2371,7 @@ public class BdD {
    /**
     * corrige un text si nécessaire pour ne pas entrainer d'erreur
     * @param txt String
-    * @return boolean
+    * @return String
     */
    public static String stringCorrecter(String str){
        char restab[] = new char [str.length()];
