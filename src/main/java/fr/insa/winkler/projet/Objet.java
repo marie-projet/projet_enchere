@@ -88,7 +88,7 @@ public class Objet {
         res=res+"Catégorie: "+this.getCategorie()+"\n";
         res=res+"Prixe de base: "+this.getPrixBase()+"\n";
         res=res+"Prix actuel : "+this.getPrixActuel()+"\n";
-        res=res+"Fin de l'enchère a " + horloge + " le " + calendrier + "\n";
+        res=res+"Fin de l'enchère à " + horloge + " le " + calendrier + "\n";
         return res;
     }
         
