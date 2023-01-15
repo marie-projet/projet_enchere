@@ -1024,7 +1024,6 @@ public class BdD {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Objet> res = new ArrayList<>();
         for(Objet objet: list){
-            System.out.println(objet.getFin());
             if(dernierEnchereSurObjet(con,objet.getId()) > dernierEnchereSurObjetDunUtilisateur(con,objet.getId(),utilisateur) && objet.getFin().before(now)){
                 System.out.print("&");
                 res.add(objet);
@@ -2354,7 +2353,7 @@ public class BdD {
     * @throws SQLException 
     */
     public static void ajouterObjet(Connection con, String titre, String description, Timestamp debut, Timestamp fin, int prixbase, int categorie, int proposepar) throws SQLException {
-       con.setAutoCommit(false);
+       con.setAutoCommit(false);     
        try ( PreparedStatement pst = con.prepareStatement(
                """
                insert into objet (titre, description, debut, fin, prixbase,categorie, proposepar) values (?,?,?,?,?,?,?)
@@ -2367,7 +2366,6 @@ public class BdD {
            pst.setInt(5, prixbase);
            pst.setInt(6, categorie);
            pst.setInt(7, proposepar);
-
            pst.executeUpdate();
            con.commit();
            } catch (Exception ex) {

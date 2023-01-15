@@ -1,21 +1,4 @@
-/*
-    Copyright 2000- Francois de Bertrand de Beuvron
 
-    This file is part of CoursBeuvron.
-
-    CoursBeuvron is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    CoursBeuvron is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with CoursBeuvron.  If not, see <http://www.gnu.org/licenses/>.
- */
 package fr.insa.winkler.gui.vues;
 
 import fr.insa.winkler.projet.BdD;
@@ -36,7 +19,9 @@ import javafx.scene.layout.GridPane;
 
 /**
  *
- * @author francois
+ * @author marie et théo
+ * 
+ * permet à un nouvel utilisateur de s'inscrire
  */
 public class NouvelUtilisateur extends GridPane {
 
@@ -70,7 +55,11 @@ public class NouvelUtilisateur extends GridPane {
         this.vtPass2.setPromptText("Mot de passe");
         this.vbValidate = new Button("Valider");
         this.vbValidate.setOnAction((event) -> {
-            Connection con = this.main.getSession().getConBdD();
+        Connection con = this.main.getSession().getConBdD();
+                if(this.vtNom.getText().equals("") || this.vtPrenom.getText().equals("") || this.vtCodePostal.getText().equals("") || this.vtEmail.getText().equals("") ||this.vtPass.getText().equals("") || this.vtPass2.getText().equals("")   ){
+        JavaFXUtils.showErrorInAlert("Champs incomplets");
+        throw new Error("Champs incomplets");
+        }
             String nom = this.vtNom.getText();
             String prenom = this.vtPrenom.getText();
             String codePostal = this.vtCodePostal.getText();
@@ -88,8 +77,9 @@ public class NouvelUtilisateur extends GridPane {
                JavaFXUtils.showErrorInAlert("Problème BdD : " + ex.getLocalizedMessage());
                 }
             
-//                catch (BdD.NomExisteDejaException ex) {
-//                JavaFXUtils.showErrorInAlert("Ce nom existe déjà, choississez en un autre");
+            }
+            else{
+                JavaFXUtils.showErrorInAlert("Mot de pass incorrect");
             }
 
         });

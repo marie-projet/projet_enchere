@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package fr.insa.winkler.gui.vues;
 
 import fr.insa.winkler.gui.MainPane;
@@ -15,9 +12,10 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 /**
- * Table pour afficher des utilisateurs.
- * voir https://devstory.net/11079/javafx-tableview
- * @author francois
+ *
+ * @author marie et théo
+ * 
+ * affiche les objets en vente sous forme de table
  */
 public class ObjetTable extends TableView {
     
@@ -38,8 +36,6 @@ public class ObjetTable extends TableView {
                 new TableColumn<>("enchère actuelle");
         this.getColumns().addAll(cTitre,cPrix);
         
-        
-        // si l'on ne veut pas d'espace supplémentaire
         this.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         
 

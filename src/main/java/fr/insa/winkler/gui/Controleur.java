@@ -51,6 +51,22 @@ public class Controleur {
         this.etat = nouvelEtat;
     }
     
+    /**
+     * etat 10: bilan des enchères
+     * etat 11: encherir
+     * etat 12: réencherir
+     * etat 13: bilan enchères terminées
+     
+     * etat 20: bilan des ventes
+     * etat 21: vendre
+     * etat 22: bilan des ventes terminées
+     */
+       
+    
+    
+    /**
+     * méthode permettant d'afficher les informations sur un objet selectionne
+     */
     public void infos(){
         if(this.etat==10){
             if(this.encheres.getvEnchere() != null ){
@@ -183,7 +199,9 @@ public class Controleur {
     
     
     
-    
+    /**
+     * methode permettant d'encherir ou rencherir sur un objet
+     */
     public void encherir(){
         if(etat==11){
             List<Objet> select=this.encherir.getvPasEnchere().getSelectedObjects();
@@ -239,7 +257,9 @@ public class Controleur {
     
     
     
-    
+    /**
+     * methode permettant de restreindre la liste des objets à une catégorie
+     */
     public void categorie(){
         if(etat==10){
             List<String> a = new ArrayList<>();
@@ -1224,17 +1244,35 @@ public class Controleur {
         
     }
     
+    /**
+     * méthode permettant de mettre en vente un objet
+     */
     public void vendre(){
+        if(this.vendre.getTitre().getText().equals("") || this.vendre.getDescription().getText().equals("") || this.vendre.getPrixBase().getText().equals("") || this.vendre.getDateFin().getValue().equals(null) || this.vendre.getCategorie().getSelectionModel().getSelectedItem().equals("")   ){
+            JavaFXUtils.showErrorInAlert("Champs incomplets");
+            throw new Error("Champs incomplets");
+        }
         Long datetime = System.currentTimeMillis();
         Timestamp debut = new Timestamp(datetime);
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         String titre=this.vendre.getTitre().getText();
         String description=this.vendre.getDescription().getText();
         Timestamp fin=Timestamp.valueOf(this.vendre.getDateFin().getValue().atStartOfDay());
+        if(fin.before(now)){
+            JavaFXUtils.showErrorInAlert("Veuillez sélectionner une date ultérieure");
+            throw new Error("Veuillez sélectionner une date ultérieure");
+        }
+        try{
+            Integer.parseInt(this.vendre.getPrixBase().getText());
+        }catch(Exception e){
+            JavaFXUtils.showErrorInAlert("Montant non valide, veuillez entrez un nombre entier");
+        }
         int prixBase=Integer.parseInt(this.vendre.getPrixBase().getText());
         List<String> a = new ArrayList<>();
             for (String s: this.vendre.getCategorie().getSelectionModel().getSelectedItem().split(":")) {
                 a.add(s);
             }
+            
             Categorie categorieChoisie=Categorie.predef(Integer.parseInt(a.get(0)));
         try{
             BdD.ajouterObjet(this.vue.getSession().getConBdD(), titre,description, debut, fin, prixBase, categorieChoisie.getId(), this.vue.getSession().getCurUser().orElseThrow().getId());
@@ -1244,6 +1282,10 @@ public class Controleur {
         this.vendre.reInit();
     }
     
+    
+    /**
+     * méthode permettant de restreindre la liste des objets à une recherche par mot
+     */
     public void recherche(){
         if(etat==10){
             if(this.encheres.getCategories().getSelectionModel().getSelectedItem()==null || this.encheres.getCategories().getSelectionModel().getSelectedItem().equals("0: All") ){
