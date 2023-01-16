@@ -1248,7 +1248,7 @@ public class Controleur {
      * méthode permettant de mettre en vente un objet
      */
     public void vendre(){
-        if(this.vendre.getTitre().getText().equals("") || this.vendre.getDescription().getText().equals("") || this.vendre.getPrixBase().getText().equals("") || this.vendre.getDateFin().getValue().equals(null) || this.vendre.getCategorie().getSelectionModel().getSelectedItem().equals("")   ){
+        if(this.vendre.getTitre().getText().equals("") || this.vendre.getDescription().getText().equals("") || this.vendre.getPrixBase().getText().equals("") || this.vendre.getDateFin().getValue()==null || this.vendre.getCategorie().getSelectionModel().getSelectedItem()==null  ){
             JavaFXUtils.showErrorInAlert("Champs incomplets");
             throw new Error("Champs incomplets");
         }
